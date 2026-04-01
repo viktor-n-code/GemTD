@@ -20,6 +20,7 @@ import { drawUI } from './ui.js';
 function init() {
   // TODO: Get canvas element
   // TODO: Set canvas size to window dimensions
+  // TODO: document.getElementById('loading').classList.add('hidden')
   // TODO: Create game state
   // TODO: Create grid
   // TODO: Create input handler

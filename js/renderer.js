@@ -5,6 +5,10 @@
 
 /**
  * Main render function - draws the entire game state to canvas
+ *
+ * ctx is obtained by gameloop.js calling canvas.getContext('2d').
+ * Canvas width/height must match GRID_COLS*CELL_SIZE and GRID_ROWS*CELL_SIZE respectively.
+ *
  * @param {CanvasRenderingContext2D} ctx - The 2D canvas context
  * @param {Object} state - Current game state
  * @param {Array<Array<Object>>} grid - The game grid

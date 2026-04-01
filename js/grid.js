@@ -4,17 +4,21 @@
  */
 
 // Grid configuration constants
-export const GRID_COLS = 8;
-export const GRID_ROWS = 6;
-export const CELL_SIZE = 64;
+// 42 cols x 47 rows based on actual game layout (gemtd_map.txt)
+export const GRID_COLS = 42;
+export const GRID_ROWS = 47;
+export const CELL_SIZE = 16; // pixels per cell, yields ~672x752 canvas
 
-// Special grid locations
-export const ENTRY = { col: 0, row: 3 };
-export const EXIT = { col: 7, row: 3 };
+// Special grid locations (from layout analysis)
+export const ENTRY = { x: 1, y: 9 }; // left edge, rows 9-10
+export const EXIT = { x: 42, y: 38 }; // right edge, rows 38-39
 export const CHECKPOINTS = [
-  { col: 2, row: 3 },
-  { col: 4, row: 1 },
-  { col: 6, row: 3 },
+  { x: 9, y: 9 },
+  { x: 9, y: 26 },
+  { x: 33, y: 26 },
+  { x: 33, y: 9 },
+  { x: 21, y: 9 },
+  { x: 21, y: 38 },
 ];
 
 /**

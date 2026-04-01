@@ -9,14 +9,18 @@
  * @todo Implement with initial values for gold, lives, waves, gems, enemies, etc.
  */
 export function createInitialState() {
-  // TODO: Initialize game state
+  // Initialize game state with proper starting values
   return {
-    gold: 0,
-    lives: 0,
+    gold: 10, // game starts with 10g per gemtd_gold.txt
+    lives: 10,
     currentWave: 0,
     gems: [],
     enemies: [],
     grid: null,
+    gemChanceLevel: 1,
+    placedThisRound: [],
+    keptGemId: null,
+    projectiles: [],
   };
 }
 

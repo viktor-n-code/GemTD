@@ -20,6 +20,7 @@ export class InputHandler {
     this.mouseY = 0;
     this.mouseDown = false;
     this.selectedGem = null;
+    this.placementIntent = null; // Track requested placement grid cell
   }
 
   /**
@@ -43,14 +44,17 @@ export class InputHandler {
   }
 
   /**
-   * Handles placing a gem at the given grid position
-   * @param {Object} gem - Gem to place
-   * @param {Object} position - Grid position {col, row}
-   * @returns {boolean} True if placement was successful
-   * @todo Implement gem placement logic
+   * Gets the last requested placement intent (grid cell to place gem at)
+   * @returns {Object|null} Grid cell {col, row} or null if no pending placement
    */
-  placeGem(gem, position) {
-    // TODO: Place gem at position
-    return false;
+  getPlacementIntent() {
+    return this.placementIntent;
+  }
+
+  /**
+   * Clears the placement intent after gameloop processes it
+   */
+  clearPlacementIntent() {
+    this.placementIntent = null;
   }
 }
