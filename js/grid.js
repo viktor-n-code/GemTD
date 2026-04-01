@@ -1,57 +1,372 @@
 /**
  * grid.js - Game grid and pathfinding
  * Manages the game grid layout, tower placement validation, and enemy pathfinding.
+ *
+ * Grid is 42 columns × 47 rows, 1-indexed on both axes.
+ * Access cells as grid[y][x].
+ *
+ * Cell types:
+ *   'empty'   — open cell, traversable by enemies, tower can be placed here
+ *   'rock'    — placed stone tower, NOT traversable (blocks maze)
+ *   'gem'     — placed gem tower, NOT traversable (blocks maze)
+ *   'blocked' — special zone (checkpoints, entry, exit, borders),
+ *               traversable by enemies but CANNOT place towers
+ *
+ * For pathfinding enemies can pass through 'empty' and 'blocked' cells only.
  */
 
-// Grid configuration constants
-// 42 cols x 47 rows based on actual game layout (gemtd_map.txt)
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
 export const GRID_COLS = 42;
 export const GRID_ROWS = 47;
-export const CELL_SIZE = 16; // pixels per cell, yields ~672x752 canvas
+export const CELL_SIZE = 16; // pixels per cell
 
-// Special grid locations (from layout analysis)
-export const ENTRY = { x: 1, y: 9 }; // left edge, rows 9-10
-export const EXIT = { x: 42, y: 38 }; // right edge, rows 38-39
+export const ENTRY = { x: 1, y: 9 };
+export const EXIT  = { x: 42, y: 38 };
+
 export const CHECKPOINTS = [
-  { x: 9, y: 9 },
-  { x: 9, y: 26 },
-  { x: 33, y: 26 },
-  { x: 33, y: 9 },
-  { x: 21, y: 9 },
-  { x: 21, y: 38 },
+  { x: 9,  y: 9  }, // CP1
+  { x: 9,  y: 26 }, // CP2
+  { x: 33, y: 26 }, // CP3
+  { x: 33, y: 9  }, // CP4
+  { x: 21, y: 9  }, // CP5
+  { x: 21, y: 38 }, // CP6
 ];
 
+// ---------------------------------------------------------------------------
+// Blocked-zone definitions
+// Every cell in these ranges is pre-marked 'blocked' (no tower placement).
+// Checkpoint cells themselves are inside the playable corridor so they remain
+// 'empty' — they are listed in CHECKPOINTS above and must stay traversable.
+// ---------------------------------------------------------------------------
+
+const BLOCKED_ZONES = [
+  // Entry area (green cells on the map)
+  { x1: 1,  y1: 9,  x2: 1,  y2: 10 },
+  // Exit area (yellow cells on the map)
+  { x1: 42, y1: 38, x2: 42, y2: 39 },
+  // CP1 area  (arrows/markers around CP1, excludes the checkpoint cell itself)
+  { x1: 10, y1: 9,  x2: 15, y2: 15 },
+  // CP2 area
+  { x1: 9,  y1: 26, x2: 15, y2: 32 },
+  // CP3 area
+  { x1: 33, y1: 26, x2: 42, y2: 30 },
+  // CP4 area
+  { x1: 33, y1: 9,  x2: 41, y2: 15 },
+  // CP5 area
+  { x1: 21, y1: 9,  x2: 26, y2: 15 },
+  // CP6 area
+  { x1: 21, y1: 38, x2: 26, y2: 44 },
+];
+
+// ---------------------------------------------------------------------------
+// createGrid
+// ---------------------------------------------------------------------------
+
 /**
- * Creates a new grid with the given dimensions
- * @returns {Array<Array<Object>>} 2D grid array with cell objects
- * @todo Implement grid initialization with empty cells
+ * Creates a new 1-indexed 2D grid (grid[y][x]).
+ * Rows: y=1..GRID_ROWS, Cols: x=1..GRID_COLS.
+ *
+ * @returns {Array} 2D array of cell objects { type, gemId }
  */
 export function createGrid() {
-  // TODO: Create and return a 2D grid of cells
-  // Each cell should track if it's occupied, what's in it, etc.
-  return [];
+  // Allocate grid[y][x]; indices 0 are unused (1-indexed).
+  const grid = new Array(GRID_ROWS + 1);
+  for (let y = 0; y <= GRID_ROWS; y++) {
+    grid[y] = new Array(GRID_COLS + 1);
+    for (let x = 0; x <= GRID_COLS; x++) {
+      grid[y][x] = { type: 'empty', gemId: null };
+    }
+  }
+
+  // Mark outer border as blocked (x=1 || x=42 || y=1 || y=47).
+  for (let y = 1; y <= GRID_ROWS; y++) {
+    for (let x = 1; x <= GRID_COLS; x++) {
+      if (x === 1 || x === GRID_COLS || y === 1 || y === GRID_ROWS) {
+        grid[y][x].type = 'blocked';
+      }
+    }
+  }
+
+  // Mark all predefined blocked zones.
+  for (const zone of BLOCKED_ZONES) {
+    for (let y = zone.y1; y <= zone.y2; y++) {
+      for (let x = zone.x1; x <= zone.x2; x++) {
+        if (y >= 1 && y <= GRID_ROWS && x >= 1 && x <= GRID_COLS) {
+          grid[y][x].type = 'blocked';
+        }
+      }
+    }
+  }
+
+  // Checkpoint cells must remain traversable ('empty') even if a blocked-zone
+  // rectangle would otherwise cover them.  The ENTRY and EXIT cells are
+  // already inside their respective blocked zones, but enemies start/end
+  // there, so they too must be 'blocked' (traversable, no tower allowed) —
+  // they are already handled correctly by the border + zone marking above.
+  // Checkpoint cells (CP1-CP6) are the exact waypoints enemies travel through;
+  // restore them to 'empty' so pathfinding can traverse them freely.
+  for (const cp of CHECKPOINTS) {
+    if (cp.y >= 1 && cp.y <= GRID_ROWS && cp.x >= 1 && cp.x <= GRID_COLS) {
+      // Only change to 'empty' if currently 'blocked' (from a zone overlap).
+      // This ensures the actual checkpoint cell is always traversable and that
+      // A* can treat it as a normal open cell.
+      if (grid[cp.y][cp.x].type === 'blocked') {
+        grid[cp.y][cp.x].type = 'empty';
+      }
+    }
+  }
+
+  return grid;
+}
+
+// ---------------------------------------------------------------------------
+// findPath  (A*)
+// ---------------------------------------------------------------------------
+
+/**
+ * A* pathfinding through the grid.
+ *
+ * Passable cell types: 'empty', 'blocked'.
+ * Impassable: 'rock', 'gem'.
+ *
+ * @param {Array}  grid - The game grid (grid[y][x])
+ * @param {{x:number,y:number}} from - Start cell (1-indexed)
+ * @param {{x:number,y:number}} to   - End cell (1-indexed)
+ * @returns {Array<{x:number,y:number}>|null} Path from→to inclusive, or null
+ */
+export function findPath(grid, from, to) {
+  if (!from || !to) return null;
+
+  const { x: sx, y: sy } = from;
+  const { x: ex, y: ey } = to;
+
+  // Quick bounds check
+  if (sx < 1 || sx > GRID_COLS || sy < 1 || sy > GRID_ROWS) return null;
+  if (ex < 1 || ex > GRID_COLS || ey < 1 || ey > GRID_ROWS) return null;
+
+  // Already there
+  if (sx === ex && sy === ey) return [{ x: sx, y: sy }];
+
+  const isPassable = (x, y) => {
+    if (x < 1 || x > GRID_COLS || y < 1 || y > GRID_ROWS) return false;
+    const t = grid[y][x].type;
+    return t === 'empty' || t === 'blocked';
+  };
+
+  const heuristic = (x, y) => Math.abs(x - ex) + Math.abs(y - ey);
+
+  // Encode/decode (x,y) as a single integer key for fast lookups.
+  const key = (x, y) => y * (GRID_COLS + 1) + x;
+
+  // Open set implemented as a simple min-heap on f = g + h.
+  // Node: { x, y, g, f, parentKey }
+  const openMap  = new Map(); // key → node (best known so far)
+  const closedSet = new Set();
+  const parentOf  = new Map(); // key → parent node
+
+  const startNode = { x: sx, y: sy, g: 0, f: heuristic(sx, sy) };
+  openMap.set(key(sx, sy), startNode);
+
+  // MinHeap helper (simple sorted array — grid is small enough).
+  // For a 42×47 grid (1 974 cells) this is fast enough in practice.
+  const heap = [startNode];
+
+  const heapPush = (node) => {
+    heap.push(node);
+    // Bubble up
+    let i = heap.length - 1;
+    while (i > 0) {
+      const parent = (i - 1) >> 1;
+      if (heap[parent].f <= heap[i].f) break;
+      [heap[parent], heap[i]] = [heap[i], heap[parent]];
+      i = parent;
+    }
+  };
+
+  const heapPop = () => {
+    const top = heap[0];
+    const last = heap.pop();
+    if (heap.length > 0) {
+      heap[0] = last;
+      // Sift down
+      let i = 0;
+      while (true) {
+        let smallest = i;
+        const l = 2 * i + 1;
+        const r = 2 * i + 2;
+        if (l < heap.length && heap[l].f < heap[smallest].f) smallest = l;
+        if (r < heap.length && heap[r].f < heap[smallest].f) smallest = r;
+        if (smallest === i) break;
+        [heap[i], heap[smallest]] = [heap[smallest], heap[i]];
+        i = smallest;
+      }
+    }
+    return top;
+  };
+
+  const DIRS = [
+    { dx:  0, dy: -1 },
+    { dx:  0, dy:  1 },
+    { dx: -1, dy:  0 },
+    { dx:  1, dy:  0 },
+  ];
+
+  while (heap.length > 0) {
+    const current = heapPop();
+    const ck = key(current.x, current.y);
+
+    if (closedSet.has(ck)) continue;
+    closedSet.add(ck);
+
+    // Reached the goal?
+    if (current.x === ex && current.y === ey) {
+      // Reconstruct path
+      const path = [];
+      let node = current;
+      while (node) {
+        path.push({ x: node.x, y: node.y });
+        node = parentOf.get(key(node.x, node.y));
+      }
+      path.reverse();
+      return path;
+    }
+
+    for (const { dx, dy } of DIRS) {
+      const nx = current.x + dx;
+      const ny = current.y + dy;
+      if (!isPassable(nx, ny)) continue;
+
+      const nk = key(nx, ny);
+      if (closedSet.has(nk)) continue;
+
+      const g = current.g + 1;
+      const existing = openMap.get(nk);
+      if (existing && existing.g <= g) continue;
+
+      const node = { x: nx, y: ny, g, f: g + heuristic(nx, ny) };
+      openMap.set(nk, node);
+      parentOf.set(nk, current);
+      heapPush(node);
+    }
+  }
+
+  // No path found
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// validatePlacement
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns true if a 2×2 tower can be placed with top-left corner at (x, y).
+ *
+ * Rules:
+ *  1. All 4 cells must currently be 'empty'.
+ *  2. Temporarily marking those 4 cells as 'rock' must NOT block the enemy
+ *     route ENTRY → CP1 → CP2 → CP3 → CP4 → CP5 → CP6 → EXIT.
+ *
+ * @param {Array}  grid
+ * @param {number} x - Top-left column (1-indexed)
+ * @param {number} y - Top-left row (1-indexed)
+ * @returns {boolean}
+ */
+export function validatePlacement(grid, x, y) {
+  // 1. Bounds check: the 2×2 block must fit inside the grid.
+  if (x < 1 || x + 1 > GRID_COLS || y < 1 || y + 1 > GRID_ROWS) return false;
+
+  const cells = [
+    { cx: x,     cy: y     },
+    { cx: x + 1, cy: y     },
+    { cx: x,     cy: y + 1 },
+    { cx: x + 1, cy: y + 1 },
+  ];
+
+  // 2. All 4 cells must be 'empty'.
+  for (const { cx, cy } of cells) {
+    if (grid[cy][cx].type !== 'empty') return false;
+  }
+
+  // 3. Temporarily mark cells as 'rock'.
+  for (const { cx, cy } of cells) {
+    grid[cy][cx].type = 'rock';
+  }
+
+  // 4. Verify full path: ENTRY → each CP in order → EXIT.
+  const waypoints = [ENTRY, ...CHECKPOINTS, EXIT];
+  let valid = true;
+
+  for (let i = 0; i < waypoints.length - 1; i++) {
+    const segment = findPath(grid, waypoints[i], waypoints[i + 1]);
+    if (!segment) {
+      valid = false;
+      break;
+    }
+  }
+
+  // 5. Restore cells.
+  for (const { cx, cy } of cells) {
+    grid[cy][cx].type = 'empty';
+  }
+
+  return valid;
+}
+
+// ---------------------------------------------------------------------------
+// Tower helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Places a rock (stone obstacle) at the 2×2 block with top-left at (x, y).
+ * Does NOT validate — call validatePlacement first.
+ *
+ * @param {Array}  grid
+ * @param {number} x
+ * @param {number} y
+ */
+export function placeRock(grid, x, y) {
+  grid[y    ][x    ].type = 'rock';
+  grid[y    ][x + 1].type = 'rock';
+  grid[y + 1][x    ].type = 'rock';
+  grid[y + 1][x + 1].type = 'rock';
 }
 
 /**
- * Finds the path from entry to exit for enemies
- * @param {Array<Array<Object>>} grid - The game grid
- * @returns {Array<Object>} Array of path waypoints
- * @todo Implement pathfinding algorithm (A*, Dijkstra, or simple waypoint following)
+ * Places a gem tower at the 2×2 block with top-left at (x, y).
+ *
+ * @param {Array}  grid
+ * @param {number} x
+ * @param {number} y
+ * @param {*}      gemId - Identifier for the gem (e.g. an id or object ref)
  */
-export function findPath(grid) {
-  // TODO: Implement pathfinding
-  return [];
+export function placeGem(grid, x, y, gemId) {
+  grid[y    ][x    ] = { type: 'gem', gemId };
+  grid[y    ][x + 1] = { type: 'gem', gemId };
+  grid[y + 1][x    ] = { type: 'gem', gemId };
+  grid[y + 1][x + 1] = { type: 'gem', gemId };
 }
 
 /**
- * Validates whether a tower can be placed at the given position
- * @param {Array<Array<Object>>} grid - The game grid
- * @param {number} col - Grid column
- * @param {number} row - Grid row
- * @returns {boolean} True if placement is valid
- * @todo Implement placement validation (check occupancy, path blocking, etc.)
+ * Removes a rock from the 2×2 block at (x, y), restoring cells to 'empty'.
+ * Only cells currently set to 'rock' are changed.
+ *
+ * @param {Array}  grid
+ * @param {number} x
+ * @param {number} y
  */
-export function validatePlacement(grid, col, row) {
-  // TODO: Validate tower placement
-  return false;
+export function removeRock(grid, x, y) {
+  const coords = [
+    [x,     y    ],
+    [x + 1, y    ],
+    [x,     y + 1],
+    [x + 1, y + 1],
+  ];
+  for (const [cx, cy] of coords) {
+    if (grid[cy][cx].type === 'rock') {
+      grid[cy][cx].type = 'empty';
+    }
+  }
 }
