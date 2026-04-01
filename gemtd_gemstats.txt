@@ -1,0 +1,416 @@
+Gem stats
+
+Range reference: 186 is 13 tiles.
+54 is 3 tiles
+72 is 4 tiles
+
+--
+Flawed Emerald
+Damage 9-13
+Attacks per second: 1
+Range 79
+
+Poisons, 3 damage per second and slows movement by 20% for 4 seconds. Only most powerful poison applies, no stacking. Only most powerful slow applies, no stacking
+--
+Flawless Sapphire
+Damage 29-40
+Attacks per second: 1
+Range 122
+
+Slows movement speed by 35% for 5 seconds.
+--
+Red Crystal (special)
+Damage 49-75
+Attacks per second 1 / 0.8
+Range 186
+Upgrade cost 100
+Aura: -4 armor to all air units within 200 range.
+--
+Flawless Opal
+Damage 39-40
+Attacks per second: 1
+Range 129
+
+Aura: Gems within 129 range get +25% attack speed (including self). Only most powerfull attack speed aura applies, no stacking.
+-- 
+Normal Aquamarine
+Damage 23-30
+Attacks per second: 2.85
+Range 54
+--
+Flawed Topaz
+Damage 7-8
+Attacks per second: 1
+Range 72
+
+Attacks three targets within range
+--
+Jade (special)
+Damage 29-35
+Attacks per second 2
+Range 114
+Upgrade cost 45
+Poisons and deals 5 damage per second, slowing by 50% for 2 seconds. 
+--
+Normal Topaz
+Damage 13-14
+Attacks per second: 1
+Range 72
+
+Attacks four targets within range
+--
+Flawed Aquamarine
+Damage 11-15
+Attacks per second: 2.85
+Range 52
+--
+Flawed Ruby
+Damage 12-16
+Attacks per second: 1
+Range 114
+
+Attacks cause splash damage (does 100% damage to other enemies within 25 range)
+--
+Normal Sapphire
+Damage 15-21
+Attacks per second: 1
+Range 114
+
+Slows movement speed by 30% for 5 seconds.
+--
+Normal Emerald
+Damage 14-25
+Attacks per second: 1
+Range 86
+
+Poisons, 5 damage per second and slows movement by 25% for 5 seconds. Only most powerful poison applies, no stacking. Only most powerful slow applies, no stacking
+--
+Normal Amethyst
+Damage 29-40
+Attacks per second: 1
+Range 179
+
+Attacks air units only.
+--
+Flawed Amethyst
+Damage 17-25
+Attacks per second: 1
+Range 161
+
+Attacks air units only.
+--
+Flawless Amethyst
+Damage 59-75
+Attacks per second: 1
+Range 186
+
+Attacks air units only.
+--
+Perfect Amethyst
+Damage 139-150
+Attacks per second: 1
+Range 215
+
+Attacks air units only.
+--
+Flawless Topaz
+Damage 24-25
+Attacks per second: 1
+Range 72
+
+Attacks five targets within range
+--
+Flawed Opal
+Damage 9-10
+Attacks per second: 1
+Range 100
+
+Aura: Gems within 100 range get +15% attack speed (including self). Only most powerfull attack speed aura applies, no stacking.
+--
+Asian Jade (special, upgraded from Jade)
+Damage 49-50
+Attacks per second 2
+Range 114
+Upgrade cost 250
+Poisons and deals 10 damage per second, slowing by 50% for 3 seconds. Only most powerful poison applies, no stacking.
+--
+Flawed Diamond
+Damage 15-18
+Attacks per second: 1
+Range 79
+
+Attacks ground units only. 25% change to do 2x damage.
+--
+Flawless Diamond
+Damage 57-65
+Attacks per second: 1
+Range 93
+
+Attacks ground units only. 25% change to do 2x damage.
+--
+Flawless Emerald
+Damage 29-38
+Attacks per second: 1
+Range 100
+
+Poisons, 8 damage per second and slows movement by 35% for 6 seconds. Only most powerful poison applies, no stacking. Only most powerful slow applies, no stacking
+--
+Sterling Silver (special, upgraded from Silver)
+Damage 39-40
+Attacks per second: 1
+Range 93
+
+Attacks cause splash damage (does 100% damage to other enemies within 30 range). Causes slow, 30% for 3 seconds to all damaged enemies. Only most powerful slow applies, no stacking.
+--
+Lucky Asian Jade (special, upgraded from Asian Jade)
+Damage 54-55
+Attacks per second 2,85
+Range 122
+Poisons and deals 10 damage per second, slowing by 50% for 4 seconds. Only most powerful poison applies, no stacking. 5% to deal 4x damage. 1% chance to stun the enemy for 2 seconds. 2% chance on hit to gain level / 2 in gold.
+--
+Standard Opal
+Damage 19-20
+Attacks per second: 1
+Range 114
+
+Aura: Gems within 115 range get +20% attack speed (including self). Only most powerfull attack speed aura applies, no stacking.
+--
+Flawless Aquamarine
+Damage 47-55
+Attacks per second: 1
+Range 61
+--
+Red Crystal Facet (special, upgraded from Red Crystal)
+Damage 74-100
+Attacks per second: 1 / 0,8
+Range 200
+Upgrade Cost 100
+Aura: -5 armor to all air units within 200 range.
+--
+Normal Diamond
+Damage 29-37
+Attacks per second: 1
+Range 86
+
+Attacks ground units only. 25% change to do 2x damage.
+--
+Rose Quartz Crystal (special, upgraded from Red Crystal Facet)
+Damage 99-125
+Attacks per second: 1 / 0,8
+Range 215
+Aura: -6 armor to all air units within 215 range.
+--
+Silver Knight (special, upgraded from Sterling Silver)
+Damage 149-150
+Attacks per second: 1
+Range 107
+
+Attacks cause splash damage (does 100% damage to other enemies within 30 range). Causes slow, 30% for 3 seconds to all damaged enemies. Only most powerful slow applies, no stacking.
+--
+Perfect Topaz
+Damage 74-75
+Attacks per second: 1
+Range 86
+
+Attacks six targets within range
+--
+Gold (Special)
+Damage 159-190
+Attacks per second: 1
+Range 114
+Upgrade Cost 210
+
+25% chance to do x2 damage. Applies -5 armor for 3 seconds to targets.
+--
+Egyptian Gold (Special, upgraded from Gold)
+Damage 159-200
+Attacks per second: 1 / 0.7
+Range 114
+Upgrade Cost 210
+
+30% chance to do x2 damage. Applies -8 armor for 3 seconds to targets.
+--
+Flawless Ruby
+Damage 37-45
+Attacks per second: 1
+Range 114
+
+Attacks cause splash damage (does 100% damage to other enemies within 30 range)
+--
+Perfect Emerald
+Damage 79-90
+Attacks per second: 1
+Range 114
+
+Poisons, 16 damage per second and slows movement by 50% for 8 seconds. Only most powerful poison applies, no stacking. Only most powerful slow applies, no stacking
+--
+Dark Emerald (Special)
+Damage 89-150
+Attacks per second: 1 / 0.8
+Range 79
+Upgrade Cost 250
+
+12,5% chance to do stund for 1 second.
+--
+Enchanted Emerald (Special, upgraded from Dark Emerald)
+Damage 98-200
+Attacks per second: 1 / 0.7
+Range 100
+Upgrade Cost 250
+
+15% chance to do stund for 2 seconds.
+--
+Perfect Sapphire
+Damage 59-75
+Attacks per second: 1
+Range 200
+
+Slows movement speed by 40% for 5 seconds.
+--
+Yellow Sapphire (Special)
+Damage 99-100
+Attacks per second: 1
+Range 114
+Upgrade Cost 210
+
+Attacks cause splash damage (does 100% damage to other enemies within 45 range). Causes slow, 40% for 4 seconds to all damaged enemies. Only most powerful slow applies, no stacking.
+--
+Star Yellow Sapphire (Special, upgraded from Yellow Sapphire)
+Damage 99-100
+Attacks per second: 1
+Range 114
+
+Attacks cause splash damage (does 100% damage to other enemies within 60 range). Causes slow, 50% for 5 seconds to all damaged enemies. Only most powerful slow applies, no stacking. Towers within 171 range get +5% damage. Damage buffs stack per source, so 1 Star Yellow Sapphire and on Black Opal/Mystic Black opal stack, but not several.
+--
+Perfect Opal
+Damage 84-85
+Attacks per second: 1
+Range 143
+
+Aura: Gems within 143 range get +35% attack speed (including self). Only most powerfull attack speed aura applies, no stacking.
+--
+Black Opal (Special)
+Damage 24-25
+Attacks per second: 1
+Range 114
+Upgrade Cost 300
+
+Towers within 143 range get +30% damage. Damage buffs stack per source, so 1 Star Yellow Sapphire and on Black Opal/Mystic Black opal stack, but not several. Black Opal does not stack with Mystic Black Opal
+--
+Mystic Black Opal (Special, upgraded from Black Opal)
+Damage 49-50
+Attacks per second: 1
+Range 143
+Upgrade Cost 300
+
+Towers within 171 range get +40% damage. Damage buffs stack per source, so 1 Star Yellow Sapphire and on Black Opal/Mystic Black opal stack, but not several. Black Opal does not stack with Mystic Black Opal
+--
+Perfect Ruby
+Damage 79-104
+Attacks per second: 1
+Range 129
+
+Attacks cause splash damage (does 100% damage to other enemies within 35 range)
+--
+Perfect Aquamarine
+Damage 99-120
+Attacks per second: 1 / 0.35
+Range 79
+--
+Great Aquamarine
+Damage 279-280
+Attacks per second: 1 / 0.35
+Range 86
+--
+Paraiba Tourmaline (special)
+Damage 25-105
+Attacks per second: 1 / 0.75
+Range 122
+Upgrade Cost 350
+
+Gives -4 armor to ground units within 86 range. Additionally, has a 33% change of casting a 100 damage nova, splashing within 45 range
+--
+Paraiba Tourmaline Facet (special, upgraded from Paraiba Tourmaline)
+Damage 125-204
+Attacks per second: 1 / 0.6
+Range 129
+
+Gives -6 armor to ground units within 93 range. Additionally, has a 33% change of casting a 125 damage nova, splashing within 50 range
+--
+Chipped Emerald
+Damage 3-7
+Attacks per second: 1 / 0.8
+Range 72
+
+Poisons, 2 damage per second and slows movement by 15% for 3 seconds. Only most powerful poison applies, no stacking. Only most powerful slow applies, no stacking
+--
+Chipped Aquamarine
+Damage 5-8
+Attacks per second: 1 / 0.35
+Range 50
+--
+Chipped Opal
+Damage 4-5
+Attacks per second: 1 / 0.8
+Range 86
+
+Aura: Gems within 86 range get +10% attack speed (including self). Only most powerfull attack speed aura applies, no stacking.
+--
+Chipped Ruby
+Damage 7-9
+Attacks per second: 1
+Range 114
+
+Attacks cause splash damage (does 100% damage to other enemies within 20 range)
+--
+Malachite
+Damage 5-6
+Attacks per second: 1 / 0.35
+Range 107
+Upgrade cost 25
+
+Attacks 3 targets within range
+--
+Chipped Diamond
+Damage 7-12
+Attacks per second: 1 / 0.8
+Range 72
+
+25% chance to do 2x damage
+--
+Chipped Sapphire
+Damage 4-8
+Attacks per second: 1
+Range 72
+
+Slows movement speed by 20% for 5 seconds.
+--
+Vivid Malachite
+Damage 10-11
+Attacks per second: 1 / 0.35
+Range 114
+Upgrade cost 280
+
+Attacks 4 targets within range
+--
+Chipped Topaz
+Damage 3-4
+Attacks per second: 1 / 0.8
+Range 72
+
+Attacks 2 targets within range.
+--
+Chipped Amethyst
+Damage 8-13
+Attacks per second: 1 / 0.8
+Range 143
+
+Attacks air units only.
+--
+Mighty Malachite
+Damage 44-45
+Attacks per second: 1 / 0.35
+Range 114
+Upgrade cost 280
+
+Attacks 10 targets within range

@@ -1,0 +1,63 @@
+Level 1 - Game start
+
+Chipped: 99%
+Flawed: 1%
+Standard: 0%
+Flawless: 0%
+Perfect: 0%
+
+Level 2 - Cost 30g
+Chipped: 69%
+Flawed: 30%
+Standard: 1%
+Flawless: 0%
+Perfect: 0%
+
+Level 3 - Cost 50g
+Chipped: 59%
+Flawed: 30%
+Standard: 10%
+Flawless: 1%
+Perfect: 0%
+
+Level 4 - Cost 80g
+Chipped: 49%
+Flawed: 30%
+Standard: 20%
+Flawless: 1%
+Perfect: 0%
+
+Level 5 - Cost 110g
+Chipped: 39%
+Flawed: 30%
+Standard: 20%
+Flawless: 10%
+Perfect: 1%
+
+Level 6 - Cost 140g
+Chipped: 29%
+Flawed: 30%
+Standard: 30%
+Flawless: 10%
+Perfect: 1%
+
+Level 7 - Cost 170g
+Chipped: 19%
+Flawed: 30%
+Standard: 30%
+Flawless: 20%
+Perfect: 1%
+
+Level 8 - Cost 200g
+Chipped: 9%
+Flawed: 30%
+Standard: 30%
+Flawless: 30%
+Perfect: 1%
+
+Level 9 (final) - Cost 230g
+Chipped: 0%
+Flawed: 30%
+Standard: 30%
+Flawless: 30%
+Perfect: 10%

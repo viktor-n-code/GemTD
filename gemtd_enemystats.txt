@@ -1,0 +1,35 @@
+Enemy life / armor / speed / minimum speed
+Level 1: 10/16/0.75
+Level 3: 55/16/0.75
+Level 4: 70/16/0.75
+Level 5: 90/16/0.75
+Level 6: 120/16/0.75
+Level 7: 178/16/0.75
+Level 8: 240/16/0.75
+Level 9: 300/16/0.75
+Level 10: 470/17/0.75
+Level 11: 650/17/0.75
+Level 12. 550/17/0.75
+Level 13: 800/17/0.75
+Level 14: 925/17/0.75
+Level 15: 1350/17/0.75
+Level 16: 850/17/0.75
+Level 17: 1650/17/0.75 - Minimum speed 0.38
+Level 18: 2000/17/0.75 - Minimum speed 0.42
+Level 19: 2500/17/0.75 - Minimum speed 0.45
+Level 20: 1550/17/0.75 - Minimum speed 0.38
+Level 21: 3250/18/0.75 - Minimum speed 0.53
+Level 22: 4100/18/0.75 - Minimum speed 0.60
+Level 23: 5000/18/0.75 - Minimum speed 0.68 
+Level 24: 2850/18/0.75 - Minimum speed 0.53 
+Level 25: 6250/18/0.75 - Minimum speed 0.75
+Level 26: 7750/18/0.83 - Minimum speed 0.83
+Level 27: 9500/18/0.91 - Minimum speed 0.91
+Level 28: 5000/18/0.75 - Minimum speed 0.57
+Level 29: 10500/18/1.06 - Minimum speed: 1.06
+Level 30: 13000/18/1.13 - Minimum speed: 1.13
+Level 31: 16000/19/1.17	- Minimum speed: 1.17
+Level 32: 7500/19/0.75 - Minimum speed 0.60
+Level 33: 19500/19/1.21	- Minimum speed: 1.21
+Level 34: 23500/19/1.25 - Minimum speed: 1.25
+Level 36: 10000/19/0.75 - Minimum speed: 0.75

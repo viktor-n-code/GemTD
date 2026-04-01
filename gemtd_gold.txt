@@ -1,0 +1,20 @@
+Starting balance: 10g
+
+Level 1: Gold per enemy: 1.25. End of round bonus: 9
+Level 2: Gold per enemy: 1.5. End of round bonus: 11
+Level 3: Gold per enemy: 1.75. End of round bonus: 13
+Level 4: Gold per enemy: 2. End of round bonus: 15
+Level 5: Gold per enemy: 2.25. End of round bonus: 17
+Level 6: Gold per enemy: 2.5. End of round bonus: 19
+Level 7: Gold per enemy: 2.75. End of round bonus: 21
+Level 8: Gold per enemy: 3. End of round bonus: 23
+Level 9: Gold per enemy: 3.25. End of round bonus: 25
+Level 10: Gold per enemy: 3.5. End of round bonus: 27
+Level 11: Gold per enemy: 3.75. End of round bonus: 29
+Level 12: Gold per enemy: 4. End of round bonus: 31
+Level 13: Gold per enemy: 4.25. End of round bonus: 33
+Level 14: Gold per enemy: 4.5. End of round bonus: 35
+Level 15: Gold per enemy: 4.75. End of round bonus: 37
+Level 16: Gold per enemy: 5. End of round bonus: 41
+Level 18: Gold per enemy: 5.5 End of round bonus: UNKNOWN
+Level 33: Gold per enemy: 9.25 End of round bonus: UNKNOWN

@@ -1,0 +1,44 @@
+Rules
+
+Tower defense game set on a 42x47 grid. Towers take 2x2 space. Enemies can move in 1x1 spaces. Each round is divided into build and defend phases. In the build phase, the player places 5 towers. Each take the shape of a random gemstone with different stats. After placing 5 gems, the player picks one to keep. The other gems turn to stone and are just blocking the way, but the picked gem is the tower, that attacks incoming enemies. 2 identical gems placed in the build phase can be combined into a higher level gem. The gem levels are:
+
+Chipped
+Flawed
+Standard (no prefix)
+Flawless
+Perfect
+Great
+Magnificent
+
+The gem colors/types are:
+
+Amethyst
+Diamond
+Topaz
+Sapphire
+Ruby
+Aquamarine
+Opal
+Emerald
+
+At the beginning of the game 100% of gems placed are chipped. As the player kills enemies, he can spend gold on upgrading his gem changes. First upgrade will mean that gems now have a 30% chance to be Flawed, 70% to be Chipped, and so on.
+
+After the build phase, the defend phase starts. 10 enemies enter at the entry point and need to pass 6 checkpoints on the map before exiting. The player has 10 lives at start. If he kills an enemy, he gets gold. If the enemy passes through the entire maze and exits, he loses a life.
+
+The next build phase another 5 gems will be placed, one will be picked, the four other turned to stone. The maze will now have 2 gems and 8 stones. A stone can always be removed in the build phase, but never a gem. Gems cannot be placed in the build phase in a way that would block the enemys path to one of the checkpoints.
+
+Each time a tower kills an enemy, it's kill counter goes up. Every increment of 10 kills, the tower levels up and gains +10% damage and in some cases, increased abilities.
+
+During the defend phase, the player can combine existing towers into stronger ones using certain combine recipes (or if lucky enough during the build phase). For example, A Standard Emerald, A Standard Opal and a Flawed Sapphire can be combined into a Jade. The resulting Jade will combine the kill counters of the three used Gems to level up. If multiple Standard Emerald exist on the map, the Jade will use the oldest one. Some special towers can be upgraded using gold. For example the special tower Gold can be upgraded to Egyptian Gold.
+
+Every fourth enemy wave is flying, ignoring the gem maze and flying the closest path between checkpoints. Each enemy and each gem has a type. A matching type means the gem does 150% damage to that enemy. For example, all flying enemies are amethyst types, so amethyst type gems do 150% damage to them.
+
+The maximum gem chance upgrade still yields 0% Great gems and 0% Magnificent gems. The only way to build those gems is to score 2x or 4x of the same perfect gem during a single build phase. Great Opal is the single most impactful gem in the game, increasing the attack speed of nearby gems. To build in some bad luck protection, we should add a ticking chance to get Great Opal increasing by each level after hitting max gem chance. Once Great Opal is built, the extra chance should be set fixed to zero. Magnificent gems are only build by pure luck, almost never.
+
+Enemies have armor that by default remove 50% of incoming damage. Some towers can reduce armor, stacking their effect. If all effects are active, an enemy will take full damage (twice as much as normal).
+
+Player should be able to pause certain towers to direct kills toward the towers of their choice, upgrading them. At the start of each defend phase, the towers should be reactivated. Player can also direct a specific tower to attack a specific enemy, though only while in range. If out of range, the tower defaults to attacking a random enemy within range. Once a tower has picked an enemy (a random within range) it will not switch until that enemy goes out of range or the player redirects it.
+
+The game should feature current round and overall leaderboard where the top damage dealing gems are tracked. When combined into other gems, the damage score should be kept. Selecting a gem should bring up a view of it's name, kills, current round damage and total damage.
+
+In the map layout file, green is entry point, yellow is exit point. Black boundaries are game boundaries, not in the game. Red arrows are the checkpoints, numbered by order. Each arrow is pointing towards the next. Enemies must pass the exact point in the lower right of the numbered cells. The maze building purpose is to maximize the distance the enemies must travel to reach the checkpoints, giving the player time to kill the enemies. Yellow, green and red tiles are blocked from placing towers, in all other location placement is ok as long as it does not block the path to any of the checkpoints.
