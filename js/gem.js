@@ -1,47 +1,106 @@
-/**
- * gem.js - Gem/tower definitions and generation
- * Handles gem types, quality levels, and gem rolling mechanics.
- */
+// gem.js — Gem definitions, rolling, and stat lookup
 
-/**
- * Gem type definitions and properties
- * @type {Object<string, Object>}
- * @todo Define gem types with base stats (damage, attack speed, range, effects, etc.)
- */
 export const GEM_TYPES = {
-  // TODO: Define gem types (e.g., fire, ice, lightning, etc.)
+  Emerald: {
+    color: '#2d8a4e',
+    effect: 'poison',
+    stats: {
+      chipped:  { damageMin: 3,   damageMax: 7,   attackSpeed: 1.25, range: 72,  effect: { type: 'poison', dps: 2,  slow: 0.15, duration: 3 } },
+      flawed:   { damageMin: 9,   damageMax: 13,  attackSpeed: 1.0,  range: 79,  effect: { type: 'poison', dps: 3,  slow: 0.20, duration: 4 } },
+      standard: { damageMin: 14,  damageMax: 25,  attackSpeed: 1.0,  range: 86,  effect: { type: 'poison', dps: 5,  slow: 0.25, duration: 5 } },
+      flawless: { damageMin: 29,  damageMax: 38,  attackSpeed: 1.0,  range: 100, effect: { type: 'poison', dps: 8,  slow: 0.35, duration: 6 } },
+      perfect:  { damageMin: 79,  damageMax: 90,  attackSpeed: 1.0,  range: 114, effect: { type: 'poison', dps: 16, slow: 0.50, duration: 8 } },
+    },
+  },
+  Ruby: {
+    color: '#c0392b',
+    effect: 'splash',
+    stats: {
+      chipped:  { damageMin: 7,   damageMax: 9,   attackSpeed: 1.0, range: 114, effect: { type: 'splash', radius: 20 } },
+      flawed:   { damageMin: 12,  damageMax: 16,  attackSpeed: 1.0, range: 114, effect: { type: 'splash', radius: 25 } },
+      standard: { damageMin: 17,  damageMax: 22,  attackSpeed: 1.0, range: 114, effect: { type: 'splash', radius: 28 } },
+      flawless: { damageMin: 37,  damageMax: 45,  attackSpeed: 1.0, range: 114, effect: { type: 'splash', radius: 30 } },
+      perfect:  { damageMin: 79,  damageMax: 104, attackSpeed: 1.0, range: 129, effect: { type: 'splash', radius: 35 } },
+    },
+  },
+  Sapphire: {
+    color: '#2980b9',
+    effect: 'slow',
+    stats: {
+      chipped:  { damageMin: 4,   damageMax: 8,   attackSpeed: 1.0, range: 72,  effect: { type: 'slow', amount: 0.20, duration: 5 } },
+      flawed:   { damageMin: 8,   damageMax: 14,  attackSpeed: 1.0, range: 93,  effect: { type: 'slow', amount: 0.25, duration: 5 } },
+      standard: { damageMin: 15,  damageMax: 21,  attackSpeed: 1.0, range: 114, effect: { type: 'slow', amount: 0.30, duration: 5 } },
+      flawless: { damageMin: 29,  damageMax: 40,  attackSpeed: 1.0, range: 122, effect: { type: 'slow', amount: 0.35, duration: 5 } },
+      perfect:  { damageMin: 59,  damageMax: 75,  attackSpeed: 1.0, range: 200, effect: { type: 'slow', amount: 0.40, duration: 5 } },
+    },
+  },
+  Amethyst: {
+    color: '#8e44ad',
+    effect: 'air',
+    stats: {
+      chipped:  { damageMin: 8,   damageMax: 13,  attackSpeed: 1.25, range: 143, effect: null },
+      flawed:   { damageMin: 17,  damageMax: 25,  attackSpeed: 1.0,  range: 161, effect: null },
+      standard: { damageMin: 29,  damageMax: 40,  attackSpeed: 1.0,  range: 179, effect: null },
+      flawless: { damageMin: 59,  damageMax: 75,  attackSpeed: 1.0,  range: 186, effect: null },
+      perfect:  { damageMin: 139, damageMax: 150, attackSpeed: 1.0,  range: 215, effect: null },
+    },
+  },
 };
 
-/**
- * Gem quality level definitions
- * @type {Object<string, Object>}
- * @todo Define quality levels with stat multipliers and visual distinctions
- */
-export const QUALITY_LEVELS = {
-  // TODO: Define quality levels (e.g., normal, rare, epic, legendary, etc.)
+export const QUALITY_LEVELS = ['chipped', 'flawed', 'standard', 'flawless', 'perfect'];
+
+export const GEM_CHANCE_LEVELS = [
+  { cost: 0,   chances: { chipped: 99, flawed: 1,  standard: 0,  flawless: 0,  perfect: 0  } },
+  { cost: 30,  chances: { chipped: 69, flawed: 30, standard: 1,  flawless: 0,  perfect: 0  } },
+  { cost: 50,  chances: { chipped: 59, flawed: 30, standard: 10, flawless: 1,  perfect: 0  } },
+  { cost: 80,  chances: { chipped: 49, flawed: 30, standard: 20, flawless: 1,  perfect: 0  } },
+  { cost: 110, chances: { chipped: 39, flawed: 30, standard: 20, flawless: 10, perfect: 1  } },
+  { cost: 140, chances: { chipped: 29, flawed: 30, standard: 30, flawless: 10, perfect: 1  } },
+  { cost: 170, chances: { chipped: 19, flawed: 30, standard: 30, flawless: 20, perfect: 1  } },
+  { cost: 200, chances: { chipped: 9,  flawed: 30, standard: 30, flawless: 30, perfect: 1  } },
+  { cost: 230, chances: { chipped: 0,  flawed: 30, standard: 30, flawless: 30, perfect: 10 } },
+];
+
+const SHAPES = {
+  chipped:  'circle',
+  flawed:   'square',
+  standard: 'diamond',
+  flawless: 'pentagon',
+  perfect:  'star',
 };
 
-/**
- * Rolls a random gem with type and quality
- * @param {number} waveNumber - Current wave number (affects odds)
- * @returns {Object} Gem object with type, quality, and stats
- * @todo Implement gem rolling with probability-based type/quality selection
- */
-export function rollGem(waveNumber) {
-  // TODO: Roll gem based on wave number and drop chances
-  return null;
+const TYPE_NAMES = Object.keys(GEM_TYPES);
+
+// chanceLevel is 1-indexed; index into GEM_CHANCE_LEVELS is chanceLevel - 1
+export function rollGem(chanceLevel) {
+  const entry = GEM_CHANCE_LEVELS[chanceLevel - 1];
+  const chances = entry.chances;
+
+  let roll = Math.random() * 100;
+  let quality = 'chipped';
+  for (const q of QUALITY_LEVELS) {
+    if (roll < chances[q]) { quality = q; break; }
+    roll -= chances[q];
+  }
+
+  const type = TYPE_NAMES[Math.floor(Math.random() * TYPE_NAMES.length)];
+  return { type, quality };
 }
 
-/**
- * Gets the visual properties of a gem (color, icon, etc.)
- * @param {Object} gem - Gem object
- * @returns {Object} Visual properties (color, size, icon, etc.)
- * @todo Implement visual property mapping
- */
-export function getVisual(gem) {
-  // TODO: Return visual properties for rendering
+export function getVisual(type, quality) {
   return {
-    color: '#ffffff',
-    size: 32,
+    color: GEM_TYPES[type].color,
+    shape: SHAPES[quality],
+  };
+}
+
+export function getStats(type, quality) {
+  const s = GEM_TYPES[type].stats[quality];
+  return {
+    damageMin:   s.damageMin,
+    damageMax:   s.damageMax,
+    attackSpeed: s.attackSpeed,
+    range:       s.range,
+    effect:      s.effect,
   };
 }
