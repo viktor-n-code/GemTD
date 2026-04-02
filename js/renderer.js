@@ -145,6 +145,7 @@ function drawWaypoints(ctx) {
 // ---------------------------------------------------------------------------
 
 function drawGems(ctx, state) {
+  ctx.save();
   const { grid, gems } = state;
   const drawn = new Set(); // avoid drawing the same gem 4× for its 2×2 block
 
@@ -162,8 +163,8 @@ function drawGems(ctx, state) {
 
       // The gem occupies a 2×2 block with top-left at (gem.x, gem.y).
       // Center of that 2×2 footprint in pixels:
-      //   px_center = (gem.x - 1 + 1) * CELL_SIZE = gem.x * CELL_SIZE
-      //   py_center = (gem.y - 1 + 1) * CELL_SIZE = gem.y * CELL_SIZE
+      // Center of 2×2 footprint: left edge = (gem.x-1)*CS, right edge = (gem.x+1)*CS
+      // center = ((gem.x-1)*CS + (gem.x+1)*CS) / 2 = gem.x * CS
       const cx = gem.x * CELL_SIZE;
       const cy = gem.y * CELL_SIZE;
       const R  = 12; // radius / half-size
@@ -217,6 +218,7 @@ function drawGems(ctx, state) {
       }
     }
   }
+  ctx.restore();
 }
 
 // ---------------------------------------------------------------------------
@@ -280,6 +282,7 @@ function drawProjectiles(ctx, projectiles) {
 // ---------------------------------------------------------------------------
 
 function drawHUD(ctx, state, canvasWidth) {
+  ctx.save();
   // Semi-transparent bar
   ctx.fillStyle = COLOR_HUD_BG;
   ctx.fillRect(0, 0, canvasWidth, HUD_HEIGHT);
@@ -292,6 +295,7 @@ function drawHUD(ctx, state, canvasWidth) {
 
   const text = `Wave: ${state.wave}  Lives: ${state.lives}  Gold: ${state.gold}g  Chance Lvl: ${state.gemChanceLevel}`;
   ctx.fillText(text, 8, HUD_HEIGHT / 2);
+  ctx.restore();
 }
 
 // ---------------------------------------------------------------------------
@@ -305,8 +309,9 @@ function drawHUD(ctx, state, canvasWidth) {
  * @param {HTMLCanvasElement} canvas - Target canvas element
  */
 export function render(state, canvas) {
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d'); // browser caches this; same object every call
 
+  // No clearRect needed: drawGrid fills every canvas pixel with a cell color.
   // 1. Draw grid cells (fills entire canvas)
   drawGrid(ctx, state);
 
