@@ -43,8 +43,13 @@ export class InputHandler {
     this.pendingAction    = null;  // { type, ... }
 
     // Selection state
-    this.selectedGemId = null;   // gem id selected in the build panel
-    this.combineStep   = 0;      // 0 = idle, 1 = first gem, 2 = second gem
+    this.selectedGemId   = null;  // gem id selected in the build panel
+    this.selectedEnemyId = null;  // enemy id selected by clicking during defend
+    this.combineStep     = 0;     // 0 = idle, 1 = first gem, 2 = second gem
+
+    // Cached from update() for use in click handler
+    this._phase   = 'build';
+    this._enemies = [];
 
     this._attachListeners();
   }
@@ -56,10 +61,11 @@ export class InputHandler {
   /** Returns a snapshot of the current input state for ui.js / renderer.js. */
   getState() {
     return {
-      hoveredCell:   this.hoveredCell,
-      hoveredGemId:  this.hoveredGemId,
-      selectedGemId: this.selectedGemId,
-      combineStep:   this.combineStep,
+      hoveredCell:     this.hoveredCell,
+      hoveredGemId:    this.hoveredGemId,
+      selectedGemId:   this.selectedGemId,
+      selectedEnemyId: this.selectedEnemyId,
+      combineStep:     this.combineStep,
     };
   }
 
@@ -84,6 +90,8 @@ export class InputHandler {
    * @param {Object} state — full game state
    */
   update(state) {
+    this._phase   = state.phase;
+    this._enemies = state.enemies || [];
     if (this.mouseY >= PANEL_Y) {
       // Find which gem slot (if any) the cursor is over
       let found = null;
@@ -102,6 +110,7 @@ export class InputHandler {
   /** Called by the gameloop when a new build phase begins. */
   resetBuildState() {
     this.selectedGemId    = null;
+    this.selectedEnemyId  = null;
     this.combineStep      = 0;
     this.pendingPlacement = null;
     this.pendingAction    = null;
@@ -192,6 +201,22 @@ export class InputHandler {
       // -----------------------------------------------------------------------
       // Click on the game grid
       // -----------------------------------------------------------------------
+
+      // During defend phase: check for enemy click first (6px body + 4px buffer)
+      if (this._phase === 'defend') {
+        for (const e of this._enemies) {
+          if (e.dead || e.exited) continue;
+          const dx = x - e.x;
+          const dy = y - e.y;
+          if (Math.sqrt(dx * dx + dy * dy) <= 10) {
+            this.selectedEnemyId = e.id;
+            this.selectedGemId   = null;
+            return;
+          }
+        }
+      }
+
+      // Otherwise treat as tower placement
       if (this.hoveredCell !== null) {
         this.pendingPlacement = { x: this.hoveredCell.x, y: this.hoveredCell.y };
       }

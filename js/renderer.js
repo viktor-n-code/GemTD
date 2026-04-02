@@ -144,9 +144,9 @@ const CP_ZONES = [
   // CP3: body horizontal, tip north
   { body: [31, 29, 36, 30], tip: [33, 27, 34, 28] },
   // CP4: body vertical, tip west
-  { body: [33, 10, 34, 15], tip: [31, 12, 32, 13] },
+  { body: [33, 7, 34, 12], tip: [31, 9, 32, 10] },
   // CP5: body horizontal, tip south
-  { body: [19, 12, 24, 13], tip: [21, 14, 22, 15] },
+  { body: [19, 9, 24, 10], tip: [21, 11, 22, 12] },
   // CP6: body vertical, tip east
   { body: [21, 39, 22, 44], tip: [23, 41, 24, 42] },
 ];

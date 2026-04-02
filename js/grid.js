@@ -33,8 +33,8 @@ export const CHECKPOINTS = [
   { x: 9,  y: 9  }, // CP1 — aim corner of (9,9)–(10,10), arrow points south
   { x: 9,  y: 29 }, // CP2 — aim corner of (9,29)–(10,30), arrow points east
   { x: 33, y: 29 }, // CP3 — aim corner of (33,29)–(34,30), arrow points north
-  { x: 33, y: 12 }, // CP4 — aim corner of (33,12)–(34,13), arrow points west
-  { x: 21, y: 12 }, // CP5 — aim corner of (21,12)–(22,13), arrow points south
+  { x: 33, y: 9  }, // CP4 — aim corner of (33,9)–(34,10), arrow points west
+  { x: 21, y: 9  }, // CP5 — aim corner of (21,9)–(22,10), arrow points south
   { x: 21, y: 41 }, // CP6 — aim corner of (21,41)–(22,42), arrow points east
 ];
 
@@ -64,12 +64,12 @@ const BLOCKED_ZONES = [
   // CP3 (aim 33,29): arrives from west, tip points north
   { x1: 31, y1: 29, x2: 36, y2: 30 }, // body (horizontal)
   { x1: 33, y1: 27, x2: 34, y2: 28 }, // tip  (north)
-  // CP4 (aim 33,12): arrives from south, tip points west
-  { x1: 33, y1: 10, x2: 34, y2: 15 }, // body (vertical)
-  { x1: 31, y1: 12, x2: 32, y2: 13 }, // tip  (west)
-  // CP5 (aim 21,12): arrives from east, tip points south
-  { x1: 19, y1: 12, x2: 24, y2: 13 }, // body (horizontal)
-  { x1: 21, y1: 14, x2: 22, y2: 15 }, // tip  (south)
+  // CP4 (aim 33,9): arrives from south, tip points west
+  { x1: 33, y1: 7,  x2: 34, y2: 12 }, // body (vertical)
+  { x1: 31, y1: 9,  x2: 32, y2: 10 }, // tip  (west)
+  // CP5 (aim 21,9): arrives from east, tip points south
+  { x1: 19, y1: 9,  x2: 24, y2: 10 }, // body (horizontal)
+  { x1: 21, y1: 11, x2: 22, y2: 12 }, // tip  (south)
   // CP6 (aim 21,41): arrives from north, tip points east
   { x1: 21, y1: 39, x2: 22, y2: 44 }, // body (vertical)
   { x1: 23, y1: 41, x2: 24, y2: 42 }, // tip  (east)
