@@ -1,44 +1,39 @@
-/**
- * state.js - Game state management
- * Handles creating, saving, and loading game state.
- */
+// state.js — Game state management
 
-/**
- * Creates and returns the initial game state
- * @returns {Object} Initial game state
- * @todo Implement with initial values for gold, lives, waves, gems, enemies, etc.
- */
+const STORAGE_KEY = 'gemtd_save';
+
 export function createInitialState() {
-  // Initialize game state with proper starting values
   return {
-    gold: 10, // game starts with 10g per gemtd_gold.txt
+    phase: 'build',
+    wave: 0,
     lives: 10,
-    currentWave: 0,
-    gems: [],
-    enemies: [],
-    grid: null,
+    gold: 10,
     gemChanceLevel: 1,
+    grid: null,
+    gems: {},
     placedThisRound: [],
     keptGemId: null,
+    enemies: [],
     projectiles: [],
   };
 }
 
-/**
- * Saves the current game state to localStorage
- * @param {Object} state - The game state to save
- * @todo Implement localStorage serialization
- */
 export function saveState(state) {
-  // TODO: Save state to localStorage
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
-/**
- * Loads game state from localStorage
- * @returns {Object|null} Loaded game state or null if none exists
- * @todo Implement localStorage deserialization
- */
 export function loadState() {
-  // TODO: Load state from localStorage
-  return null;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    if (!s || typeof s !== 'object' || Array.isArray(s)) return null;
+    return s;
+  } catch {
+    return null;
+  }
+}
+
+export function clearState() {
+  localStorage.removeItem(STORAGE_KEY);
 }
