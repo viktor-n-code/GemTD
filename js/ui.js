@@ -217,8 +217,108 @@ function drawTooltip(ctx, gem, state, inputState) {
  * @param {Object} state       — full game state
  * @param {Object} inputState  — { hoveredCell, hoveredGemId, selectedGemId, combineStep }
  */
+// ---------------------------------------------------------------------------
+// Stats panel — floats in the upper-right corner of the canvas
+// Shows stats for the selected gem (any phase) or selected enemy (defend phase)
+// ---------------------------------------------------------------------------
+
+function formatEffect(effect) {
+  if (!effect) return null;
+  if (effect.type === 'poison')  return `Poison ${effect.dps}dps / ${effect.duration}s`;
+  if (effect.type === 'slow')    return `Slow ${Math.round(effect.amount * 100)}% / ${effect.duration}s`;
+  if (effect.type === 'splash')  return `Splash r=${effect.radius}`;
+  return effect.type;
+}
+
+function drawStatsPanel(ctx, state, inputState) {
+  if (!inputState) return;
+
+  const BOX_X = 432;
+  const BOX_W = 232;
+  const PAD   = 6;
+
+  // --- Gem selected ---
+  const gemId = inputState.selectedGemId;
+  if (gemId && state.gems[gemId]) {
+    const gem    = state.gems[gemId];
+    const stats  = getStats(gem.type, gem.quality);
+    const effect = formatEffect(stats.effect);
+    const lines  = [
+      `${gem.quality} ${gem.type}`,
+      `DMG  ${stats.damageMin}–${stats.damageMax}`,
+      `SPD  ${stats.attackSpeed}/s    RNG  ${stats.range}px`,
+    ];
+    if (effect) lines.push(`FX   ${effect}`);
+
+    const BOX_H = PAD * 2 + lines.length * 14;
+    const BOX_Y = 28;
+
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,0.72)';
+    ctx.fillRect(BOX_X, BOX_Y, BOX_W, BOX_H);
+    ctx.strokeStyle = 'rgba(100,140,180,0.6)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(BOX_X + 0.5, BOX_Y + 0.5, BOX_W - 1, BOX_H - 1);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 11px Arial';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillText(lines[0], BOX_X + PAD, BOX_Y + PAD);
+    ctx.font = '10px Arial';
+    for (let i = 1; i < lines.length; i++) {
+      ctx.fillText(lines[i], BOX_X + PAD, BOX_Y + PAD + i * 14);
+    }
+    ctx.restore();
+    return;
+  }
+
+  // --- Enemy selected (defend phase) ---
+  const enemyId = inputState.selectedEnemyId;
+  if (enemyId && state.phase === 'defend') {
+    const enemy = state.enemies.find(e => e.id === enemyId && !e.dead && !e.exited);
+    if (!enemy) return;
+
+    const now = performance.now();
+    const statusParts = [];
+    if (now < enemy.slowUntil)   statusParts.push('Slowed');
+    if (now < enemy.poisonUntil) statusParts.push(`Poisoned ${enemy.poisonDps}dps`);
+
+    const lines = [
+      `Wave ${enemy.wave} Enemy`,
+      `HP   ${Math.ceil(enemy.hp)} / ${enemy.maxHp}`,
+      `ARM  ${enemy.armor}%    SPD  ${Math.round(enemy.speed)}px/s`,
+    ];
+    if (statusParts.length) lines.push(statusParts.join('  '));
+
+    const BOX_H = PAD * 2 + lines.length * 14;
+    const BOX_Y = 28;
+
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,0.72)';
+    ctx.fillRect(BOX_X, BOX_Y, BOX_W, BOX_H);
+    ctx.strokeStyle = 'rgba(180,80,80,0.6)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(BOX_X + 0.5, BOX_Y + 0.5, BOX_W - 1, BOX_H - 1);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 11px Arial';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillText(lines[0], BOX_X + PAD, BOX_Y + PAD);
+    ctx.font = '10px Arial';
+    for (let i = 1; i < lines.length; i++) {
+      ctx.fillText(lines[i], BOX_X + PAD, BOX_Y + PAD + i * 14);
+    }
+    ctx.restore();
+  }
+}
+
 export function drawUI(ctx, state, inputState) {
-  // Only draw during build phase
+  // Stats panel is shown in all phases
+  drawStatsPanel(ctx, state, inputState);
+
+  // Build panel only during build phase
   if (state.phase !== 'build') return;
 
   ctx.save();
