@@ -12,7 +12,7 @@ import { WaveSpawner } from './wave.js';
 import { attackEnemy, canAttack, isInRange, tickPoison } from './combat.js';
 import { render } from './renderer.js';
 import { InputHandler } from './input.js';
-import { drawUI } from './ui.js';
+import { drawUI, PANEL_H } from './ui.js';
 
 // ---------------------------------------------------------------------------
 // Module-level state
@@ -35,8 +35,8 @@ function init() {
   canvas = document.getElementById('game');
   ctx = canvas.getContext('2d');
 
-  canvas.width  = GRID_COLS * CELL_SIZE;   // 672
-  canvas.height = GRID_ROWS * CELL_SIZE;   // 752
+  canvas.width  = GRID_COLS * CELL_SIZE;          // 672
+  canvas.height = GRID_ROWS * CELL_SIZE + PANEL_H; // 752 + 46 = 798
 
   document.getElementById('loading').classList.add('hidden');
 

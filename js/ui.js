@@ -2,13 +2,14 @@
 // Draws the semi-transparent panel at the bottom of the canvas during 'build' phase.
 
 import { getVisual, getStats, GEM_CHANCE_LEVELS } from './gem.js';
+import { GRID_ROWS, CELL_SIZE } from './grid.js';
 
 // ---------------------------------------------------------------------------
 // Layout constants (exported so input.js can do hit-testing)
 // ---------------------------------------------------------------------------
 
-export const PANEL_Y = 706;
 export const PANEL_H = 46;
+export const PANEL_Y = GRID_ROWS * CELL_SIZE; // 752 — sits below all 47 grid rows
 
 // 5 gem slots for gems placed this round
 export const GEM_SLOTS = [
