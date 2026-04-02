@@ -116,15 +116,13 @@ function updateBuild(dt, now) {
     switch (action.type) {
 
       case 'keep': {
-        // Mark all non-kept placed gems as permanent rocks
+        // Convert all non-kept placed gems to permanent rocks, then start wave
         gameState.keptGemId = action.gemId;
         for (const id of gameState.placedThisRound) {
           if (id !== action.gemId) {
             const g = gameState.gems[id];
             if (!g) continue;
-            // Convert gem cells to rock
             placeRock(gameState.grid, g.x, g.y);
-            // placeRock sets type but not gemId — clear gemId references explicitly
             for (let dy = 0; dy <= 1; dy++) {
               for (let dx = 0; dx <= 1; dx++) {
                 gameState.grid[g.y + dy][g.x + dx].gemId = null;
@@ -133,30 +131,31 @@ function updateBuild(dt, now) {
             delete gameState.gems[id];
           }
         }
-        // Keep only the kept gem in placedThisRound so the slot UI stays clean
         gameState.placedThisRound = gameState.placedThisRound.filter(
           id => id === action.gemId
         );
+        startDefendPhase(); // wave begins immediately after keeping
         break;
       }
 
       case 'combine': {
-        // Auto-combine: find first pair of same-type gems in placedThisRound
-        const byType = {};
+        // Find first matching pair: same type AND same quality
+        const byTypeQuality = {};
         for (const id of gameState.placedThisRound) {
           const g = gameState.gems[id];
           if (!g) continue;
-          if (!byType[g.type]) byType[g.type] = [];
-          byType[g.type].push(id);
+          const key = `${g.type}_${g.quality}`;
+          if (!byTypeQuality[key]) byTypeQuality[key] = [];
+          byTypeQuality[key].push(id);
         }
-        for (const type of Object.keys(byType)) {
-          if (byType[type].length >= 2) {
-            const [id1, id2] = byType[type];
+        for (const ids of Object.values(byTypeQuality)) {
+          if (ids.length >= 2) {
+            const [id1, id2] = ids;
             const g1 = gameState.gems[id1];
             const g2 = gameState.gems[id2];
             // Upgrade quality of g1 by one level
             const qi = QUALITY_LEVELS.indexOf(g1.quality);
-            const newQuality = QUALITY_LEVELS[Math.min(qi + 1, 4)];
+            const newQuality = QUALITY_LEVELS[Math.min(qi + 1, QUALITY_LEVELS.length - 1)];
             g1.quality = newQuality;
             const newStats = getStats(g1.type, newQuality);
             g1.attackCooldown = Math.round(1000 / newStats.attackSpeed);
@@ -168,10 +167,24 @@ function updateBuild(dt, now) {
               }
             }
             delete gameState.gems[id2];
-            gameState.placedThisRound = gameState.placedThisRound.filter(
-              id => id !== id2
-            );
-            break; // only one combine per action
+            // Convert all remaining non-combined gems to rocks, then start wave
+            gameState.keptGemId = id1;
+            for (const id of gameState.placedThisRound) {
+              if (id !== id1 && id !== id2) {
+                const g = gameState.gems[id];
+                if (!g) continue;
+                placeRock(gameState.grid, g.x, g.y);
+                for (let dy = 0; dy <= 1; dy++) {
+                  for (let dx = 0; dx <= 1; dx++) {
+                    gameState.grid[g.y + dy][g.x + dx].gemId = null;
+                  }
+                }
+                delete gameState.gems[id];
+              }
+            }
+            gameState.placedThisRound = [id1];
+            startDefendPhase(); // wave begins immediately after combining
+            break;
           }
         }
         break;

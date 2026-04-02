@@ -292,15 +292,16 @@ export function drawUI(ctx, state, inputState) {
   // Action buttons
   // -------------------------------------------------------------------------
 
-  // Combine — active if >=2 gems share the same type
-  const typeCounts = {};
+  // Combine — active if >=2 gems share the same type AND same quality
+  const typeQualityCounts = {};
   for (const gemId of state.placedThisRound) {
     if (gemId == null) continue;
     const gem = state.gems[gemId];
     if (!gem) continue;
-    typeCounts[gem.type] = (typeCounts[gem.type] || 0) + 1;
+    const key = `${gem.type}_${gem.quality}`;
+    typeQualityCounts[key] = (typeQualityCounts[key] || 0) + 1;
   }
-  const combineActive = Object.values(typeCounts).some(c => c >= 2);
+  const combineActive = Object.values(typeQualityCounts).some(c => c >= 2);
   drawButton(ctx, BTN_COMBINE, 'Combine', combineActive, '#3a6a3a');
 
   // Keep — active if a gem is selected and no gem has been kept yet
