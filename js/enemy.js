@@ -114,20 +114,18 @@ export function moveEnemy(enemy, dt, now) {
   const dy = targetY - enemy.y;
   const dist = Math.sqrt(dx * dx + dy * dy);
 
-  if (dist <= 1) {
+  const step = enemy.currentSpeed * dt;
+
+  if (step >= dist) {
     // Snap to waypoint and advance
     enemy.x = targetX;
     enemy.y = targetY;
     enemy.pathIndex++;
-
     if (enemy.pathIndex >= waypoints.length) {
       enemy.exited = true;
     }
-    return;
+  } else {
+    enemy.x += (dx / dist) * step;
+    enemy.y += (dy / dist) * step;
   }
-
-  // Move toward target
-  const step = enemy.currentSpeed * dt;
-  enemy.x += (dx / dist) * step;
-  enemy.y += (dy / dist) * step;
 }
