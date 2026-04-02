@@ -24,15 +24,18 @@ export const GRID_ROWS = 47;
 export const CELL_SIZE = 16; // pixels per cell
 
 export const ENTRY = { x: 1, y: 9 };
-export const EXIT  = { x: 42, y: 38 };
+export const EXIT  = { x: 42, y: 41 };
 
+// Each checkpoint stores the top-left cell of the 2×2 aim-point block.
+// Enemies aim for the corner between that block's 4 tiles, which in pixels
+// is (cp.x * CELL_SIZE, cp.y * CELL_SIZE) — see enemy.js moveEnemy.
 export const CHECKPOINTS = [
-  { x: 9,  y: 9  }, // CP1
-  { x: 9,  y: 26 }, // CP2
-  { x: 33, y: 26 }, // CP3
-  { x: 33, y: 9  }, // CP4
-  { x: 21, y: 9  }, // CP5
-  { x: 21, y: 38 }, // CP6
+  { x: 9,  y: 9  }, // CP1 — aim corner of (9,9)–(10,10), arrow points south
+  { x: 9,  y: 29 }, // CP2 — aim corner of (9,29)–(10,30), arrow points east
+  { x: 33, y: 29 }, // CP3 — aim corner of (33,29)–(34,30), arrow points north
+  { x: 33, y: 12 }, // CP4 — aim corner of (33,12)–(34,13), arrow points west
+  { x: 21, y: 12 }, // CP5 — aim corner of (21,12)–(22,13), arrow points south
+  { x: 21, y: 41 }, // CP6 — aim corner of (21,41)–(22,42), arrow points east
 ];
 
 // ---------------------------------------------------------------------------
@@ -42,23 +45,34 @@ export const CHECKPOINTS = [
 // 'empty' — they are listed in CHECKPOINTS above and must stay traversable.
 // ---------------------------------------------------------------------------
 
+// Each checkpoint arrow is 16 tiles: a 6×2 body bar + a 2×2 tip pointing
+// toward the next checkpoint.  The 2×2 aim-point block sits at the centre of
+// the body; enemies aim for the corner between those 4 tiles.
+// Entry/exit are 2-tile strips on the left/right border (already covered by
+// the border marking, listed here for clarity and renderer reference).
 const BLOCKED_ZONES = [
-  // Entry area (green cells on the map)
+  // Entry — 2 tiles on left border (x=1, y=9–10)
   { x1: 1,  y1: 9,  x2: 1,  y2: 10 },
-  // Exit area (yellow cells on the map)
-  { x1: 42, y1: 38, x2: 42, y2: 39 },
-  // CP1 area  (arrows/markers around CP1, excludes the checkpoint cell itself)
-  { x1: 10, y1: 9,  x2: 15, y2: 15 },
-  // CP2 area
-  { x1: 9,  y1: 26, x2: 15, y2: 32 },
-  // CP3 area
-  { x1: 33, y1: 26, x2: 42, y2: 30 },
-  // CP4 area
-  { x1: 33, y1: 9,  x2: 41, y2: 15 },
-  // CP5 area
-  { x1: 21, y1: 9,  x2: 26, y2: 15 },
-  // CP6 area
-  { x1: 21, y1: 38, x2: 26, y2: 44 },
+  // Exit  — 2 tiles on right border (x=42, y=41–42)
+  { x1: 42, y1: 41, x2: 42, y2: 42 },
+  // CP1 (aim 9,9): arrives from west, tip points south
+  { x1: 7,  y1: 9,  x2: 12, y2: 10 }, // body (horizontal)
+  { x1: 9,  y1: 11, x2: 10, y2: 12 }, // tip  (south)
+  // CP2 (aim 9,29): arrives from north, tip points east
+  { x1: 9,  y1: 27, x2: 10, y2: 32 }, // body (vertical)
+  { x1: 11, y1: 29, x2: 12, y2: 30 }, // tip  (east)
+  // CP3 (aim 33,29): arrives from west, tip points north
+  { x1: 31, y1: 29, x2: 36, y2: 30 }, // body (horizontal)
+  { x1: 33, y1: 27, x2: 34, y2: 28 }, // tip  (north)
+  // CP4 (aim 33,12): arrives from south, tip points west
+  { x1: 33, y1: 10, x2: 34, y2: 15 }, // body (vertical)
+  { x1: 31, y1: 12, x2: 32, y2: 13 }, // tip  (west)
+  // CP5 (aim 21,12): arrives from east, tip points south
+  { x1: 19, y1: 12, x2: 24, y2: 13 }, // body (horizontal)
+  { x1: 21, y1: 14, x2: 22, y2: 15 }, // tip  (south)
+  // CP6 (aim 21,41): arrives from north, tip points east
+  { x1: 21, y1: 39, x2: 22, y2: 44 }, // body (vertical)
+  { x1: 23, y1: 41, x2: 24, y2: 42 }, // tip  (east)
 ];
 
 // ---------------------------------------------------------------------------

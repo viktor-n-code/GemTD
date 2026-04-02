@@ -119,25 +119,68 @@ function drawGrid(ctx, state) {
 }
 
 // ---------------------------------------------------------------------------
-// Draw waypoint dots (checkpoints, entry, exit)
+// Draw special zones — entry, exit, checkpoint arrows
 // ---------------------------------------------------------------------------
 
-function drawWaypoints(ctx) {
-  const drawDot = (x, y, color, radius) => {
-    // Center of cell
-    const cx = (x - 1) * CELL_SIZE + CELL_SIZE / 2;
-    const cy = (y - 1) * CELL_SIZE + CELL_SIZE / 2;
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-    ctx.fill();
-  };
-
-  for (const cp of CHECKPOINTS) {
-    drawDot(cp.x, cp.y, COLOR_CHECKPOINT, 3);
+// Fills a rectangle of grid cells (1-indexed, inclusive) with a colour,
+// leaving the 1px grid-line gap so the grid overlay still shows through.
+function fillZone(ctx, x1, y1, x2, y2, color) {
+  ctx.fillStyle = color;
+  for (let y = y1; y <= y2; y++) {
+    for (let x = x1; x <= x2; x++) {
+      ctx.fillRect((x - 1) * CELL_SIZE + 1, (y - 1) * CELL_SIZE + 1,
+                   CELL_SIZE - 1, CELL_SIZE - 1);
+    }
   }
-  drawDot(ENTRY.x, ENTRY.y, COLOR_ENTRY, 3);
-  drawDot(EXIT.x,  EXIT.y,  COLOR_EXIT,  3);
+}
+
+// Checkpoint arrow shapes — body + tip zones and the direction each points.
+// Matches the BLOCKED_ZONES in grid.js exactly.
+const CP_ZONES = [
+  // CP1: body horizontal, tip south
+  { body: [7, 9, 12, 10], tip: [9, 11, 10, 12] },
+  // CP2: body vertical, tip east
+  { body: [9, 27, 10, 32], tip: [11, 29, 12, 30] },
+  // CP3: body horizontal, tip north
+  { body: [31, 29, 36, 30], tip: [33, 27, 34, 28] },
+  // CP4: body vertical, tip west
+  { body: [33, 10, 34, 15], tip: [31, 12, 32, 13] },
+  // CP5: body horizontal, tip south
+  { body: [19, 12, 24, 13], tip: [21, 14, 22, 15] },
+  // CP6: body vertical, tip east
+  { body: [21, 39, 22, 44], tip: [23, 41, 24, 42] },
+];
+
+const COLOR_CP_BODY = 'rgba(200, 80, 40, 0.55)';  // muted red
+const COLOR_CP_TIP  = 'rgba(220, 130, 30, 0.75)'; // amber tip (arrow head)
+const COLOR_CP_AIM  = 'rgba(255, 220, 60, 0.40)'; // faint yellow aim block
+
+function drawZones(ctx) {
+  // Entry — 2 green tiles on left border
+  fillZone(ctx, 1, 9, 1, 10, 'rgba(40, 180, 60, 0.70)');
+
+  // Exit — 2 yellow tiles on right border
+  fillZone(ctx, 42, 41, 42, 42, 'rgba(220, 200, 40, 0.70)');
+
+  // Checkpoint arrow zones
+  for (let i = 0; i < CP_ZONES.length; i++) {
+    const { body, tip } = CP_ZONES[i];
+    fillZone(ctx, body[0], body[1], body[2], body[3], COLOR_CP_BODY);
+    fillZone(ctx, tip[0],  tip[1],  tip[2],  tip[3],  COLOR_CP_TIP);
+
+    // 2×2 aim-point block at centre of body (where enemies aim)
+    const cp = CHECKPOINTS[i];
+    fillZone(ctx, cp.x, cp.y, cp.x + 1, cp.y + 1, COLOR_CP_AIM);
+
+    // Checkpoint number label in the aim-point centre
+    const labelX = cp.x * CELL_SIZE;
+    const labelY = cp.y * CELL_SIZE;
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.font = 'bold 9px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(i + 1, labelX, labelY);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -315,8 +358,8 @@ export function render(state, canvas) {
   // 1. Draw grid cells (fills entire canvas)
   drawGrid(ctx, state);
 
-  // 2. Waypoint indicators on top of grid
-  drawWaypoints(ctx);
+  // 2. Special zones — entry, exit, checkpoint arrows
+  drawZones(ctx);
 
   // 3. Gem tower shapes (drawn over the colored cells)
   drawGems(ctx, state);

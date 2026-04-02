@@ -107,8 +107,14 @@ export function moveEnemy(enemy, dt, now) {
   }
 
   const target = waypoints[enemy.pathIndex];
-  const targetX = (target.x - 0.5) * CELL_SIZE;
-  const targetY = (target.y - 0.5) * CELL_SIZE;
+  // Both flying and ground enemies aim for the corner between the 4 centre
+  // tiles when the current waypoint is a checkpoint (x * CELL_SIZE).
+  // For all other A* path cells, ground enemies navigate to the cell centre
+  // ((x - 0.5) * CELL_SIZE) so they walk smoothly through the grid.
+  const isCP = CHECKPOINTS.some(cp => cp.x === target.x && cp.y === target.y);
+  const useCorner = enemy.flying || isCP;
+  const targetX = useCorner ? target.x * CELL_SIZE : (target.x - 0.5) * CELL_SIZE;
+  const targetY = useCorner ? target.y * CELL_SIZE : (target.y - 0.5) * CELL_SIZE;
 
   const dx = targetX - enemy.x;
   const dy = targetY - enemy.y;
