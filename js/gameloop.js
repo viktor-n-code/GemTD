@@ -6,7 +6,7 @@
 import { createInitialState, saveState, loadState, clearState } from './state.js';
 import { createGrid, validatePlacement, placeGem, placeRock, findPath,
          GRID_COLS, GRID_ROWS, CELL_SIZE, ENTRY, CHECKPOINTS, EXIT } from './grid.js';
-import { rollGem, getStats, GEM_CHANCE_LEVELS } from './gem.js';
+import { rollGem, getStats, GEM_CHANCE_LEVELS, QUALITY_LEVELS } from './gem.js';
 import { moveEnemy, GOLD_PER_WAVE } from './enemy.js';
 import { WaveSpawner } from './wave.js';
 import { attackEnemy, canAttack, isInRange, tickPoison } from './combat.js';
@@ -18,7 +18,8 @@ import { drawUI } from './ui.js';
 // Module-level state
 // ---------------------------------------------------------------------------
 
-const canvas = document.getElementById('game');
+let canvas;
+let ctx;
 
 let gameState    = null;
 let inputHandler = null;
@@ -31,6 +32,9 @@ let groundPath   = null;   // cached A* path for current wave
 // ---------------------------------------------------------------------------
 
 function init() {
+  canvas = document.getElementById('game');
+  ctx = canvas.getContext('2d');
+
   canvas.width  = GRID_COLS * CELL_SIZE;   // 672
   canvas.height = GRID_ROWS * CELL_SIZE;   // 752
 
@@ -68,12 +72,11 @@ function gameLoop(timestamp) {
 
   inputHandler.update(gameState);
 
-  if (gameState.phase === 'build')   updateBuild(dt, now);
-  if (gameState.phase === 'defend')  updateDefend(dt, now);
-  if (gameState.phase === 'between') updateBetween();
+  if      (gameState.phase === 'build')   updateBuild(dt, now);
+  else if (gameState.phase === 'defend')  updateDefend(dt, now);
+  else if (gameState.phase === 'between') updateBetween();
 
   render(gameState, canvas);
-  const ctx = canvas.getContext('2d');
   drawUI(ctx, gameState, inputHandler.getState());
 
   if (!gameState.gameOver && !gameState.gameWon) {
@@ -139,7 +142,6 @@ function updateBuild(dt, now) {
 
       case 'combine': {
         // Auto-combine: find first pair of same-type gems in placedThisRound
-        const QUALITY_LEVELS = ['chipped', 'flawed', 'standard', 'flawless', 'perfect'];
         const byType = {};
         for (const id of gameState.placedThisRound) {
           const g = gameState.gems[id];
@@ -318,6 +320,7 @@ function updateBetween() {
 
   if (gameState.wave >= 10) {
     gameState.gameWon = true;
+    gameState.phase = 'gamewon'; // terminal state — prevents re-entry
     return;
   }
 
@@ -342,15 +345,6 @@ function drawEndScreen(ctx) {
 }
 
 // ---------------------------------------------------------------------------
-// handleResize
-// ---------------------------------------------------------------------------
-
-function handleResize() {
-  // Canvas internal resolution is fixed; CSS handles display scaling.
-  // Nothing to do here — the canvas max-width/max-height CSS already scales it.
-}
-
-// ---------------------------------------------------------------------------
 // Bootstrap
 // ---------------------------------------------------------------------------
 
@@ -359,5 +353,3 @@ if (document.readyState === 'loading') {
 } else {
   init();
 }
-
-window.addEventListener('resize', handleResize);
