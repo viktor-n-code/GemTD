@@ -52,8 +52,8 @@ export function isInRange(gem, enemy) {
   // Gem pixel centre: grid coords are top-left of the 2×2 block.
   // Use the same formula as the renderer: gem.x * CELL_SIZE (top-left corner).
   // Centre of a 2×2 block is +1 cell = +CELL_SIZE pixels from top-left.
-  const gemPx = gem.x * CELL_SIZE + CELL_SIZE; // centre x
-  const gemPy = gem.y * CELL_SIZE + CELL_SIZE; // centre y
+  const gemPx = gem.x * CELL_SIZE; // centre x — matches renderer.js convention
+  const gemPy = gem.y * CELL_SIZE; // centre y
 
   const dx = enemy.x - gemPx;
   const dy = enemy.y - gemPy;
@@ -78,6 +78,7 @@ export function isInRange(gem, enemy) {
  * @param {number}      now    - Current timestamp in ms
  */
 export function applyEffect(enemy, effect, now) {
+  if (enemy.dead || enemy.exited) return;
   if (!effect) return;
 
   if (effect.type === 'poison') {
@@ -132,6 +133,7 @@ export function applySplash(gem, primaryEnemy, enemies, primaryDamage, now) {
     const dist = Math.sqrt(dx * dx + dy * dy);
 
     if (dist <= radius) {
+      // Splash deals raw damage only; no status effects applied to splash targets.
       enemy.hp -= primaryDamage;
       if (enemy.hp <= 0) {
         enemy.dead = true;
@@ -213,7 +215,7 @@ export function tickPoison(enemy, dt, now) {
   }
 
   // Expire poison when duration ends
-  if (now >= enemy.poisonUntil) {
+  if (enemy.poisonDps > 0 && now >= enemy.poisonUntil) {
     enemy.poisonDps = 0;
   }
 }
