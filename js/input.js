@@ -1,60 +1,200 @@
-/**
- * input.js - Input handling
- * Manages mouse and keyboard input for tower placement, dragging, etc.
- */
+// input.js — Mouse input handling for Gem TD
+// Tracks mouse position, derives hover state, and queues pending actions.
+
+import { CELL_SIZE, GRID_COLS, GRID_ROWS } from './grid.js';
+import { GEM_SLOTS, BTN_COMBINE, BTN_KEEP, BTN_UPGRADE, BTN_SENDWAVE, PANEL_Y } from './ui.js';
+
+// ---------------------------------------------------------------------------
+// Private helper
+// ---------------------------------------------------------------------------
 
 /**
- * InputHandler class - processes user input events
- * @todo Implement input event handling and state management
+ * Returns true if pixel (px, py) is inside the given rect.
+ * @param {{ x, y, w, h }} rect
+ * @param {number} px
+ * @param {number} py
  */
+function hitTest(rect, px, py) {
+  return px >= rect.x && px < rect.x + rect.w &&
+         py >= rect.y && py < rect.y + rect.h;
+}
+
+// ---------------------------------------------------------------------------
+// InputHandler
+// ---------------------------------------------------------------------------
+
 export class InputHandler {
   /**
-   * Creates a new input handler
-   * @param {HTMLCanvasElement} canvas - The game canvas element
+   * @param {HTMLCanvasElement} canvas
    */
   constructor(canvas) {
-    // TODO: Initialize input handler
-    // TODO: Attach mouse and keyboard event listeners
     this.canvas = canvas;
+
+    // Raw canvas-pixel coordinates of the mouse cursor
     this.mouseX = 0;
     this.mouseY = 0;
-    this.mouseDown = false;
-    this.selectedGem = null;
-    this.placementIntent = null; // Track requested placement grid cell
+
+    // Derived hover state (updated on mousemove + update())
+    this.hoveredCell  = null;   // { x, y } grid cell (1-indexed), or null
+    this.hoveredGemId = null;   // gem id when mouse is over a populated slot, else null
+
+    // Pending actions consumed by the gameloop each frame
+    this.pendingPlacement = null;  // { x, y } grid cell
+    this.pendingAction    = null;  // { type, ... }
+
+    // Selection state
+    this.selectedGemId = null;   // gem id selected in the build panel
+    this.combineStep   = 0;      // 0 = idle, 1 = first gem, 2 = second gem
+
+    this._attachListeners();
+  }
+
+  // -------------------------------------------------------------------------
+  // Public API
+  // -------------------------------------------------------------------------
+
+  /** Returns a snapshot of the current input state for ui.js / renderer.js. */
+  getState() {
+    return {
+      hoveredCell:   this.hoveredCell,
+      hoveredGemId:  this.hoveredGemId,
+      selectedGemId: this.selectedGemId,
+      combineStep:   this.combineStep,
+    };
+  }
+
+  /** Consume and return the pending grid-placement request (null if none). */
+  consumePlacement() {
+    const p = this.pendingPlacement;
+    this.pendingPlacement = null;
+    return p;
+  }
+
+  /** Consume and return the pending UI action (null if none). */
+  consumeAction() {
+    const a = this.pendingAction;
+    this.pendingAction = null;
+    return a;
   }
 
   /**
-   * Gets the grid position from mouse coordinates
-   * @returns {Object|null} Grid cell {col, row} or null if outside grid
-   * @todo Implement coordinate conversion from canvas to grid
+   * Called by the gameloop each frame to sync state-dependent hover info
+   * (e.g. which gem id lives in the slot under the mouse).
+   *
+   * @param {Object} state — full game state
    */
-  getGridPosition() {
-    // TODO: Convert mouse coordinates to grid cell
-    return null;
+  update(state) {
+    if (this.mouseY >= PANEL_Y) {
+      // Find which gem slot (if any) the cursor is over
+      let found = null;
+      for (let i = 0; i < GEM_SLOTS.length; i++) {
+        if (hitTest(GEM_SLOTS[i], this.mouseX, this.mouseY)) {
+          found = state.placedThisRound[i] ?? null;
+          break;
+        }
+      }
+      this.hoveredGemId = found;
+    } else {
+      this.hoveredGemId = null;
+    }
   }
 
-  /**
-   * Gets the currently selected gem
-   * @returns {Object|null} Selected gem object or null
-   * @todo Implement gem selection tracking
-   */
-  getSelectedGem() {
-    // TODO: Return selected gem
-    return null;
+  /** Called by the gameloop when a new build phase begins. */
+  resetBuildState() {
+    this.selectedGemId    = null;
+    this.combineStep      = 0;
+    this.pendingPlacement = null;
+    this.pendingAction    = null;
   }
 
-  /**
-   * Gets the last requested placement intent (grid cell to place gem at)
-   * @returns {Object|null} Grid cell {col, row} or null if no pending placement
-   */
-  getPlacementIntent() {
-    return this.placementIntent;
+  // -------------------------------------------------------------------------
+  // Private — event listeners
+  // -------------------------------------------------------------------------
+
+  _attachListeners() {
+    this.canvas.addEventListener('mousemove', (e) => this._onMouseMove(e));
+    this.canvas.addEventListener('click',     (e) => this._onClick(e));
   }
 
-  /**
-   * Clears the placement intent after gameloop processes it
-   */
-  clearPlacementIntent() {
-    this.placementIntent = null;
+  /** Convert a MouseEvent to canvas-local pixel coordinates. */
+  _canvasPos(e) {
+    const rect    = this.canvas.getBoundingClientRect();
+    const scaleX  = this.canvas.width  / rect.width;
+    const scaleY  = this.canvas.height / rect.height;
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top)  * scaleY,
+    };
+  }
+
+  _onMouseMove(e) {
+    const { x, y } = this._canvasPos(e);
+    this.mouseX = x;
+    this.mouseY = y;
+
+    // Derive grid cell hover (above the panel only)
+    if (y < PANEL_Y) {
+      const gx = Math.floor(x / CELL_SIZE) + 1;
+      const gy = Math.floor(y / CELL_SIZE) + 1;
+      if (gx >= 1 && gx <= GRID_COLS && gy >= 1 && gy <= GRID_ROWS) {
+        this.hoveredCell = { x: gx, y: gy };
+      } else {
+        this.hoveredCell = null;
+      }
+    } else {
+      this.hoveredCell = null;
+    }
+  }
+
+  _onClick(e) {
+    const { x, y } = this._canvasPos(e);
+    this.mouseX = x;
+    this.mouseY = y;
+
+    if (y >= PANEL_Y) {
+      // -----------------------------------------------------------------------
+      // Click inside the build panel
+      // -----------------------------------------------------------------------
+      if (hitTest(BTN_COMBINE, x, y)) {
+        this.pendingAction = { type: 'combine' };
+        return;
+      }
+      if (hitTest(BTN_KEEP, x, y)) {
+        if (this.selectedGemId !== null) {
+          this.pendingAction = { type: 'keep', gemId: this.selectedGemId };
+        }
+        return;
+      }
+      if (hitTest(BTN_UPGRADE, x, y)) {
+        this.pendingAction = { type: 'upgrade' };
+        return;
+      }
+      if (hitTest(BTN_SENDWAVE, x, y)) {
+        this.pendingAction = { type: 'sendWave' };
+        return;
+      }
+
+      // Check gem slots — hoveredGemId is maintained by update(), but on click
+      // we re-derive it synchronously so clicks are never one frame stale.
+      for (let i = 0; i < GEM_SLOTS.length; i++) {
+        if (hitTest(GEM_SLOTS[i], x, y)) {
+          // hoveredGemId is set by update(state) each frame; if update() runs before
+          // click dispatch (gameloop must guarantee this), the value is always current.
+          const gemId = this.hoveredGemId;
+          if (gemId != null) {
+            this.selectedGemId = gemId;
+            this.pendingAction = { type: 'selectGem', gemId };
+          }
+          return;
+        }
+      }
+    } else {
+      // -----------------------------------------------------------------------
+      // Click on the game grid
+      // -----------------------------------------------------------------------
+      if (this.hoveredCell !== null) {
+        this.pendingPlacement = { x: this.hoveredCell.x, y: this.hoveredCell.y };
+      }
+    }
   }
 }
