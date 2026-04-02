@@ -107,8 +107,11 @@ export function moveEnemy(enemy, dt, now) {
   }
 
   const target = waypoints[enemy.pathIndex];
-  const targetX = (target.x - 0.5) * CELL_SIZE;
-  const targetY = (target.y - 0.5) * CELL_SIZE;
+  // Ground enemies follow A* cell centres: (x - 0.5) * CELL_SIZE.
+  // Flying enemies aim for the corner between the 4 centre tiles of each
+  // checkpoint arrow: x * CELL_SIZE (right/bottom edge of the stored cell).
+  const targetX = enemy.flying ? target.x * CELL_SIZE : (target.x - 0.5) * CELL_SIZE;
+  const targetY = enemy.flying ? target.y * CELL_SIZE : (target.y - 0.5) * CELL_SIZE;
 
   const dx = targetX - enemy.x;
   const dy = targetY - enemy.y;
