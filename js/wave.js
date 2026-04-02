@@ -3,49 +3,69 @@
  * Handles wave definitions, spawning schedules, and progression.
  */
 
+import { spawnEnemy, ENEMY_STATS } from './enemy.js';
+
 /**
- * Wave definitions specifying enemy types and spawn timings
- * @type {Array<Object>}
- * @todo Define wave progression with enemy compositions and timing
+ * Wave definitions (index 0 = wave 1).
+ * All demo waves send 10 enemies spaced 1 second apart.
+ * @type {Array<{wave: number, count: number, intervalSec: number}>}
  */
 export const WAVE_DEFS = [
-  // TODO: Define waves with enemy types, counts, spawn times, and delays
+  { wave:  1, count: 10, intervalSec: 1.0 },
+  { wave:  2, count: 10, intervalSec: 1.0 },
+  { wave:  3, count: 10, intervalSec: 1.0 },
+  { wave:  4, count: 10, intervalSec: 1.0 },
+  { wave:  5, count: 10, intervalSec: 1.0 },
+  { wave:  6, count: 10, intervalSec: 1.0 },
+  { wave:  7, count: 10, intervalSec: 1.0 },
+  { wave:  8, count: 10, intervalSec: 1.0 },
+  { wave:  9, count: 10, intervalSec: 1.0 },
+  { wave: 10, count: 10, intervalSec: 1.0 },
 ];
 
 /**
- * WaveSpawner class - manages enemy spawning for the current wave
- * @todo Implement spawning logic with timing and progression
+ * Manages enemy spawning for a single wave.
  */
 export class WaveSpawner {
   /**
-   * Creates a new wave spawner for the given wave
-   * @param {number} waveNumber - The wave number to spawn
+   * @param {number} waveNumber - 1-indexed wave number (1–10)
+   * @param {Array<{x:number,y:number}>|null} path - A* ground path (ignored for flying waves)
    */
-  constructor(waveNumber) {
-    // TODO: Initialize wave spawner with wave data
-    this.waveNumber = waveNumber;
-    this.currentIndex = 0;
-    this.spawnTime = 0;
+  constructor(waveNumber, path) {
+    this.wave = waveNumber;
+    this.path = path;
+    this.def = WAVE_DEFS[waveNumber - 1];
+    this.spawned = 0;
+    this.elapsed = 0;
   }
 
   /**
-   * Checks if the next enemy should spawn and returns it if so
-   * @param {number} deltaTime - Time elapsed since last check
-   * @returns {Object|null} Enemy object to spawn or null
-   * @todo Implement spawn timing logic
+   * Advances the spawner by dt seconds.
+   * Returns a new enemy object when it is time to spawn one, otherwise null.
+   *
+   * @param {number} dt - Seconds since last call
+   * @returns {Object|null} Newly spawned enemy, or null
    */
-  update(deltaTime) {
-    // TODO: Check timing and spawn next enemy if ready
+  update(dt) {
+    this.elapsed += dt;
+
+    if (!this.isComplete() && this.elapsed >= this.spawned * this.def.intervalSec) {
+      // Flying waves pass null path — the enemy uses CHECKPOINTS internally
+      const isFlying = ENEMY_STATS[this.wave - 1].flying;
+      const spawnPath = isFlying ? null : this.path;
+      const enemy = spawnEnemy(this.wave, spawnPath);
+      this.spawned++;
+      return enemy;
+    }
+
     return null;
   }
 
   /**
-   * Checks if the wave has finished spawning all enemies
-   * @returns {boolean} True if all enemies have been spawned
-   * @todo Implement completion check
+   * Returns true when all enemies for this wave have been spawned.
+   * @returns {boolean}
    */
   isComplete() {
-    // TODO: Return true if all enemies spawned
-    return false;
+    return this.spawned >= this.def.count;
   }
 }
