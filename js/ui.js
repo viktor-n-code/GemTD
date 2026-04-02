@@ -146,7 +146,7 @@ function drawButton(ctx, rect, label, active, activeColor = '#3a6a3a') {
 // Tooltip drawing helper
 // ---------------------------------------------------------------------------
 
-function drawTooltip(ctx, gem) {
+function drawTooltip(ctx, gem, state, inputState) {
   const { type, quality } = gem;
   const stats = getStats(type, quality);
 
@@ -174,8 +174,10 @@ function drawTooltip(ctx, gem) {
   const boxH     = padding * 2 + lines * lineH;
   const boxY     = PANEL_Y - boxH - 4;
 
-  // Measure to find an x that fits inside the canvas (672px wide)
-  let boxX = 8;
+  // Anchor tooltip above the hovered slot, clamped to canvas
+  const slotIdx = state.placedThisRound.indexOf(inputState.hoveredGemId);
+  const slotX = slotIdx >= 0 ? GEM_SLOTS[slotIdx].x : 8;
+  let boxX = slotX;
   if (boxX + boxW > 672) boxX = 672 - boxW - 4;
 
   // Background
@@ -310,8 +312,8 @@ export function drawUI(ctx, state, inputState) {
   drawButton(ctx, BTN_KEEP, 'Keep', keepActive, '#3a6a3a');
 
   // Upgrade — active if not max level and player can afford it
-  const upgradeCost   = GEM_CHANCE_LEVELS[state.gemChanceLevel]
-    ? GEM_CHANCE_LEVELS[state.gemChanceLevel].cost
+  const upgradeCost   = GEM_CHANCE_LEVELS[state.gemChanceLevel - 1]
+    ? GEM_CHANCE_LEVELS[state.gemChanceLevel - 1].cost
     : null;
   const upgradeActive = upgradeCost !== null && state.gemChanceLevel < 9 && state.gold >= upgradeCost;
   const upgradeLabel  = upgradeCost !== null ? `Upgrade (${upgradeCost}g)` : 'Upgrade (max)';
@@ -327,7 +329,7 @@ export function drawUI(ctx, state, inputState) {
   if (inputState && inputState.hoveredGemId != null) {
     const gem = state.gems[inputState.hoveredGemId];
     if (gem) {
-      drawTooltip(ctx, gem);
+      drawTooltip(ctx, gem, state, inputState);
     }
   }
 

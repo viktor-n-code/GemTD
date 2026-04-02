@@ -178,8 +178,8 @@ export class InputHandler {
       // we re-derive it synchronously so clicks are never one frame stale.
       for (let i = 0; i < GEM_SLOTS.length; i++) {
         if (hitTest(GEM_SLOTS[i], x, y)) {
-          // We need the gemId — use hoveredGemId which update() keeps current.
-          // On a click frame update() may not have run yet, so guard with null.
+          // hoveredGemId is set by update(state) each frame; if update() runs before
+          // click dispatch (gameloop must guarantee this), the value is always current.
           const gemId = this.hoveredGemId;
           if (gemId != null) {
             this.selectedGemId = gemId;
