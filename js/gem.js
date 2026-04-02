@@ -74,6 +74,7 @@ const TYPE_NAMES = Object.keys(GEM_TYPES);
 // chanceLevel is 1-indexed; index into GEM_CHANCE_LEVELS is chanceLevel - 1
 export function rollGem(chanceLevel) {
   const entry = GEM_CHANCE_LEVELS[chanceLevel - 1];
+  if (!entry) throw new RangeError(`Invalid chanceLevel: ${chanceLevel}`);
   const chances = entry.chances;
 
   let roll = Math.random() * 100;
@@ -87,6 +88,7 @@ export function rollGem(chanceLevel) {
   return { type, quality };
 }
 
+// getVisual(type, quality) — both are strings; type is a GEM_TYPES key, quality is a QUALITY_LEVELS entry
 export function getVisual(type, quality) {
   return {
     color: GEM_TYPES[type].color,

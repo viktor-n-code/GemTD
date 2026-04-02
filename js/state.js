@@ -1,5 +1,7 @@
 // state.js — Game state management
 
+const STORAGE_KEY = 'gemtd_save';
+
 export function createInitialState() {
   return {
     phase: 'build',
@@ -17,19 +19,21 @@ export function createInitialState() {
 }
 
 export function saveState(state) {
-  localStorage.setItem('gemtd_save', JSON.stringify(state));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
 export function loadState() {
   try {
-    const raw = localStorage.getItem('gemtd_save');
+    const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    return JSON.parse(raw);
+    const s = JSON.parse(raw);
+    if (!s || typeof s !== 'object' || Array.isArray(s)) return null;
+    return s;
   } catch {
     return null;
   }
 }
 
 export function clearState() {
-  localStorage.removeItem('gemtd_save');
+  localStorage.removeItem(STORAGE_KEY);
 }
