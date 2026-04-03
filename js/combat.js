@@ -58,7 +58,8 @@ export function isInRange(gem, enemy) {
   const dy = enemy.y - gemPy;
   const dist = Math.sqrt(dx * dx + dy * dy);
 
-  return dist <= stats.range;
+  // Range values are in design units where 18 units = 1 tile (CELL_SIZE px).
+  return dist <= stats.range * (CELL_SIZE / 18);
 }
 
 // ---------------------------------------------------------------------------
