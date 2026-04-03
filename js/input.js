@@ -48,8 +48,9 @@ export class InputHandler {
     this.combineStep     = 0;     // 0 = idle, 1 = first gem, 2 = second gem
 
     // Cached from update() for use in click handler
-    this._phase   = 'build';
-    this._enemies = [];
+    this._phase          = 'build';
+    this._enemies        = [];
+    this._placedThisRound = [];
 
     this._attachListeners();
   }
@@ -90,8 +91,9 @@ export class InputHandler {
    * @param {Object} state — full game state
    */
   update(state) {
-    this._phase   = state.phase;
-    this._enemies = state.enemies || [];
+    this._phase           = state.phase;
+    this._enemies         = state.enemies || [];
+    this._placedThisRound = state.placedThisRound || [];
     if (this.mouseY >= PANEL_Y) {
       // Find which gem slot (if any) the cursor is over
       let found = null;
@@ -183,13 +185,11 @@ export class InputHandler {
         return;
       }
 
-      // Check gem slots — hoveredGemId is maintained by update(), but on click
-      // we re-derive it synchronously so clicks are never one frame stale.
+      // Check gem slots — derive gem ID directly from cached placedThisRound
+      // so clicks are never dependent on hoveredGemId being current.
       for (let i = 0; i < GEM_SLOTS.length; i++) {
         if (hitTest(GEM_SLOTS[i], x, y)) {
-          // hoveredGemId is set by update(state) each frame; if update() runs before
-          // click dispatch (gameloop must guarantee this), the value is always current.
-          const gemId = this.hoveredGemId;
+          const gemId = this._placedThisRound[i] ?? null;
           if (gemId != null) {
             this.selectedGemId = gemId;
             this.pendingAction = { type: 'selectGem', gemId };
