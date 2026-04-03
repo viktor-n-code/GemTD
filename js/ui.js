@@ -409,10 +409,11 @@ export function drawUI(ctx, state, inputState) {
   drawButton(ctx, BTN_KEEP, 'Keep', keepActive, '#3a6a3a');
 
   // Upgrade — active if not max level and player can afford it
-  const upgradeCost   = GEM_CHANCE_LEVELS[state.gemChanceLevel - 1]
-    ? GEM_CHANCE_LEVELS[state.gemChanceLevel - 1].cost
+  // Cost of the NEXT level (index = current level, since array is 0-indexed and level is 1-indexed)
+  const upgradeCost   = state.gemChanceLevel < 9
+    ? GEM_CHANCE_LEVELS[state.gemChanceLevel].cost
     : null;
-  const upgradeActive = upgradeCost !== null && state.gemChanceLevel < 9 && state.gold >= upgradeCost;
+  const upgradeActive = upgradeCost !== null && state.gold >= upgradeCost;
   const upgradeLabel  = upgradeCost !== null ? `Upgrade (${upgradeCost}g)` : 'Upgrade (max)';
   drawButton(ctx, BTN_UPGRADE, upgradeLabel, upgradeActive, '#3a4a6a');
 

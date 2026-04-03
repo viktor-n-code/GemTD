@@ -140,7 +140,7 @@ function updateBuild(dt, now) {
       }
 
       case 'combine': {
-        // Find first matching pair: same type AND same quality
+        // Group current-round gems by type+quality
         const byTypeQuality = {};
         for (const id of gameState.placedThisRound) {
           const g = gameState.gems[id];
@@ -149,48 +149,46 @@ function updateBuild(dt, now) {
           if (!byTypeQuality[key]) byTypeQuality[key] = [];
           byTypeQuality[key].push(id);
         }
+        // Prefer the pair containing the selected gem; fall back to first eligible pair
+        const selectedId = action.selectedGemId;
+        let chosenIds = null;
         for (const ids of Object.values(byTypeQuality)) {
           if (ids.length >= 2) {
-            const [id1, id2] = ids;
-            // If player selected one of the pair, that gem survives (keeps its position)
-            const selectedId = action.selectedGemId;
-            const survivorId = (selectedId === id1 || selectedId === id2) ? selectedId : id1;
-            const removedId  = (survivorId === id1) ? id2 : id1;
-            const g1 = gameState.gems[survivorId];
-            const g2 = gameState.gems[removedId];
-            // Upgrade quality of survivor by one level
-            const qi = QUALITY_LEVELS.indexOf(g1.quality);
-            const newQuality = QUALITY_LEVELS[Math.min(qi + 1, QUALITY_LEVELS.length - 1)];
-            g1.quality = newQuality;
-            const newStats = getStats(g1.type, newQuality);
-            g1.attackCooldown = Math.round(1000 / newStats.attackSpeed);
-            // removed gem's position becomes a permanent rock
-            placeRock(gameState.grid, g2.x, g2.y);
-            for (let dy = 0; dy <= 1; dy++) {
-              for (let dx = 0; dx <= 1; dx++) {
-                gameState.grid[g2.y + dy][g2.x + dx].gemId = null;
-              }
-            }
-            delete gameState.gems[removedId];
-            // Convert all remaining non-combined gems to rocks, then start wave
-            gameState.keptGemId = survivorId;
-            for (const id of gameState.placedThisRound) {
-              if (id !== survivorId && id !== removedId) {
-                const g = gameState.gems[id];
-                if (!g) continue;
-                placeRock(gameState.grid, g.x, g.y);
-                for (let dy = 0; dy <= 1; dy++) {
-                  for (let dx = 0; dx <= 1; dx++) {
-                    gameState.grid[g.y + dy][g.x + dx].gemId = null;
-                  }
-                }
-                delete gameState.gems[id];
-              }
-            }
-            gameState.placedThisRound = [survivorId];
-            startDefendPhase(); // wave begins immediately after combining
-            break;
+            if (!chosenIds) chosenIds = ids;
+            if (ids.includes(selectedId)) { chosenIds = ids; break; }
           }
+        }
+        if (chosenIds) {
+          const [id1, id2] = chosenIds;
+          const survivorId = (selectedId === id1 || selectedId === id2) ? selectedId : id1;
+          const removedId  = (survivorId === id1) ? id2 : id1;
+          const g1 = gameState.gems[survivorId];
+          const g2 = gameState.gems[removedId];
+          // Upgrade quality of survivor by one level
+          const qi = QUALITY_LEVELS.indexOf(g1.quality);
+          g1.quality = QUALITY_LEVELS[Math.min(qi + 1, QUALITY_LEVELS.length - 1)];
+          g1.attackCooldown = Math.round(1000 / getStats(g1.type, g1.quality).attackSpeed);
+          // Removed gem's position becomes a permanent rock
+          placeRock(gameState.grid, g2.x, g2.y);
+          for (let dy = 0; dy <= 1; dy++)
+            for (let dx = 0; dx <= 1; dx++)
+              gameState.grid[g2.y + dy][g2.x + dx].gemId = null;
+          delete gameState.gems[removedId];
+          // Convert all remaining non-combined gems to rocks, then start wave
+          gameState.keptGemId = survivorId;
+          for (const id of gameState.placedThisRound) {
+            if (id !== survivorId && id !== removedId) {
+              const g = gameState.gems[id];
+              if (!g) continue;
+              placeRock(gameState.grid, g.x, g.y);
+              for (let dy = 0; dy <= 1; dy++)
+                for (let dx = 0; dx <= 1; dx++)
+                  gameState.grid[g.y + dy][g.x + dx].gemId = null;
+              delete gameState.gems[id];
+            }
+          }
+          gameState.placedThisRound = [survivorId];
+          startDefendPhase();
         }
         break;
       }
@@ -261,6 +259,10 @@ function computeFullPath(grid) {
 // ---------------------------------------------------------------------------
 
 function updateDefend(dt, now) {
+  // Check for restart (works in any phase)
+  const action = inputHandler.consumeAction();
+  if (action?.type === 'restart') { clearState(); location.reload(); return; }
+
   // 1. Spawn
   const newEnemy = waveSpawner.update(dt);
   if (newEnemy) gameState.enemies.push(newEnemy);
