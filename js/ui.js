@@ -26,7 +26,6 @@ export const BTN_COMBINE  = { x: 232, y: PANEL_Y + 9, w: 70,  h: 28 };
 export const BTN_KEEP     = { x: 308, y: PANEL_Y + 9, w: 60,  h: 28 };
 export const BTN_UPGRADE  = { x: 374, y: PANEL_Y + 9, w: 90,  h: 28 };
 export const BTN_RESTART  = { x: 470, y: PANEL_Y + 9, w: 80,  h: 28 };
-export const BTN_SENDWAVE = { x: 556, y: PANEL_Y + 9, w: 108, h: 28 };
 
 // ---------------------------------------------------------------------------
 // Private shape helpers (draw gem shapes centred at cx, cy with radius r)
@@ -425,10 +424,6 @@ export function drawUI(ctx, state, inputState) {
 
   // Restart — always active
   drawButton(ctx, BTN_RESTART, 'Restart', true, '#6a1a1a');
-
-  // Send Wave — active if player has chosen a gem to keep
-  const sendActive = state.keptGemId !== null;
-  drawButton(ctx, BTN_SENDWAVE, `Send Wave ${state.wave + 1}`, sendActive, '#6a3a3a');
 
   // -------------------------------------------------------------------------
   // Tooltip

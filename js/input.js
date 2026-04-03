@@ -2,7 +2,7 @@
 // Tracks mouse position, derives hover state, and queues pending actions.
 
 import { CELL_SIZE, GRID_COLS, GRID_ROWS } from './grid.js';
-import { GEM_SLOTS, BTN_COMBINE, BTN_KEEP, BTN_UPGRADE, BTN_RESTART, BTN_SENDWAVE, PANEL_Y } from './ui.js';
+import { GEM_SLOTS, BTN_COMBINE, BTN_KEEP, BTN_UPGRADE, BTN_RESTART, PANEL_Y } from './ui.js';
 
 // ---------------------------------------------------------------------------
 // Private helper
@@ -169,7 +169,7 @@ export class InputHandler {
       // Click inside the build panel
       // -----------------------------------------------------------------------
       if (hitTest(BTN_COMBINE, x, y)) {
-        this.pendingAction = { type: 'combine' };
+        this.pendingAction = { type: 'combine', selectedGemId: this.selectedGemId };
         return;
       }
       if (hitTest(BTN_KEEP, x, y)) {
@@ -186,11 +186,6 @@ export class InputHandler {
         this.pendingAction = { type: 'restart' };
         return;
       }
-      if (hitTest(BTN_SENDWAVE, x, y)) {
-        this.pendingAction = { type: 'sendWave' };
-        return;
-      }
-
       // Check gem slots — derive gem ID directly from cached placedThisRound
       // so clicks are never dependent on hoveredGemId being current.
       for (let i = 0; i < GEM_SLOTS.length; i++) {

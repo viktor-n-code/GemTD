@@ -153,7 +153,7 @@ function updateBuild(dt, now) {
           if (ids.length >= 2) {
             const [id1, id2] = ids;
             // If player selected one of the pair, that gem survives (keeps its position)
-            const selectedId = inputHandler.getState()?.selectedGemId;
+            const selectedId = action.selectedGemId;
             const survivorId = (selectedId === id1 || selectedId === id2) ? selectedId : id1;
             const removedId  = (survivorId === id1) ? id2 : id1;
             const g1 = gameState.gems[survivorId];
@@ -203,13 +203,6 @@ function updateBuild(dt, now) {
             gameState.gold -= cost;
             gameState.gemChanceLevel = nextLevel;
           }
-        }
-        break;
-      }
-
-      case 'sendWave': {
-        if (gameState.keptGemId !== null) {
-          startDefendPhase();
         }
         break;
       }
