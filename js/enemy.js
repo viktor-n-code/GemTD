@@ -3,7 +3,7 @@
  * Handles enemy types, stats, spawning, and movement.
  */
 
-import { CELL_SIZE, ENTRY, CHECKPOINTS } from './grid.js';
+import { CELL_SIZE, ENTRY, CHECKPOINTS, EXIT } from './grid.js';
 
 // Converts the stat's cell/sec value into pixels/sec.
 // e.g. 0.75 cell/sec × (16px × 5) = 60 px/sec
@@ -14,16 +14,16 @@ const SPEED_SCALE = CELL_SIZE * 4;
  * @type {Array<{hp: number, armor: number, speed: number, minSpeed: number, flying: boolean}>}
  */
 export const ENEMY_STATS = [
-  { hp:  10, armor: 10, speed: 0.75, minSpeed: 0.75, flying: false }, // wave 1
-  { hp:  30, armor: 10, speed: 0.75, minSpeed: 0.75, flying: false }, // wave 2
-  { hp:  55, armor: 10, speed: 0.75, minSpeed: 0.75, flying: false }, // wave 3
-  { hp:  70, armor: 10, speed: 0.75, minSpeed: 0.75, flying: true  }, // wave 4
-  { hp:  90, armor: 11, speed: 0.75, minSpeed: 0.75, flying: false }, // wave 5
-  { hp: 120, armor: 11, speed: 0.75, minSpeed: 0.75, flying: false }, // wave 6
-  { hp: 178, armor: 11, speed: 0.75, minSpeed: 0.75, flying: false }, // wave 7
-  { hp: 240, armor: 11, speed: 0.75, minSpeed: 0.75, flying: true  }, // wave 8
-  { hp: 300, armor: 12, speed: 0.75, minSpeed: 0.75, flying: false }, // wave 9
-  { hp: 470, armor: 12, speed: 0.75, minSpeed: 0.75, flying: false }, // wave 10
+  { hp:  10, armor: 10, speed: 0.75, minSpeed: 0.25, flying: false }, // wave 1
+  { hp:  30, armor: 10, speed: 0.75, minSpeed: 0.25, flying: false }, // wave 2
+  { hp:  55, armor: 10, speed: 0.75, minSpeed: 0.25, flying: false }, // wave 3
+  { hp:  70, armor: 10, speed: 0.75, minSpeed: 0.25, flying: true  }, // wave 4
+  { hp:  90, armor: 11, speed: 0.75, minSpeed: 0.25, flying: false }, // wave 5
+  { hp: 120, armor: 11, speed: 0.75, minSpeed: 0.25, flying: false }, // wave 6
+  { hp: 178, armor: 11, speed: 0.75, minSpeed: 0.25, flying: false }, // wave 7
+  { hp: 240, armor: 11, speed: 0.75, minSpeed: 0.25, flying: true  }, // wave 8
+  { hp: 300, armor: 12, speed: 0.75, minSpeed: 0.25, flying: false }, // wave 9
+  { hp: 470, armor: 12, speed: 0.75, minSpeed: 0.25, flying: false }, // wave 10
 ];
 // Armor formula: min(10 + floor((wave - 1) / 4), 25)
 
@@ -69,7 +69,7 @@ export function spawnEnemy(waveNumber, path) {
     flying: stats.flying,
     x: entryPixelX,
     y: entryPixelY,
-    path: path,           // array of {x,y} grid cells; null for flying enemies
+    path: stats.flying ? [...CHECKPOINTS, EXIT] : path,
     pathIndex: 0,         // current target index in path (or CHECKPOINTS for flying)
     slowUntil: 0,         // timestamp (ms) when slow expires; 0 = not slowed
     currentSpeed: stats.speed * SPEED_SCALE,
@@ -98,8 +98,8 @@ export function moveEnemy(enemy, dt, now) {
     enemy.currentSpeed = enemy.speed;
   }
 
-  // Choose waypoint list
-  const waypoints = enemy.flying ? CHECKPOINTS : enemy.path;
+  // Choose waypoint list (flying enemies have path pre-populated with CHECKPOINTS+EXIT)
+  const waypoints = enemy.path;
   if (!waypoints || waypoints.length === 0) return;
 
   if (enemy.pathIndex >= waypoints.length) {

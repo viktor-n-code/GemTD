@@ -88,6 +88,21 @@ function gameLoop(timestamp) {
 }
 
 // ---------------------------------------------------------------------------
+// handleUpgrade — shared between build and defend phases
+// ---------------------------------------------------------------------------
+
+function handleUpgrade() {
+  const nextLevel = gameState.gemChanceLevel + 1;
+  if (nextLevel <= 9) {
+    const cost = GEM_CHANCE_LEVELS[nextLevel - 1].cost;
+    if (gameState.gold >= cost) {
+      gameState.gold -= cost;
+      gameState.gemChanceLevel = nextLevel;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // updateBuild
 // ---------------------------------------------------------------------------
 
@@ -194,17 +209,9 @@ function updateBuild(dt, now) {
         break;
       }
 
-      case 'upgrade': {
-        const nextLevel = gameState.gemChanceLevel + 1;
-        if (nextLevel <= 9) {
-          const cost = GEM_CHANCE_LEVELS[nextLevel - 1].cost;
-          if (gameState.gold >= cost) {
-            gameState.gold -= cost;
-            gameState.gemChanceLevel = nextLevel;
-          }
-        }
+      case 'upgrade':
+        handleUpgrade();
         break;
-      }
 
       case 'restart':
         clearState();
@@ -263,6 +270,7 @@ function updateDefend(dt, now) {
   // Check for restart (works in any phase)
   const action = inputHandler.consumeAction();
   if (action?.type === 'restart') { clearState(); location.reload(); return; }
+  if (action?.type === 'upgrade') { handleUpgrade(); }
 
   // Clear last frame's projectiles
   gameState.projectiles = [];
@@ -314,6 +322,7 @@ function updateDefend(dt, now) {
 
   // 5. Check wave end
   if (waveSpawner.isComplete() && gameState.enemies.length === 0) {
+    gameState.projectiles = [];
     gameState.phase = 'between';
   }
 }
