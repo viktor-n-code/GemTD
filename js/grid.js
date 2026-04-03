@@ -95,15 +95,6 @@ export function createGrid() {
     }
   }
 
-  // Mark outer border as blocked (x=1 || x=42 || y=1 || y=47).
-  for (let y = 1; y <= GRID_ROWS; y++) {
-    for (let x = 1; x <= GRID_COLS; x++) {
-      if (x === 1 || x === GRID_COLS || y === 1 || y === GRID_ROWS) {
-        grid[y][x].type = 'blocked';
-      }
-    }
-  }
-
   // Mark all predefined blocked zones.
   for (const zone of BLOCKED_ZONES) {
     for (let y = zone.y1; y <= zone.y2; y++) {
