@@ -238,6 +238,43 @@ function drawStatsPanel(ctx, state, inputState) {
   const BOX_W = 232;
   const PAD   = 6;
 
+  // --- Nothing selected — show current gem chances ---
+  if (!inputState.selectedGemId && !inputState.selectedEnemyId) {
+    const entry   = GEM_CHANCE_LEVELS[state.gemChanceLevel - 1];
+    const chances = entry ? entry.chances : null;
+    if (!chances) return;
+
+    const lines = [
+      `Gem Chances (level ${state.gemChanceLevel})`,
+      `Chipped  ${chances.chipped}%   Flawed  ${chances.flawed}%`,
+      `Standard ${chances.standard}%   Flawless ${chances.flawless}%`,
+      `Perfect  ${chances.perfect}%`,
+    ];
+
+    const BOX_H = PAD * 2 + lines.length * 14;
+    const BOX_Y = 28;
+
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,0.72)';
+    ctx.fillRect(BOX_X, BOX_Y, BOX_W, BOX_H);
+    ctx.strokeStyle = 'rgba(100,100,160,0.6)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(BOX_X + 0.5, BOX_Y + 0.5, BOX_W - 1, BOX_H - 1);
+
+    ctx.fillStyle = '#aabbcc';
+    ctx.font = 'bold 11px Arial';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillText(lines[0], BOX_X + PAD, BOX_Y + PAD);
+    ctx.font = '10px Arial';
+    ctx.fillStyle = '#ffffff';
+    for (let i = 1; i < lines.length; i++) {
+      ctx.fillText(lines[i], BOX_X + PAD, BOX_Y + PAD + i * 14);
+    }
+    ctx.restore();
+    return;
+  }
+
   // --- Gem selected ---
   const gemId = inputState.selectedGemId;
   if (gemId && state.gems[gemId]) {
@@ -288,7 +325,7 @@ function drawStatsPanel(ctx, state, inputState) {
     const lines = [
       `Wave ${enemy.wave} Enemy`,
       `HP   ${Math.ceil(enemy.hp)} / ${enemy.maxHp}`,
-      `ARM  ${enemy.armor}%    SPD  ${Math.round(enemy.speed)}px/s`,
+      `ARM  ${enemy.armor * 2}%    SPD  ${Math.round(enemy.speed)}px/s`,
     ];
     if (statusParts.length) lines.push(statusParts.join('  '));
 
@@ -318,6 +355,20 @@ function drawStatsPanel(ctx, state, inputState) {
 export function drawUI(ctx, state, inputState) {
   // Stats panel is shown in all phases
   drawStatsPanel(ctx, state, inputState);
+
+  // Placement preview — 2×2 highlight on grid during build phase
+  if (state.phase === 'build' && inputState?.hoveredCell) {
+    const { x: gx, y: gy } = inputState.hoveredCell;
+    const px = (gx - 1) * CELL_SIZE;
+    const py = (gy - 1) * CELL_SIZE;
+    ctx.save();
+    ctx.fillStyle = 'rgba(255,255,255,0.18)';
+    ctx.fillRect(px, py, CELL_SIZE * 2, CELL_SIZE * 2);
+    ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(px + 0.5, py + 0.5, CELL_SIZE * 2 - 1, CELL_SIZE * 2 - 1);
+    ctx.restore();
+  }
 
   // Build panel only during build phase
   if (state.phase !== 'build') return;
