@@ -164,8 +164,8 @@ export function attackEnemy(gem, enemy, enemies, now) {
   // 1. Roll damage
   let damage = Math.floor(Math.random() * (stats.damageMax - stats.damageMin + 1)) + stats.damageMin;
 
-  // 2. Apply armor reduction (enemy.armor treated as % — e.g. 16 → 16% reduction)
-  damage = Math.round(damage * (1 - enemy.armor / 100));
+  // 2. Apply armor reduction (enemy.armor / 50 — e.g. 16 armor → 32% reduction)
+  damage = Math.round(damage * (1 - enemy.armor / 50));
 
   // 3. Apply type advantage: Amethyst vs flying enemies
   if (enemy.flying && gem.type === 'Amethyst') {
