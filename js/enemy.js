@@ -14,17 +14,18 @@ const SPEED_SCALE = CELL_SIZE * 4;
  * @type {Array<{hp: number, armor: number, speed: number, minSpeed: number, flying: boolean}>}
  */
 export const ENEMY_STATS = [
-  { hp:  10, armor: 16, speed: 0.75, minSpeed: 0.75, flying: false }, // wave 1
-  { hp:  30, armor: 16, speed: 0.75, minSpeed: 0.75, flying: false }, // wave 2 (interpolated)
-  { hp:  55, armor: 16, speed: 0.75, minSpeed: 0.75, flying: false }, // wave 3
-  { hp:  70, armor: 16, speed: 0.75, minSpeed: 0.75, flying: true  }, // wave 4
-  { hp:  90, armor: 16, speed: 0.75, minSpeed: 0.75, flying: false }, // wave 5
-  { hp: 120, armor: 16, speed: 0.75, minSpeed: 0.75, flying: false }, // wave 6
-  { hp: 178, armor: 16, speed: 0.75, minSpeed: 0.75, flying: false }, // wave 7
-  { hp: 240, armor: 16, speed: 0.75, minSpeed: 0.75, flying: true  }, // wave 8
-  { hp: 300, armor: 16, speed: 0.75, minSpeed: 0.75, flying: false }, // wave 9
-  { hp: 470, armor: 17, speed: 0.75, minSpeed: 0.75, flying: false }, // wave 10
+  { hp:  10, armor: 10, speed: 0.75, minSpeed: 0.75, flying: false }, // wave 1
+  { hp:  30, armor: 10, speed: 0.75, minSpeed: 0.75, flying: false }, // wave 2
+  { hp:  55, armor: 10, speed: 0.75, minSpeed: 0.75, flying: false }, // wave 3
+  { hp:  70, armor: 10, speed: 0.75, minSpeed: 0.75, flying: true  }, // wave 4
+  { hp:  90, armor: 11, speed: 0.75, minSpeed: 0.75, flying: false }, // wave 5
+  { hp: 120, armor: 11, speed: 0.75, minSpeed: 0.75, flying: false }, // wave 6
+  { hp: 178, armor: 11, speed: 0.75, minSpeed: 0.75, flying: false }, // wave 7
+  { hp: 240, armor: 11, speed: 0.75, minSpeed: 0.75, flying: true  }, // wave 8
+  { hp: 300, armor: 12, speed: 0.75, minSpeed: 0.75, flying: false }, // wave 9
+  { hp: 470, armor: 12, speed: 0.75, minSpeed: 0.75, flying: false }, // wave 10
 ];
+// Armor formula: min(10 + floor((wave - 1) / 4), 25)
 
 /**
  * Per-wave gold rewards (index 0 = wave 1).
