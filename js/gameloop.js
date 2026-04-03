@@ -6,7 +6,7 @@
 import { createInitialState, saveState, loadState, clearState } from './state.js';
 import { createGrid, validatePlacement, placeGem, placeRock, findPath,
          GRID_COLS, GRID_ROWS, CELL_SIZE, ENTRY, CHECKPOINTS, EXIT } from './grid.js';
-import { rollGem, getStats, GEM_CHANCE_LEVELS, QUALITY_LEVELS } from './gem.js';
+import { rollGem, getStats, getVisual, GEM_CHANCE_LEVELS, QUALITY_LEVELS } from './gem.js';
 import { moveEnemy, GOLD_PER_WAVE } from './enemy.js';
 import { WaveSpawner } from './wave.js';
 import { attackEnemy, canAttack, isInRange, tickPoison } from './combat.js';
@@ -105,6 +105,7 @@ function updateBuild(dt, now) {
         kills: 0, totalDamage: 0,
         lastAttackTime: 0,
         attackCooldown: Math.round(1000 / stats.attackSpeed),
+        lastTargetId: null,
       };
       placeGem(gameState.grid, x, y, id);
       gameState.placedThisRound.push(id);
@@ -263,6 +264,9 @@ function updateDefend(dt, now) {
   const action = inputHandler.consumeAction();
   if (action?.type === 'restart') { clearState(); location.reload(); return; }
 
+  // Clear last frame's projectiles
+  gameState.projectiles = [];
+
   // 1. Spawn
   const newEnemy = waveSpawner.update(dt);
   if (newEnemy) gameState.enemies.push(newEnemy);
@@ -287,6 +291,15 @@ function updateDefend(dt, now) {
     const target = findTarget(gem);
     if (target) {
       attackEnemy(gem, target, gameState.enemies, now);
+      gem.lastTargetId = target.id;
+      const color = getVisual(gem.type, gem.quality).color;
+      gameState.projectiles.push({
+        x1: gem.x * CELL_SIZE,
+        y1: gem.y * CELL_SIZE,
+        x2: target.x,
+        y2: target.y,
+        color,
+      });
     }
   }
 
@@ -310,20 +323,22 @@ function updateDefend(dt, now) {
 // ---------------------------------------------------------------------------
 
 function findTarget(gem) {
-  let nearest = null;
-  let nearestDist = Infinity;
+  // Prio 1: keep attacking current target if still alive and in range
+  if (gem.lastTargetId) {
+    const current = gameState.enemies.find(
+      e => e.id === gem.lastTargetId && !e.dead && !e.exited
+    );
+    if (current && isInRange(gem, current)) return current;
+  }
+
+  // Prio 2: lowest HP enemy in range
+  let best = null;
   for (const e of gameState.enemies) {
     if (e.dead || e.exited) continue;
     if (!isInRange(gem, e)) continue;
-    const dx = e.x - gem.x * CELL_SIZE;
-    const dy = e.y - gem.y * CELL_SIZE;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist < nearestDist) {
-      nearestDist = dist;
-      nearest = e;
-    }
+    if (!best || e.hp < best.hp) best = e;
   }
-  return nearest;
+  return best;
 }
 
 // ---------------------------------------------------------------------------

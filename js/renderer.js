@@ -307,10 +307,10 @@ function drawProjectiles(ctx, projectiles) {
   if (!projectiles || projectiles.length === 0) return;
 
   ctx.save();
-  ctx.strokeStyle = COLOR_PROJECTILE;
-  ctx.lineWidth   = 1;
+  ctx.lineWidth = 1.5;
 
   for (const p of projectiles) {
+    ctx.strokeStyle = p.color || COLOR_PROJECTILE;
     ctx.beginPath();
     ctx.moveTo(p.x1, p.y1);
     ctx.lineTo(p.x2, p.y2);
