@@ -163,7 +163,7 @@ function drawTooltip(ctx, gem, state, inputState) {
     } else if (e.type === 'slow') {
       effectLine = `Slow: -${Math.round(e.amount * 100)}% for ${e.duration}s`;
     } else if (e.type === 'splash') {
-      effectLine = `Splash: ${e.radius}px radius`;
+      effectLine = `Splash: ${(e.radius / CELL_SIZE).toFixed(1)}t radius`;
     } else {
       effectLine = `${e.type}`;
     }
@@ -227,7 +227,10 @@ function formatEffect(effect) {
   if (!effect) return null;
   if (effect.type === 'poison')  return `Poison ${effect.dps}dps / ${effect.duration}s`;
   if (effect.type === 'slow')    return `Slow ${Math.round(effect.amount * 100)}% / ${effect.duration}s`;
-  if (effect.type === 'splash')  return `Splash r=${effect.radius}`;
+  if (effect.type === 'splash')  return `Splash r=${(effect.radius / CELL_SIZE).toFixed(1)}t`;
+  if (effect.type === 'crit')    return `Crit ${Math.round(effect.chance * 100)}% x${effect.multiplier}`;
+  if (effect.type === 'multi')   return `Hits ${effect.targets} targets`;
+  if (effect.type === 'aura')    return `Aura +${Math.round(effect.bonus * 100)}% dmg`;
   return effect.type;
 }
 
@@ -251,7 +254,7 @@ function drawStatsPanel(ctx, state, inputState) {
     const gem    = state.gems[gemId];
     const stats  = getStats(gem.type, gem.quality);
     const effect = formatEffect(stats.effect);
-    const tiles  = (stats.range / 18).toFixed(1);
+    const tiles  = (stats.range / 15).toFixed(1);
     let text = `${gem.quality} ${gem.type}  DMG ${stats.damageMin}-${stats.damageMax}  SPD ${stats.attackSpeed}/s  RNG ${tiles}t`;
     if (effect) text += `  ${effect}`;
     ctx.fillStyle = '#aaddff';
@@ -306,7 +309,7 @@ export function drawUI(ctx, state, inputState) {
       const stats  = getStats(gem.type, gem.quality);
       const cx     = gem.x * CELL_SIZE;
       const cy     = gem.y * CELL_SIZE;
-      const radius = stats.range * (CELL_SIZE / 18);
+      const radius = stats.range * (CELL_SIZE / 15);
       ctx.save();
       ctx.strokeStyle = 'rgba(255,255,255,0.5)';
       ctx.lineWidth   = 1;
@@ -350,16 +353,27 @@ export function drawUI(ctx, state, inputState) {
     ctx.restore();
   }
 
-  // Build panel only during build phase
+  // -------------------------------------------------------------------------
+  // Panel background + always-visible buttons (upgrade + restart)
+  // -------------------------------------------------------------------------
+
+  ctx.save();
+  ctx.fillStyle = 'rgba(0,0,0,0.75)';
+  ctx.fillRect(0, PANEL_Y, 672, PANEL_H);
+
+  const upgradeCost   = state.gemChanceLevel < 9
+    ? GEM_CHANCE_LEVELS[state.gemChanceLevel].cost
+    : null;
+  const upgradeActive = upgradeCost !== null && state.gold >= upgradeCost;
+  const upgradeLabel  = upgradeCost !== null ? `Upgrade (${upgradeCost}g)` : 'Upgrade (max)';
+  drawButton(ctx, BTN_UPGRADE, upgradeLabel, upgradeActive, '#3a4a6a');
+  drawButton(ctx, BTN_RESTART, 'Restart', true, '#6a1a1a');
+  ctx.restore();
+
+  // Build-only elements (slots, combine, keep)
   if (state.phase !== 'build') return;
 
   ctx.save();
-
-  // -------------------------------------------------------------------------
-  // Panel background
-  // -------------------------------------------------------------------------
-  ctx.fillStyle = 'rgba(0,0,0,0.75)';
-  ctx.fillRect(0, PANEL_Y, 672, PANEL_H);
 
   // -------------------------------------------------------------------------
   // Gem slots
@@ -445,17 +459,7 @@ export function drawUI(ctx, state, inputState) {
   );
   drawButton(ctx, BTN_KEEP, 'Keep', keepActive, '#3a6a3a');
 
-  // Upgrade — active if not max level and player can afford it
-  // Cost of the NEXT level (index = current level, since array is 0-indexed and level is 1-indexed)
-  const upgradeCost   = state.gemChanceLevel < 9
-    ? GEM_CHANCE_LEVELS[state.gemChanceLevel].cost
-    : null;
-  const upgradeActive = upgradeCost !== null && state.gold >= upgradeCost;
-  const upgradeLabel  = upgradeCost !== null ? `Upgrade (${upgradeCost}g)` : 'Upgrade (max)';
-  drawButton(ctx, BTN_UPGRADE, upgradeLabel, upgradeActive, '#3a4a6a');
-
-  // Restart — always active
-  drawButton(ctx, BTN_RESTART, 'Restart', true, '#6a1a1a');
+  // (Upgrade and Restart drawn in always-visible block above)
 
   // -------------------------------------------------------------------------
   // Tooltip

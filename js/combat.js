@@ -43,8 +43,8 @@ export function canAttack(gem, now) {
 export function isInRange(gem, enemy) {
   // Amethyst only attacks flying enemies
   if (gem.type === 'Amethyst' && !enemy.flying) return false;
-  // Ground gems skip flying enemies
-  if (gem.type !== 'Amethyst' && enemy.flying) return false;
+  // Diamond only attacks ground enemies
+  if (gem.type === 'Diamond' && enemy.flying) return false;
 
   const stats = getStats(gem.type, gem.quality);
 
@@ -58,8 +58,8 @@ export function isInRange(gem, enemy) {
   const dy = enemy.y - gemPy;
   const dist = Math.sqrt(dx * dx + dy * dy);
 
-  // Range values are in design units where 18 units = 1 tile (CELL_SIZE px).
-  return dist <= stats.range * (CELL_SIZE / 18);
+  // Range values are in design units where 15 units = 1 tile (CELL_SIZE px).
+  return dist <= stats.range * (CELL_SIZE / 15);
 }
 
 // ---------------------------------------------------------------------------
@@ -156,8 +156,9 @@ export function applySplash(gem, primaryEnemy, enemies, primaryDamage, now) {
  * @returns {number} Damage dealt to the primary target (0 if attack was skipped)
  */
 export function attackEnemy(gem, enemy, enemies, now) {
-  // Amethyst cannot attack ground enemies
+  // Amethyst cannot attack ground enemies; Diamond cannot attack flying
   if (gem.type === 'Amethyst' && !enemy.flying) return 0;
+  if (gem.type === 'Diamond'   &&  enemy.flying) return 0;
 
   const stats = getStats(gem.type, gem.quality);
 
