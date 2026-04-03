@@ -299,8 +299,27 @@ export function drawUI(ctx, state, inputState) {
   // Stats panel is shown in all phases
   drawStatsPanel(ctx, state, inputState);
 
-  // Placement preview — 2×2 highlight on grid during build phase
-  if (state.phase === 'build' && inputState?.hoveredCell) {
+  // Range circle around selected gem (any phase)
+  if (inputState?.selectedGemId) {
+    const gem = state.gems[inputState.selectedGemId];
+    if (gem) {
+      const stats  = getStats(gem.type, gem.quality);
+      const cx     = gem.x * CELL_SIZE;
+      const cy     = gem.y * CELL_SIZE;
+      const radius = stats.range * (CELL_SIZE / 18);
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+      ctx.lineWidth   = 1;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  // Placement preview — 2×2 highlight, only while fewer than 5 gems placed
+  if (state.phase === 'build' && inputState?.hoveredCell && state.placedThisRound.length < 5) {
     const { x: gx, y: gy } = inputState.hoveredCell;
     const px = (gx - 1) * CELL_SIZE;
     const py = (gy - 1) * CELL_SIZE;
@@ -310,6 +329,24 @@ export function drawUI(ctx, state, inputState) {
     ctx.strokeStyle = 'rgba(255,255,255,0.55)';
     ctx.lineWidth = 1;
     ctx.strokeRect(px + 0.5, py + 0.5, CELL_SIZE * 2 - 1, CELL_SIZE * 2 - 1);
+    ctx.restore();
+  }
+
+  // Build instruction overlay (bottom of grid, above HUD)
+  if (state.phase === 'build') {
+    const msg   = state.placedThisRound.length < 5
+      ? `Place gems (${state.placedThisRound.length}/5)`
+      : 'Keep or combine a gem';
+    const iy    = GRID_ROWS * CELL_SIZE - 14;
+    const icanW = GRID_ROWS * CELL_SIZE; // use grid width (672px)
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fillRect(0, iy - 4, 672, 18);
+    ctx.fillStyle = '#ccddee';
+    ctx.font = '11px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillText(msg, 336, iy);
     ctx.restore();
   }
 

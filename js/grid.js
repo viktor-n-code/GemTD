@@ -24,7 +24,7 @@ export const GRID_ROWS = 47;
 export const CELL_SIZE = 16; // pixels per cell
 
 export const ENTRY = { x: 1, y: 9 };
-export const EXIT  = { x: 42, y: 41 };
+export const EXIT  = { x: 42, y: 38 };
 
 // Each checkpoint stores the top-left cell of the 2×2 aim-point block.
 // Enemies aim for the corner between that block's 4 tiles, which in pixels
@@ -53,8 +53,8 @@ export const CHECKPOINTS = [
 const BLOCKED_ZONES = [
   // Entry — 2 tiles on left border (x=1, y=9–10)
   { x1: 1,  y1: 9,  x2: 1,  y2: 10 },
-  // Exit  — 2 tiles on right border (x=42, y=41–42)
-  { x1: 42, y1: 41, x2: 42, y2: 42 },
+  // Exit  — 2 tiles on right border (x=42, y=38–39)
+  { x1: 42, y1: 38, x2: 42, y2: 39 },
   // CP1 (aim 9,9): arrives from west, tip points south
   { x1: 7,  y1: 9,  x2: 12, y2: 10 }, // body (horizontal)
   { x1: 9,  y1: 11, x2: 10, y2: 12 }, // tip  (south)
