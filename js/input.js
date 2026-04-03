@@ -51,6 +51,7 @@ export class InputHandler {
     this._phase          = 'build';
     this._enemies        = [];
     this._placedThisRound = [];
+    this._grid           = null;
 
     this._attachListeners();
   }
@@ -94,6 +95,7 @@ export class InputHandler {
     this._phase           = state.phase;
     this._enemies         = state.enemies || [];
     this._placedThisRound = state.placedThisRound || [];
+    this._grid            = state.grid || null;
     if (this.mouseY >= PANEL_Y) {
       // Find which gem slot (if any) the cursor is over
       let found = null;
@@ -206,7 +208,18 @@ export class InputHandler {
       // Click on the game grid
       // -----------------------------------------------------------------------
 
-      // During defend phase: check for enemy click first (6px body + 4px buffer)
+      // Check if click lands on a gem cell (works in any phase)
+      if (this.hoveredCell !== null) {
+        const { x: gx, y: gy } = this.hoveredCell;
+        const cell = this._grid?.[gy]?.[gx];
+        if (cell?.type === 'gem' && cell.gemId != null) {
+          this.selectedGemId   = cell.gemId;
+          this.selectedEnemyId = null;
+          return;
+        }
+      }
+
+      // During defend phase: check for enemy click (6px body + 4px buffer)
       if (this._phase === 'defend') {
         for (const e of this._enemies) {
           if (e.dead || e.exited) continue;
@@ -220,8 +233,8 @@ export class InputHandler {
         }
       }
 
-      // Otherwise treat as tower placement
-      if (this.hoveredCell !== null) {
+      // Tower placement — build phase only
+      if (this._phase === 'build' && this.hoveredCell !== null) {
         this.pendingPlacement = { x: this.hoveredCell.x, y: this.hoveredCell.y };
       }
     }
