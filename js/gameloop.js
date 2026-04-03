@@ -308,6 +308,19 @@ function updateDefend(dt, now) {
         y2: target.y,
         color,
       });
+
+      // Topaz: attack additional targets (all in range, excluding primary)
+      const stats = getStats(gem.type, gem.quality);
+      if (stats.effect?.type === 'multi') {
+        const extras = gameState.enemies
+          .filter(e => !e.dead && !e.exited && e !== target && isInRange(gem, e))
+          .sort((a, b) => a.hp - b.hp)
+          .slice(0, stats.effect.targets - 1);
+        for (const extra of extras) {
+          attackEnemy(gem, extra, gameState.enemies, now);
+          gameState.projectiles.push({ x1: gem.x * CELL_SIZE, y1: gem.y * CELL_SIZE, x2: extra.x, y2: extra.y, color });
+        }
+      }
     }
   }
 

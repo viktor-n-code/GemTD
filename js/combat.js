@@ -165,6 +165,11 @@ export function attackEnemy(gem, enemy, enemies, now) {
   // 1. Roll damage
   let damage = Math.floor(Math.random() * (stats.damageMax - stats.damageMin + 1)) + stats.damageMin;
 
+  // 1b. Diamond crit — 25% chance to double damage (before armor)
+  if (stats.effect?.type === 'crit' && Math.random() < stats.effect.chance) {
+    damage *= stats.effect.multiplier;
+  }
+
   // 2. Apply armor reduction (enemy.armor / 50 — e.g. 16 armor → 32% reduction)
   damage = Math.round(damage * (1 - enemy.armor / 50));
 
