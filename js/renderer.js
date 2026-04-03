@@ -140,15 +140,15 @@ const CP_ZONES = [
   // CP1: body horizontal, tip south
   { body: [7, 9, 12, 10], tip: [9, 11, 10, 12] },
   // CP2: body vertical, tip east
-  { body: [9, 27, 10, 32], tip: [11, 29, 12, 30] },
+  { body: [9, 24, 10, 29], tip: [11, 26, 12, 27] },
   // CP3: body horizontal, tip north
-  { body: [31, 29, 36, 30], tip: [33, 27, 34, 28] },
+  { body: [31, 26, 36, 27], tip: [33, 24, 34, 25] },
   // CP4: body vertical, tip west
   { body: [33, 7, 34, 12], tip: [31, 9, 32, 10] },
   // CP5: body horizontal, tip south
   { body: [19, 9, 24, 10], tip: [21, 11, 22, 12] },
   // CP6: body vertical, tip east
-  { body: [21, 39, 22, 44], tip: [23, 41, 24, 42] },
+  { body: [21, 36, 22, 41], tip: [23, 38, 24, 39] },
 ];
 
 const COLOR_CP_BODY = 'rgba(200, 80, 40, 0.55)';  // muted red

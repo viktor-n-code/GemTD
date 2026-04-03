@@ -10,7 +10,6 @@ import { getStats } from './gem.js';
 // Constants
 // ---------------------------------------------------------------------------
 
-const ARMOR_REDUCTION = 0.5;
 const TYPE_ADVANTAGE  = 1.5;
 
 // ---------------------------------------------------------------------------
@@ -59,7 +58,8 @@ export function isInRange(gem, enemy) {
   const dy = enemy.y - gemPy;
   const dist = Math.sqrt(dx * dx + dy * dy);
 
-  return dist <= stats.range;
+  // Range values are in design units where 18 units = 1 tile (CELL_SIZE px).
+  return dist <= stats.range * (CELL_SIZE / 18);
 }
 
 // ---------------------------------------------------------------------------
@@ -164,8 +164,8 @@ export function attackEnemy(gem, enemy, enemies, now) {
   // 1. Roll damage
   let damage = Math.floor(Math.random() * (stats.damageMax - stats.damageMin + 1)) + stats.damageMin;
 
-  // 2. Apply armor reduction (all demo enemies have 50% reduction)
-  damage = Math.round(damage * (1 - ARMOR_REDUCTION));
+  // 2. Apply armor reduction (enemy.armor / 50 — e.g. 16 armor → 32% reduction)
+  damage = Math.round(damage * (1 - enemy.armor / 50));
 
   // 3. Apply type advantage: Amethyst vs flying enemies
   if (enemy.flying && gem.type === 'Amethyst') {
