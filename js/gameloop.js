@@ -10,7 +10,7 @@ import { rollGem, getStats, GEM_CHANCE_LEVELS, QUALITY_LEVELS } from './gem.js';
 import { moveEnemy, GOLD_PER_WAVE } from './enemy.js';
 import { WaveSpawner } from './wave.js';
 import { attackEnemy, canAttack, isInRange, tickPoison } from './combat.js';
-import { render } from './renderer.js';
+import { render, HUD_HEIGHT } from './renderer.js';
 import { InputHandler } from './input.js';
 import { drawUI, PANEL_H } from './ui.js';
 
@@ -35,8 +35,8 @@ function init() {
   canvas = document.getElementById('game');
   ctx = canvas.getContext('2d');
 
-  canvas.width  = GRID_COLS * CELL_SIZE;          // 672
-  canvas.height = GRID_ROWS * CELL_SIZE + PANEL_H; // 752 + 46 = 798
+  canvas.width  = GRID_COLS * CELL_SIZE;                         // 672
+  canvas.height = GRID_ROWS * CELL_SIZE + HUD_HEIGHT + PANEL_H; // 752 + 24 + 46 = 822
 
   document.getElementById('loading').classList.add('hidden');
 
@@ -76,7 +76,8 @@ function gameLoop(timestamp) {
   else if (gameState.phase === 'defend')  updateDefend(dt, now);
   else if (gameState.phase === 'between') updateBetween();
 
-  render(gameState, canvas);
+  const HUD_Y = GRID_ROWS * CELL_SIZE; // 752 — grid ends here, HUD starts here
+  render(gameState, canvas, HUD_Y);
   drawUI(ctx, gameState, inputHandler.getState());
 
   if (!gameState.gameOver && !gameState.gameWon) {
@@ -212,6 +213,11 @@ function updateBuild(dt, now) {
         }
         break;
       }
+
+      case 'restart':
+        clearState();
+        location.reload();
+        break;
 
       // selectGem is purely a UI selection — no game-state change needed here
       case 'selectGem':

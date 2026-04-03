@@ -2,7 +2,7 @@
 // Tracks mouse position, derives hover state, and queues pending actions.
 
 import { CELL_SIZE, GRID_COLS, GRID_ROWS } from './grid.js';
-import { GEM_SLOTS, BTN_COMBINE, BTN_KEEP, BTN_UPGRADE, BTN_SENDWAVE, PANEL_Y } from './ui.js';
+import { GEM_SLOTS, BTN_COMBINE, BTN_KEEP, BTN_UPGRADE, BTN_RESTART, BTN_SENDWAVE, PANEL_Y } from './ui.js';
 
 // ---------------------------------------------------------------------------
 // Private helper
@@ -178,6 +178,10 @@ export class InputHandler {
       }
       if (hitTest(BTN_UPGRADE, x, y)) {
         this.pendingAction = { type: 'upgrade' };
+        return;
+      }
+      if (hitTest(BTN_RESTART, x, y)) {
+        this.pendingAction = { type: 'restart' };
         return;
       }
       if (hitTest(BTN_SENDWAVE, x, y)) {
