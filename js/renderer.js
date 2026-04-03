@@ -29,7 +29,7 @@ const COLOR_PROJECTILE = '#ffff88';
 const COLOR_HUD_BG   = 'rgba(0,0,0,0.6)';
 const COLOR_HUD_TEXT = '#ffffff';
 
-const HUD_HEIGHT = 24;
+export const HUD_HEIGHT = 24;
 
 // ---------------------------------------------------------------------------
 // Helpers — polygon drawing
@@ -324,11 +324,11 @@ function drawProjectiles(ctx, projectiles) {
 // Draw HUD overlay
 // ---------------------------------------------------------------------------
 
-function drawHUD(ctx, state, canvasWidth) {
+function drawHUD(ctx, state, canvasWidth, hudY) {
   ctx.save();
   // Semi-transparent bar
   ctx.fillStyle = COLOR_HUD_BG;
-  ctx.fillRect(0, 0, canvasWidth, HUD_HEIGHT);
+  ctx.fillRect(0, hudY, canvasWidth, HUD_HEIGHT);
 
   // Text
   ctx.fillStyle = COLOR_HUD_TEXT;
@@ -337,7 +337,7 @@ function drawHUD(ctx, state, canvasWidth) {
   ctx.textBaseline = 'middle';
 
   const text = `Wave: ${state.wave}  Lives: ${state.lives}  Gold: ${state.gold}g  Chance Lvl: ${state.gemChanceLevel}`;
-  ctx.fillText(text, 8, HUD_HEIGHT / 2);
+  ctx.fillText(text, 8, hudY + HUD_HEIGHT / 2);
   ctx.restore();
 }
 
@@ -351,7 +351,7 @@ function drawHUD(ctx, state, canvasWidth) {
  * @param {Object}            state  - Current game state
  * @param {HTMLCanvasElement} canvas - Target canvas element
  */
-export function render(state, canvas) {
+export function render(state, canvas, hudY) {
   const ctx = canvas.getContext('2d'); // browser caches this; same object every call
 
   // No clearRect needed: drawGrid fills every canvas pixel with a cell color.
@@ -370,6 +370,6 @@ export function render(state, canvas) {
   // 5. Projectiles
   drawProjectiles(ctx, state.projectiles);
 
-  // 6. HUD (drawn last, always on top)
-  drawHUD(ctx, state, canvas.width);
+  // 6. HUD (drawn last, below grid)
+  drawHUD(ctx, state, canvas.width, hudY);
 }

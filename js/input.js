@@ -2,7 +2,7 @@
 // Tracks mouse position, derives hover state, and queues pending actions.
 
 import { CELL_SIZE, GRID_COLS, GRID_ROWS } from './grid.js';
-import { GEM_SLOTS, BTN_COMBINE, BTN_KEEP, BTN_UPGRADE, BTN_SENDWAVE, PANEL_Y } from './ui.js';
+import { GEM_SLOTS, BTN_COMBINE, BTN_KEEP, BTN_UPGRADE, BTN_RESTART, PANEL_Y } from './ui.js';
 
 // ---------------------------------------------------------------------------
 // Private helper
@@ -51,6 +51,7 @@ export class InputHandler {
     this._phase          = 'build';
     this._enemies        = [];
     this._placedThisRound = [];
+    this._grid           = null;
 
     this._attachListeners();
   }
@@ -94,6 +95,7 @@ export class InputHandler {
     this._phase           = state.phase;
     this._enemies         = state.enemies || [];
     this._placedThisRound = state.placedThisRound || [];
+    this._grid            = state.grid || null;
     if (this.mouseY >= PANEL_Y) {
       // Find which gem slot (if any) the cursor is over
       let found = null;
@@ -167,7 +169,7 @@ export class InputHandler {
       // Click inside the build panel
       // -----------------------------------------------------------------------
       if (hitTest(BTN_COMBINE, x, y)) {
-        this.pendingAction = { type: 'combine' };
+        this.pendingAction = { type: 'combine', selectedGemId: this.selectedGemId };
         return;
       }
       if (hitTest(BTN_KEEP, x, y)) {
@@ -180,11 +182,10 @@ export class InputHandler {
         this.pendingAction = { type: 'upgrade' };
         return;
       }
-      if (hitTest(BTN_SENDWAVE, x, y)) {
-        this.pendingAction = { type: 'sendWave' };
+      if (hitTest(BTN_RESTART, x, y)) {
+        this.pendingAction = { type: 'restart' };
         return;
       }
-
       // Check gem slots — derive gem ID directly from cached placedThisRound
       // so clicks are never dependent on hoveredGemId being current.
       for (let i = 0; i < GEM_SLOTS.length; i++) {
@@ -202,7 +203,18 @@ export class InputHandler {
       // Click on the game grid
       // -----------------------------------------------------------------------
 
-      // During defend phase: check for enemy click first (6px body + 4px buffer)
+      // Check if click lands on a gem cell (works in any phase)
+      if (this.hoveredCell !== null) {
+        const { x: gx, y: gy } = this.hoveredCell;
+        const cell = this._grid?.[gy]?.[gx];
+        if (cell?.type === 'gem' && cell.gemId != null) {
+          this.selectedGemId   = cell.gemId;
+          this.selectedEnemyId = null;
+          return;
+        }
+      }
+
+      // During defend phase: check for enemy click (6px body + 4px buffer)
       if (this._phase === 'defend') {
         for (const e of this._enemies) {
           if (e.dead || e.exited) continue;
@@ -216,8 +228,8 @@ export class InputHandler {
         }
       }
 
-      // Otherwise treat as tower placement
-      if (this.hoveredCell !== null) {
+      // Tower placement — build phase only
+      if (this._phase === 'build' && this.hoveredCell !== null) {
         this.pendingPlacement = { x: this.hoveredCell.x, y: this.hoveredCell.y };
       }
     }
