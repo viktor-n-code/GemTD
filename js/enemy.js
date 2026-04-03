@@ -7,7 +7,7 @@ import { CELL_SIZE, ENTRY, CHECKPOINTS } from './grid.js';
 
 // Converts the stat's cell/sec value into pixels/sec.
 // e.g. 0.75 cell/sec × (16px × 5) = 60 px/sec
-const SPEED_SCALE = CELL_SIZE * 5;
+const SPEED_SCALE = CELL_SIZE * 4;
 
 /**
  * Per-wave enemy base stats (index 0 = wave 1).
