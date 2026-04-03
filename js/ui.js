@@ -231,49 +231,19 @@ function formatEffect(effect) {
   return effect.type;
 }
 
+// Draws a single info line in the right half of the HUD bar (y = GRID_ROWS * CELL_SIZE).
+// This keeps all info outside the grid area.
 function drawStatsPanel(ctx, state, inputState) {
   if (!inputState) return;
 
-  const BOX_X = 432;
-  const BOX_W = 232;
-  const PAD   = 6;
+  const hudY    = GRID_ROWS * CELL_SIZE; // 752 — same as HUD_Y in gameloop.js
+  const midY    = hudY + HUD_HEIGHT / 2;
+  const rightX  = 668; // 4px from right edge
 
-  // --- Nothing selected — show current gem chances ---
-  if (!inputState.selectedGemId && !inputState.selectedEnemyId) {
-    const entry   = GEM_CHANCE_LEVELS[state.gemChanceLevel - 1];
-    const chances = entry ? entry.chances : null;
-    if (!chances) return;
-
-    const lines = [
-      `Gem Chances (level ${state.gemChanceLevel})`,
-      `Chipped  ${chances.chipped}%   Flawed  ${chances.flawed}%`,
-      `Standard ${chances.standard}%   Flawless ${chances.flawless}%`,
-      `Perfect  ${chances.perfect}%`,
-    ];
-
-    const BOX_H = PAD * 2 + lines.length * 14;
-    const BOX_Y = 28;
-
-    ctx.save();
-    ctx.fillStyle = 'rgba(0,0,0,0.72)';
-    ctx.fillRect(BOX_X, BOX_Y, BOX_W, BOX_H);
-    ctx.strokeStyle = 'rgba(100,100,160,0.6)';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(BOX_X + 0.5, BOX_Y + 0.5, BOX_W - 1, BOX_H - 1);
-
-    ctx.fillStyle = '#aabbcc';
-    ctx.font = 'bold 11px Arial';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
-    ctx.fillText(lines[0], BOX_X + PAD, BOX_Y + PAD);
-    ctx.font = '10px Arial';
-    ctx.fillStyle = '#ffffff';
-    for (let i = 1; i < lines.length; i++) {
-      ctx.fillText(lines[i], BOX_X + PAD, BOX_Y + PAD + i * 14);
-    }
-    ctx.restore();
-    return;
-  }
+  ctx.save();
+  ctx.font = '10px Arial';
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
 
   // --- Gem selected ---
   const gemId = inputState.selectedGemId;
@@ -281,32 +251,11 @@ function drawStatsPanel(ctx, state, inputState) {
     const gem    = state.gems[gemId];
     const stats  = getStats(gem.type, gem.quality);
     const effect = formatEffect(stats.effect);
-    const lines  = [
-      `${gem.quality} ${gem.type}`,
-      `DMG  ${stats.damageMin}–${stats.damageMax}`,
-      `SPD  ${stats.attackSpeed}/s    RNG  ${stats.range}px`,
-    ];
-    if (effect) lines.push(`FX   ${effect}`);
-
-    const BOX_H = PAD * 2 + lines.length * 14;
-    const BOX_Y = 28;
-
-    ctx.save();
-    ctx.fillStyle = 'rgba(0,0,0,0.72)';
-    ctx.fillRect(BOX_X, BOX_Y, BOX_W, BOX_H);
-    ctx.strokeStyle = 'rgba(100,140,180,0.6)';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(BOX_X + 0.5, BOX_Y + 0.5, BOX_W - 1, BOX_H - 1);
-
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 11px Arial';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
-    ctx.fillText(lines[0], BOX_X + PAD, BOX_Y + PAD);
-    ctx.font = '10px Arial';
-    for (let i = 1; i < lines.length; i++) {
-      ctx.fillText(lines[i], BOX_X + PAD, BOX_Y + PAD + i * 14);
-    }
+    const tiles  = (stats.range / 18).toFixed(1);
+    let text = `${gem.quality} ${gem.type}  DMG ${stats.damageMin}-${stats.damageMax}  SPD ${stats.attackSpeed}/s  RNG ${tiles}t`;
+    if (effect) text += `  ${effect}`;
+    ctx.fillStyle = '#aaddff';
+    ctx.fillText(text, rightX, midY);
     ctx.restore();
     return;
   }
@@ -315,49 +264,62 @@ function drawStatsPanel(ctx, state, inputState) {
   const enemyId = inputState.selectedEnemyId;
   if (enemyId && state.phase === 'defend') {
     const enemy = state.enemies.find(e => e.id === enemyId && !e.dead && !e.exited);
-    if (!enemy) return;
-
-    const now = performance.now();
-    const statusParts = [];
-    if (now < enemy.slowUntil)   statusParts.push('Slowed');
-    if (now < enemy.poisonUntil) statusParts.push(`Poisoned ${enemy.poisonDps}dps`);
-
-    const lines = [
-      `Wave ${enemy.wave} Enemy`,
-      `HP   ${Math.ceil(enemy.hp)} / ${enemy.maxHp}`,
-      `ARM  ${enemy.armor * 2}%    SPD  ${Math.round(enemy.speed)}px/s`,
-    ];
-    if (statusParts.length) lines.push(statusParts.join('  '));
-
-    const BOX_H = PAD * 2 + lines.length * 14;
-    const BOX_Y = 28;
-
-    ctx.save();
-    ctx.fillStyle = 'rgba(0,0,0,0.72)';
-    ctx.fillRect(BOX_X, BOX_Y, BOX_W, BOX_H);
-    ctx.strokeStyle = 'rgba(180,80,80,0.6)';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(BOX_X + 0.5, BOX_Y + 0.5, BOX_W - 1, BOX_H - 1);
-
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 11px Arial';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
-    ctx.fillText(lines[0], BOX_X + PAD, BOX_Y + PAD);
-    ctx.font = '10px Arial';
-    for (let i = 1; i < lines.length; i++) {
-      ctx.fillText(lines[i], BOX_X + PAD, BOX_Y + PAD + i * 14);
+    if (enemy) {
+      const now = performance.now();
+      const parts = [
+        `Wave ${enemy.wave} Enemy`,
+        `HP ${Math.ceil(enemy.hp)}/${enemy.maxHp}`,
+        `ARM ${enemy.armor * 2}%`,
+        `SPD ${Math.round(enemy.speed)}px/s`,
+      ];
+      if (now < enemy.slowUntil)   parts.push('Slowed');
+      if (now < enemy.poisonUntil) parts.push(`Poison ${enemy.poisonDps}dps`);
+      ctx.fillStyle = '#ffaaaa';
+      ctx.fillText(parts.join('  '), rightX, midY);
     }
     ctx.restore();
+    return;
   }
+
+  // --- Nothing selected — show current gem chances ---
+  if (state.phase === 'build') {
+    const entry   = GEM_CHANCE_LEVELS[state.gemChanceLevel - 1];
+    const c       = entry ? entry.chances : null;
+    if (c) {
+      const text = `Chances: C${c.chipped}%  F${c.flawed}%  S${c.standard}%  FL${c.flawless}%  P${c.perfect}%`;
+      ctx.fillStyle = '#aaaaaa';
+      ctx.fillText(text, rightX, midY);
+    }
+  }
+
+  ctx.restore();
 }
 
 export function drawUI(ctx, state, inputState) {
   // Stats panel is shown in all phases
   drawStatsPanel(ctx, state, inputState);
 
-  // Placement preview — 2×2 highlight on grid during build phase
-  if (state.phase === 'build' && inputState?.hoveredCell) {
+  // Range circle around selected gem (any phase)
+  if (inputState?.selectedGemId) {
+    const gem = state.gems[inputState.selectedGemId];
+    if (gem) {
+      const stats  = getStats(gem.type, gem.quality);
+      const cx     = gem.x * CELL_SIZE;
+      const cy     = gem.y * CELL_SIZE;
+      const radius = stats.range * (CELL_SIZE / 18);
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+      ctx.lineWidth   = 1;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  // Placement preview — 2×2 highlight, only while fewer than 5 gems placed
+  if (state.phase === 'build' && inputState?.hoveredCell && state.placedThisRound.length < 5) {
     const { x: gx, y: gy } = inputState.hoveredCell;
     const px = (gx - 1) * CELL_SIZE;
     const py = (gy - 1) * CELL_SIZE;
@@ -367,6 +329,24 @@ export function drawUI(ctx, state, inputState) {
     ctx.strokeStyle = 'rgba(255,255,255,0.55)';
     ctx.lineWidth = 1;
     ctx.strokeRect(px + 0.5, py + 0.5, CELL_SIZE * 2 - 1, CELL_SIZE * 2 - 1);
+    ctx.restore();
+  }
+
+  // Build instruction overlay (bottom of grid, above HUD)
+  if (state.phase === 'build') {
+    const msg   = state.placedThisRound.length < 5
+      ? `Place gems (${state.placedThisRound.length}/5)`
+      : 'Keep or combine a gem';
+    const iy    = GRID_ROWS * CELL_SIZE - 14;
+    const icanW = GRID_ROWS * CELL_SIZE; // use grid width (672px)
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fillRect(0, iy - 4, 672, 18);
+    ctx.fillStyle = '#ccddee';
+    ctx.font = '11px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillText(msg, 336, iy);
     ctx.restore();
   }
 
@@ -466,10 +446,11 @@ export function drawUI(ctx, state, inputState) {
   drawButton(ctx, BTN_KEEP, 'Keep', keepActive, '#3a6a3a');
 
   // Upgrade — active if not max level and player can afford it
-  const upgradeCost   = GEM_CHANCE_LEVELS[state.gemChanceLevel - 1]
-    ? GEM_CHANCE_LEVELS[state.gemChanceLevel - 1].cost
+  // Cost of the NEXT level (index = current level, since array is 0-indexed and level is 1-indexed)
+  const upgradeCost   = state.gemChanceLevel < 9
+    ? GEM_CHANCE_LEVELS[state.gemChanceLevel].cost
     : null;
-  const upgradeActive = upgradeCost !== null && state.gemChanceLevel < 9 && state.gold >= upgradeCost;
+  const upgradeActive = upgradeCost !== null && state.gold >= upgradeCost;
   const upgradeLabel  = upgradeCost !== null ? `Upgrade (${upgradeCost}g)` : 'Upgrade (max)';
   drawButton(ctx, BTN_UPGRADE, upgradeLabel, upgradeActive, '#3a4a6a');
 

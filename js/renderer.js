@@ -160,7 +160,7 @@ function drawZones(ctx) {
   fillZone(ctx, 1, 9, 1, 10, 'rgba(40, 180, 60, 0.70)');
 
   // Exit — 2 yellow tiles on right border
-  fillZone(ctx, 42, 41, 42, 42, 'rgba(220, 200, 40, 0.70)');
+  fillZone(ctx, 42, 38, 42, 39, 'rgba(220, 200, 40, 0.70)');
 
   // Checkpoint arrow zones
   for (let i = 0; i < CP_ZONES.length; i++) {
@@ -307,10 +307,10 @@ function drawProjectiles(ctx, projectiles) {
   if (!projectiles || projectiles.length === 0) return;
 
   ctx.save();
-  ctx.strokeStyle = COLOR_PROJECTILE;
-  ctx.lineWidth   = 1;
+  ctx.lineWidth = 1.5;
 
   for (const p of projectiles) {
+    ctx.strokeStyle = p.color || COLOR_PROJECTILE;
     ctx.beginPath();
     ctx.moveTo(p.x1, p.y1);
     ctx.lineTo(p.x2, p.y2);
