@@ -15,6 +15,7 @@ export function createInitialState() {
     keptGemId: null,
     enemies: [],
     projectiles: [],
+    critNumbers: [],
     gameOver: false,
     gameWon: false,
   };

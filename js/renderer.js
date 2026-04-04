@@ -320,6 +320,23 @@ function drawProjectiles(ctx, projectiles) {
   ctx.restore();
 }
 
+function drawCritNumbers(ctx, critNumbers) {
+  if (!critNumbers || critNumbers.length === 0) return;
+  const now = performance.now();
+  ctx.save();
+  ctx.font = 'bold 13px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  for (const n of critNumbers) {
+    const t = Math.min(1, (now - n.createdAt) / 600);
+    const alpha = 1 - t;
+    const offsetY = t * 22;
+    ctx.fillStyle = `rgba(255, 60, 60, ${alpha})`;
+    ctx.fillText(n.value, n.x, n.y - offsetY);
+  }
+  ctx.restore();
+}
+
 // ---------------------------------------------------------------------------
 // Draw HUD overlay
 // ---------------------------------------------------------------------------
@@ -370,6 +387,9 @@ export function render(state, canvas, hudY) {
   // 5. Projectiles
   drawProjectiles(ctx, state.projectiles);
 
-  // 6. HUD (drawn last, below grid)
+  // 6. Crit damage numbers
+  drawCritNumbers(ctx, state.critNumbers);
+
+  // 7. HUD (drawn last, below grid)
   drawHUD(ctx, state, canvas.width, hudY);
 }

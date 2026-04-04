@@ -156,28 +156,19 @@ function updateBuild(dt, now) {
       }
 
       case 'combine': {
-        // Group current-round gems by type+quality
-        const byTypeQuality = {};
-        for (const id of gameState.placedThisRound) {
-          const g = gameState.gems[id];
-          if (!g) continue;
-          const key = `${g.type}_${g.quality}`;
-          if (!byTypeQuality[key]) byTypeQuality[key] = [];
-          byTypeQuality[key].push(id);
-        }
-        // Prefer the pair containing the selected gem; fall back to first eligible pair
-        const selectedId = action.selectedGemId;
-        let chosenIds = null;
-        for (const ids of Object.values(byTypeQuality)) {
-          if (ids.length >= 2) {
-            if (!chosenIds) chosenIds = ids;
-            if (ids.includes(selectedId)) { chosenIds = ids; break; }
-          }
-        }
-        if (chosenIds) {
-          const [id1, id2] = chosenIds;
-          const survivorId = (selectedId === id1 || selectedId === id2) ? selectedId : id1;
-          const removedId  = (survivorId === id1) ? id2 : id1;
+        // Selected gem is always the survivor; find any matching partner
+        const survivorId = action.selectedGemId;
+        const survivor = survivorId ? gameState.gems[survivorId] : null;
+        const removedId = survivor
+          ? gameState.placedThisRound.find(id => {
+              if (!id || id === survivorId) return false;
+              const g = gameState.gems[id];
+              return g && g.type === survivor.type && g.quality === survivor.quality;
+            })
+          : null;
+        if (survivorId && removedId) {
+          const g1 = gameState.gems[survivorId];
+          const g2 = gameState.gems[removedId];
           const g1 = gameState.gems[survivorId];
           const g2 = gameState.gems[removedId];
           // Upgrade quality of survivor by one level
@@ -272,8 +263,9 @@ function updateDefend(dt, now) {
   if (action?.type === 'restart') { clearState(); location.reload(); return; }
   if (action?.type === 'upgrade') { handleUpgrade(); }
 
-  // Clear last frame's projectiles
+  // Clear last frame's projectiles; expire old crit numbers
   gameState.projectiles = [];
+  gameState.critNumbers = gameState.critNumbers.filter(n => now - n.createdAt < 600);
 
   // 1. Spawn
   const newEnemy = waveSpawner.update(dt);
@@ -298,7 +290,7 @@ function updateDefend(dt, now) {
     if (!canAttack(gem, now)) continue;
     const target = findTarget(gem);
     if (target) {
-      attackEnemy(gem, target, gameState.enemies, now);
+      const result = attackEnemy(gem, target, gameState.enemies, now);
       gem.lastTargetId = target.id;
       const color = getVisual(gem.type, gem.quality).color;
       gameState.projectiles.push({
@@ -308,6 +300,9 @@ function updateDefend(dt, now) {
         y2: target.y,
         color,
       });
+      if (result.crit) {
+        gameState.critNumbers.push({ x: target.x, y: target.y - 12, value: result.damage, createdAt: now });
+      }
 
       // Topaz: attack additional targets (all in range, excluding primary)
       const stats = getStats(gem.type, gem.quality);
@@ -317,8 +312,11 @@ function updateDefend(dt, now) {
           .sort((a, b) => a.hp - b.hp)
           .slice(0, stats.effect.targets - 1);
         for (const extra of extras) {
-          attackEnemy(gem, extra, gameState.enemies, now);
+          const extraResult = attackEnemy(gem, extra, gameState.enemies, now);
           gameState.projectiles.push({ x1: gem.x * CELL_SIZE, y1: gem.y * CELL_SIZE, x2: extra.x, y2: extra.y, color });
+          if (extraResult.crit) {
+            gameState.critNumbers.push({ x: extra.x, y: extra.y - 12, value: extraResult.damage, createdAt: now });
+          }
         }
       }
     }
@@ -336,6 +334,7 @@ function updateDefend(dt, now) {
   // 5. Check wave end
   if (waveSpawner.isComplete() && gameState.enemies.length === 0) {
     gameState.projectiles = [];
+    gameState.critNumbers = [];
     gameState.phase = 'between';
   }
 }
