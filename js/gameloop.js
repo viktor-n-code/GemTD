@@ -125,6 +125,7 @@ function updateBuild(dt, now) {
       };
       placeGem(gameState.grid, x, y, id);
       gameState.placedThisRound.push(id);
+      applyAuraBuffs(gameState); // update aura bonuses after each placement
     }
   }
 
@@ -216,6 +217,43 @@ function updateBuild(dt, now) {
 }
 
 // ---------------------------------------------------------------------------
+// applyAuraBuffs
+// ---------------------------------------------------------------------------
+
+/**
+ * Resets every gem's attackCooldown to its base value, then applies the
+ * strongest Opal aura in range. Called after gem placement and at wave start.
+ * Stores gem.auraBonus (0 if none) so the stats panel can show boosted speed.
+ */
+function applyAuraBuffs(state) {
+  // 1. Reset to base cooldown and clear previous aura bonus
+  for (const gem of Object.values(state.gems)) {
+    const base = getStats(gem.type, gem.quality);
+    gem.auraBonus      = 0;
+    gem.attackCooldown = Math.round(1000 / base.attackSpeed);
+  }
+
+  // 2. Apply strongest aura from any Opal in range (no stacking)
+  for (const opal of Object.values(state.gems)) {
+    const opalStats = getStats(opal.type, opal.quality);
+    if (opalStats.effect?.type !== 'aura') continue;
+    const { bonus, auraRange } = opalStats.effect;
+    const radiusPx = auraRange * (CELL_SIZE / 15);
+    const opx = opal.x * CELL_SIZE;
+    const opy = opal.y * CELL_SIZE;
+    for (const gem of Object.values(state.gems)) {
+      const dx = gem.x * CELL_SIZE - opx;
+      const dy = gem.y * CELL_SIZE - opy;
+      if (Math.sqrt(dx * dx + dy * dy) <= radiusPx && bonus > gem.auraBonus) {
+        gem.auraBonus = bonus;
+        const base = getStats(gem.type, gem.quality);
+        gem.attackCooldown = Math.round(1000 / (base.attackSpeed * (1 + bonus)));
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // startDefendPhase
 // ---------------------------------------------------------------------------
 
@@ -225,6 +263,9 @@ function startDefendPhase() {
 
   // Compute ground path once (all ground enemies share it)
   groundPath = computeFullPath(gameState.grid);
+
+  // Apply Opal aura bonuses to attack cooldowns before wave begins
+  applyAuraBuffs(gameState);
 
   // Create wave spawner
   waveSpawner = new WaveSpawner(gameState.wave, groundPath);

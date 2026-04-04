@@ -230,7 +230,7 @@ function formatEffect(effect) {
   if (effect.type === 'splash')  return `Splash r=${(effect.radius / CELL_SIZE).toFixed(1)}t`;
   if (effect.type === 'crit')    return `Crit ${Math.round(effect.chance * 100)}% x${effect.multiplier}`;
   if (effect.type === 'multi')   return `Hits ${effect.targets} targets`;
-  if (effect.type === 'aura')    return `Aura +${Math.round(effect.bonus * 100)}% dmg`;
+  if (effect.type === 'aura')    return `Aura +${Math.round(effect.bonus * 100)}% atk spd`;
   return effect.type;
 }
 
@@ -255,7 +255,14 @@ function drawStatsPanel(ctx, state, inputState) {
     const stats  = getStats(gem.type, gem.quality);
     const effect = formatEffect(stats.effect);
     const tiles  = (stats.range / 15).toFixed(1);
-    let text = `${gem.quality} ${gem.type}  DMG ${stats.damageMin}-${stats.damageMax}  SPD ${stats.attackSpeed}/s  RNG ${tiles}t`;
+    const spdBase    = stats.attackSpeed;
+    const spdEffective = gem.auraBonus > 0
+      ? (spdBase * (1 + gem.auraBonus)).toFixed(2)
+      : spdBase;
+    const spdLabel = gem.auraBonus > 0
+      ? `${spdEffective}/s (+${Math.round(gem.auraBonus * 100)}% Opal)`
+      : `${spdBase}/s`;
+    let text = `${gem.quality} ${gem.type}  DMG ${stats.damageMin}-${stats.damageMax}  SPD ${spdLabel}  RNG ${tiles}t`;
     if (effect) text += `  ${effect}`;
     ctx.fillStyle = '#aaddff';
     ctx.fillText(text, rightX, midY);
@@ -317,6 +324,16 @@ export function drawUI(ctx, state, inputState) {
       ctx.beginPath();
       ctx.arc(cx, cy, radius, 0, Math.PI * 2);
       ctx.stroke();
+
+      // Opal: draw a separate green dashed circle showing the aura range
+      if (stats.effect?.type === 'aura') {
+        const auraRadius = stats.effect.auraRange * (CELL_SIZE / 15);
+        ctx.strokeStyle = 'rgba(100,255,100,0.65)';
+        ctx.beginPath();
+        ctx.arc(cx, cy, auraRadius, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
       ctx.restore();
     }
   }
