@@ -4,7 +4,7 @@
  */
 
 import { createInitialState, saveState, loadState, clearState } from './state.js';
-import { createGrid, validatePlacement, placeGem, placeRock, findPath,
+import { createGrid, validatePlacement, placeGem, placeRock, removeRock, findPath,
          GRID_COLS, GRID_ROWS, CELL_SIZE, ENTRY, CHECKPOINTS, EXIT } from './grid.js';
 import { rollGem, getStats, getVisual, GEM_CHANCE_LEVELS, QUALITY_LEVELS } from './gem.js';
 import { moveEnemy, GOLD_PER_WAVE } from './enemy.js';
@@ -202,6 +202,12 @@ function updateBuild(dt, now) {
           gameState.placedThisRound = [survivorId];
           startDefendPhase();
         }
+        break;
+      }
+
+      case 'removeRock': {
+        removeRock(gameState.grid, action.x, action.y);
+        applyAuraBuffs(gameState);
         break;
       }
 

@@ -2,7 +2,7 @@
 // Tracks mouse position, derives hover state, and queues pending actions.
 
 import { CELL_SIZE, GRID_COLS, GRID_ROWS } from './grid.js';
-import { GEM_SLOTS, BTN_COMBINE, BTN_KEEP, BTN_UPGRADE, BTN_RESTART, PANEL_Y } from './ui.js';
+import { GEM_SLOTS, BTN_COMBINE, BTN_KEEP, BTN_UPGRADE, BTN_RESTART, BTN_REMOVE, PANEL_Y } from './ui.js';
 
 // ---------------------------------------------------------------------------
 // Private helper
@@ -45,6 +45,7 @@ export class InputHandler {
     // Selection state
     this.selectedGemId   = null;  // gem id selected in the build panel
     this.selectedEnemyId = null;  // enemy id selected by clicking during defend
+    this.selectedRockPos = null;  // { x, y } of a selected rock cell, or null
     this.combineStep     = 0;     // 0 = idle, 1 = first gem, 2 = second gem
 
     // Cached from update() for use in click handler
@@ -67,6 +68,7 @@ export class InputHandler {
       hoveredGemId:    this.hoveredGemId,
       selectedGemId:   this.selectedGemId,
       selectedEnemyId: this.selectedEnemyId,
+      selectedRockPos: this.selectedRockPos,
       combineStep:     this.combineStep,
     };
   }
@@ -115,6 +117,7 @@ export class InputHandler {
   resetBuildState() {
     this.selectedGemId    = null;
     this.selectedEnemyId  = null;
+    this.selectedRockPos  = null;
     this.combineStep      = 0;
     this.pendingPlacement = null;
     this.pendingAction    = null;
@@ -186,6 +189,13 @@ export class InputHandler {
         this.pendingAction = { type: 'restart' };
         return;
       }
+      if (hitTest(BTN_REMOVE, x, y)) {
+        if (this.selectedRockPos !== null) {
+          this.pendingAction   = { type: 'removeRock', x: this.selectedRockPos.x, y: this.selectedRockPos.y };
+          this.selectedRockPos = null;
+        }
+        return;
+      }
       // Check gem slots — derive gem ID directly from cached placedThisRound
       // so clicks are never dependent on hoveredGemId being current.
       for (let i = 0; i < GEM_SLOTS.length; i++) {
@@ -203,6 +213,17 @@ export class InputHandler {
       // Click on the game grid
       // -----------------------------------------------------------------------
 
+      // Build phase: click on rock → select it
+      if (this._phase === 'build' && this.hoveredCell !== null) {
+        const { x: gx, y: gy } = this.hoveredCell;
+        const cell = this._grid?.[gy]?.[gx];
+        if (cell?.type === 'rock') {
+          this.selectedRockPos = { x: gx, y: gy };
+          this.selectedGemId   = null;
+          return;
+        }
+      }
+
       // Check if click lands on a gem cell (works in any phase)
       if (this.hoveredCell !== null) {
         const { x: gx, y: gy } = this.hoveredCell;
@@ -210,6 +231,7 @@ export class InputHandler {
         if (cell?.type === 'gem' && cell.gemId != null) {
           this.selectedGemId   = cell.gemId;
           this.selectedEnemyId = null;
+          this.selectedRockPos = null;
           return;
         }
       }
@@ -223,13 +245,15 @@ export class InputHandler {
           if (Math.sqrt(dx * dx + dy * dy) <= 10) {
             this.selectedEnemyId = e.id;
             this.selectedGemId   = null;
+            this.selectedRockPos = null;
             return;
           }
         }
       }
 
-      // Tower placement — build phase only
+      // Tower placement — build phase only; deselects rock
       if (this._phase === 'build' && this.hoveredCell !== null) {
+        this.selectedRockPos  = null;
         this.pendingPlacement = { x: this.hoveredCell.x, y: this.hoveredCell.y };
       }
     }
