@@ -272,8 +272,9 @@ function updateDefend(dt, now) {
   if (action?.type === 'restart') { clearState(); location.reload(); return; }
   if (action?.type === 'upgrade') { handleUpgrade(); }
 
-  // Clear last frame's projectiles
+  // Clear last frame's projectiles; expire old crit numbers
   gameState.projectiles = [];
+  gameState.critNumbers = gameState.critNumbers.filter(n => now - n.createdAt < 600);
 
   // 1. Spawn
   const newEnemy = waveSpawner.update(dt);
@@ -298,7 +299,7 @@ function updateDefend(dt, now) {
     if (!canAttack(gem, now)) continue;
     const target = findTarget(gem);
     if (target) {
-      attackEnemy(gem, target, gameState.enemies, now);
+      const result = attackEnemy(gem, target, gameState.enemies, now);
       gem.lastTargetId = target.id;
       const color = getVisual(gem.type, gem.quality).color;
       gameState.projectiles.push({
@@ -308,6 +309,9 @@ function updateDefend(dt, now) {
         y2: target.y,
         color,
       });
+      if (result.crit) {
+        gameState.critNumbers.push({ x: target.x, y: target.y - 12, value: result.damage, createdAt: now });
+      }
 
       // Topaz: attack additional targets (all in range, excluding primary)
       const stats = getStats(gem.type, gem.quality);
@@ -317,8 +321,11 @@ function updateDefend(dt, now) {
           .sort((a, b) => a.hp - b.hp)
           .slice(0, stats.effect.targets - 1);
         for (const extra of extras) {
-          attackEnemy(gem, extra, gameState.enemies, now);
+          const extraResult = attackEnemy(gem, extra, gameState.enemies, now);
           gameState.projectiles.push({ x1: gem.x * CELL_SIZE, y1: gem.y * CELL_SIZE, x2: extra.x, y2: extra.y, color });
+          if (extraResult.crit) {
+            gameState.critNumbers.push({ x: extra.x, y: extra.y - 12, value: extraResult.damage, createdAt: now });
+          }
         }
       }
     }
@@ -336,6 +343,7 @@ function updateDefend(dt, now) {
   // 5. Check wave end
   if (waveSpawner.isComplete() && gameState.enemies.length === 0) {
     gameState.projectiles = [];
+    gameState.critNumbers = [];
     gameState.phase = 'between';
   }
 }

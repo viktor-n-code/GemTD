@@ -157,8 +157,8 @@ export function applySplash(gem, primaryEnemy, enemies, primaryDamage, now) {
  */
 export function attackEnemy(gem, enemy, enemies, now) {
   // Amethyst cannot attack ground enemies; Diamond cannot attack flying
-  if (gem.type === 'Amethyst' && !enemy.flying) return 0;
-  if (gem.type === 'Diamond'   &&  enemy.flying) return 0;
+  if (gem.type === 'Amethyst' && !enemy.flying) return { damage: 0, crit: false };
+  if (gem.type === 'Diamond'   &&  enemy.flying) return { damage: 0, crit: false };
 
   const stats = getStats(gem.type, gem.quality);
 
@@ -166,8 +166,10 @@ export function attackEnemy(gem, enemy, enemies, now) {
   let damage = Math.floor(Math.random() * (stats.damageMax - stats.damageMin + 1)) + stats.damageMin;
 
   // 1b. Diamond crit — 25% chance to double damage (before armor)
+  let isCrit = false;
   if (stats.effect?.type === 'crit' && Math.random() < stats.effect.chance) {
     damage *= stats.effect.multiplier;
+    isCrit = true;
   }
 
   // 2. Apply armor reduction (enemy.armor / 50 — e.g. 16 armor → 32% reduction)
@@ -197,8 +199,8 @@ export function attackEnemy(gem, enemy, enemies, now) {
   // 8. Update attack timing
   gem.lastAttackTime = now;
 
-  // 9. Return damage dealt
-  return damage;
+  // 9. Return damage dealt and crit flag
+  return { damage, crit: isCrit };
 }
 
 // ---------------------------------------------------------------------------
