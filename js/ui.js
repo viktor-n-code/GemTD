@@ -66,9 +66,17 @@ function drawStar(ctx, cx, cy, outerR, innerR) {
  * @param {number} cy     — centre y
  * @param {number} r      — radius / half-size
  */
+function _contrastStroke(hex) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return lum > 0.55 ? 'rgba(0,0,0,0.65)' : 'rgba(255,255,255,0.65)';
+}
+
 function drawShapeInSlot(ctx, shape, color, cx, cy, r) {
   ctx.fillStyle = color;
-  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+  ctx.strokeStyle = _contrastStroke(color);
   ctx.lineWidth = 1;
 
   switch (shape) {
