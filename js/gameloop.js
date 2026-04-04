@@ -156,28 +156,19 @@ function updateBuild(dt, now) {
       }
 
       case 'combine': {
-        // Group current-round gems by type+quality
-        const byTypeQuality = {};
-        for (const id of gameState.placedThisRound) {
-          const g = gameState.gems[id];
-          if (!g) continue;
-          const key = `${g.type}_${g.quality}`;
-          if (!byTypeQuality[key]) byTypeQuality[key] = [];
-          byTypeQuality[key].push(id);
-        }
-        // Prefer the pair containing the selected gem; fall back to first eligible pair
-        const selectedId = action.selectedGemId;
-        let chosenIds = null;
-        for (const ids of Object.values(byTypeQuality)) {
-          if (ids.length >= 2) {
-            if (!chosenIds) chosenIds = ids;
-            if (ids.includes(selectedId)) { chosenIds = ids; break; }
-          }
-        }
-        if (chosenIds) {
-          const [id1, id2] = chosenIds;
-          const survivorId = (selectedId === id1 || selectedId === id2) ? selectedId : id1;
-          const removedId  = (survivorId === id1) ? id2 : id1;
+        // Selected gem is always the survivor; find any matching partner
+        const survivorId = action.selectedGemId;
+        const survivor = survivorId ? gameState.gems[survivorId] : null;
+        const removedId = survivor
+          ? gameState.placedThisRound.find(id => {
+              if (!id || id === survivorId) return false;
+              const g = gameState.gems[id];
+              return g && g.type === survivor.type && g.quality === survivor.quality;
+            })
+          : null;
+        if (survivorId && removedId) {
+          const g1 = gameState.gems[survivorId];
+          const g2 = gameState.gems[removedId];
           const g1 = gameState.gems[survivorId];
           const g2 = gameState.gems[removedId];
           // Upgrade quality of survivor by one level

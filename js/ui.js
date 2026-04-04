@@ -439,16 +439,17 @@ export function drawUI(ctx, state, inputState) {
   // Action buttons
   // -------------------------------------------------------------------------
 
-  // Combine — active if >=2 gems share the same type AND same quality
-  const typeQualityCounts = {};
-  for (const gemId of state.placedThisRound) {
-    if (gemId == null) continue;
-    const gem = state.gems[gemId];
-    if (!gem) continue;
-    const key = `${gem.type}_${gem.quality}`;
-    typeQualityCounts[key] = (typeQualityCounts[key] || 0) + 1;
+  // Combine — active only when the selected gem has a matching partner (same type + quality)
+  const selectedGem = inputState?.selectedGemId ? state.gems[inputState.selectedGemId] : null;
+  let combineActive = false;
+  if (selectedGem && state.placedThisRound.includes(inputState.selectedGemId)) {
+    const matchCount = state.placedThisRound.filter(id => {
+      if (id == null || id === inputState.selectedGemId) return false;
+      const g = state.gems[id];
+      return g && g.type === selectedGem.type && g.quality === selectedGem.quality;
+    }).length;
+    combineActive = matchCount >= 1;
   }
-  const combineActive = Object.values(typeQualityCounts).some(c => c >= 2);
   drawButton(ctx, BTN_COMBINE, 'Combine', combineActive, '#3a6a3a');
 
   // Keep — active if a gem is selected and no gem has been kept yet
