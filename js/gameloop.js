@@ -170,8 +170,6 @@ function updateBuild(dt, now) {
         if (survivorId && removedId) {
           const g1 = gameState.gems[survivorId];
           const g2 = gameState.gems[removedId];
-          const g1 = gameState.gems[survivorId];
-          const g2 = gameState.gems[removedId];
           // Upgrade quality of survivor by one level
           const qi = QUALITY_LEVELS.indexOf(g1.quality);
           g1.quality = QUALITY_LEVELS[Math.min(qi + 1, QUALITY_LEVELS.length - 1)];
