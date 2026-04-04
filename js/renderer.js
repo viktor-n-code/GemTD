@@ -187,6 +187,14 @@ function drawZones(ctx) {
 // Draw gem shapes
 // ---------------------------------------------------------------------------
 
+function _contrastStroke(hex) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return lum > 0.55 ? 'rgba(0,0,0,0.65)' : 'rgba(255,255,255,0.65)';
+}
+
 function drawGems(ctx, state) {
   ctx.save();
   const { grid, gems } = state;
@@ -213,7 +221,7 @@ function drawGems(ctx, state) {
       const R  = 12; // radius / half-size
 
       ctx.fillStyle = visual.color;
-      ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+      ctx.strokeStyle = _contrastStroke(visual.color);
       ctx.lineWidth = 1;
 
       switch (visual.shape) {
