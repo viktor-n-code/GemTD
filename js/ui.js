@@ -347,9 +347,13 @@ function drawTooltip(ctx, gem, state, inputState) {
     }
   }
 
+  const killsLine = gem.kills > 0
+    ? `Kills: ${gem.kills}   Dmg: ${Math.round(gem.totalDamage)}`
+    : null;
+
   const padding = 6;
   const lineH   = 14;
-  const lines    = effectLine ? 3 : 2;
+  const lines    = 2 + (effectLine ? 1 : 0) + (killsLine ? 1 : 0);
   const boxW     = 220;
   const boxH     = padding * 2 + lines * lineH;
   const boxY     = PANEL_Y - boxH - 4;
@@ -378,10 +382,18 @@ function drawTooltip(ctx, gem, state, inputState) {
   ctx.font = '11px Arial';
   ctx.fillText(statsLine, boxX + padding, boxY + padding + lineH);
 
+  let lineIdx = 2;
   // Effect
   if (effectLine) {
     ctx.fillStyle = '#ccddaa';
-    ctx.fillText(effectLine, boxX + padding, boxY + padding + lineH * 2);
+    ctx.fillText(effectLine, boxX + padding, boxY + padding + lineH * lineIdx);
+    lineIdx++;
+  }
+
+  // Kills
+  if (killsLine) {
+    ctx.fillStyle = '#aaaaaa';
+    ctx.fillText(killsLine, boxX + padding, boxY + padding + lineH * lineIdx);
   }
 }
 

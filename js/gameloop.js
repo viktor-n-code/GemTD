@@ -337,6 +337,10 @@ function updateDefend(dt, now) {
     if (target) {
       const result = attackEnemy(gem, target, gameState.enemies, now);
       gem.lastTargetId = target.id;
+      gem.totalDamage += result.damage + result.splashDamage;
+      if (target.dead) gem.kills++;
+      gem.kills += result.splashKills;
+
       const color = getVisual(gem.type, gem.quality).color;
       gameState.projectiles.push({
         x1: gem.x * CELL_SIZE,
@@ -358,6 +362,8 @@ function updateDefend(dt, now) {
           .slice(0, stats.effect.targets - 1);
         for (const extra of extras) {
           const extraResult = attackEnemy(gem, extra, gameState.enemies, now);
+          gem.totalDamage += extraResult.damage;
+          if (extra.dead) gem.kills++;
           gameState.projectiles.push({ x1: gem.x * CELL_SIZE, y1: gem.y * CELL_SIZE, x2: extra.x, y2: extra.y, color });
           if (extraResult.crit) {
             gameState.critNumbers.push({ x: extra.x, y: extra.y - 12, value: extraResult.damage, createdAt: now });

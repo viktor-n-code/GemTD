@@ -123,6 +123,8 @@ export function applyEffect(enemy, effect, now) {
 export function applySplash(gem, primaryEnemy, enemies, primaryDamage, now) {
   const stats  = getStats(gem.type, gem.quality);
   const radius = stats.effect.radius;
+  let splashKills  = 0;
+  let splashDamage = 0;
 
   for (const enemy of enemies) {
     if (enemy === primaryEnemy) continue;
@@ -135,11 +137,15 @@ export function applySplash(gem, primaryEnemy, enemies, primaryDamage, now) {
     if (dist <= radius) {
       // Splash deals raw damage only; no status effects applied to splash targets.
       enemy.hp -= primaryDamage;
+      splashDamage += primaryDamage;
       if (enemy.hp <= 0) {
         enemy.dead = true;
+        splashKills++;
       }
     }
   }
+
+  return { kills: splashKills, damage: splashDamage };
 }
 
 // ---------------------------------------------------------------------------
@@ -192,15 +198,17 @@ export function attackEnemy(gem, enemy, enemies, now) {
   applyEffect(enemy, stats.effect, now);
 
   // 7. Ruby splash damage
+  let splashKills = 0;
+  let splashDamage = 0;
   if (gem.type === 'Ruby') {
-    applySplash(gem, enemy, enemies, damage, now);
+    ({ kills: splashKills, damage: splashDamage } = applySplash(gem, enemy, enemies, damage, now));
   }
 
   // 8. Update attack timing
   gem.lastAttackTime = now;
 
-  // 9. Return damage dealt and crit flag
-  return { damage, crit: isCrit };
+  // 9. Return damage dealt, crit flag, and splash stats
+  return { damage, crit: isCrit, splashKills, splashDamage };
 }
 
 // ---------------------------------------------------------------------------
