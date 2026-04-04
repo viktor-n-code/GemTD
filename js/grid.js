@@ -363,15 +363,20 @@ export function placeGem(grid, x, y, gemId) {
  * @param {number} y
  */
 export function removeRock(grid, x, y) {
-  const coords = [
-    [x,     y    ],
-    [x + 1, y    ],
-    [x,     y + 1],
-    [x + 1, y + 1],
-  ];
-  for (const [cx, cy] of coords) {
-    if (grid[cy][cx].type === 'rock') {
-      grid[cy][cx].type = 'empty';
+  // Accept any cell in the 2×2 block — find the actual top-left corner.
+  const candidates = [[x, y], [x-1, y], [x, y-1], [x-1, y-1]];
+  for (const [rx, ry] of candidates) {
+    if (
+      grid[ry  ]?.[rx  ]?.type === 'rock' &&
+      grid[ry  ]?.[rx+1]?.type === 'rock' &&
+      grid[ry+1]?.[rx  ]?.type === 'rock' &&
+      grid[ry+1]?.[rx+1]?.type === 'rock'
+    ) {
+      grid[ry  ][rx  ].type = 'empty';
+      grid[ry  ][rx+1].type = 'empty';
+      grid[ry+1][rx  ].type = 'empty';
+      grid[ry+1][rx+1].type = 'empty';
+      return;
     }
   }
 }

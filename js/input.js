@@ -203,6 +203,16 @@ export class InputHandler {
       // Click on the game grid
       // -----------------------------------------------------------------------
 
+      // Build phase: click on rock → queue removal
+      if (this._phase === 'build' && this.hoveredCell !== null) {
+        const { x: gx, y: gy } = this.hoveredCell;
+        const cell = this._grid?.[gy]?.[gx];
+        if (cell?.type === 'rock') {
+          this.pendingAction = { type: 'removeRock', x: gx, y: gy };
+          return;
+        }
+      }
+
       // Check if click lands on a gem cell (works in any phase)
       if (this.hoveredCell !== null) {
         const { x: gx, y: gy } = this.hoveredCell;

@@ -95,10 +95,33 @@
         }
 
         #panel-content {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        #panel-selection {
+            flex: 1;
+            overflow: hidden;
+            min-height: 0;
             color: #cce0f0;
             font-size: 12px;
             line-height: 1.6;
-            flex: 1;
+        }
+
+        #panel-section-divider {
+            border: none;
+            border-top: 1px solid #1e3a5f;
+            margin: 10px 0;
+            flex-shrink: 0;
+        }
+
+        #panel-chances {
+            flex-shrink: 0;
+            color: #cce0f0;
+            font-size: 12px;
+            line-height: 1.6;
         }
 
         /* ── Panel content classes (written by JS innerHTML) ── */
@@ -229,10 +252,14 @@
         <div id="info-panel">
             <div id="panel-header">
                 <div id="panel-title">GEM TD</div>
-                <div id="panel-version">v0.8.0</div>
+                <div id="panel-version">v0.8.1</div>
             </div>
             <hr id="panel-divider">
-            <div id="panel-content"></div>
+            <div id="panel-content">
+                <div id="panel-selection"></div>
+                <hr id="panel-section-divider">
+                <div id="panel-chances"></div>
+            </div>
         </div>
     </div>
     <div id="loading">Loading...</div>
