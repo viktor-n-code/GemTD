@@ -145,6 +145,135 @@ function drawButton(ctx, rect, label, active, activeColor = '#3a6a3a') {
 }
 
 // ---------------------------------------------------------------------------
+// Info panel — DOM-based right-side panel
+// ---------------------------------------------------------------------------
+
+function _buildGemHTML(gem) {
+  const stats  = getStats(gem.type, gem.quality);
+  const tiles  = (stats.range / 15).toFixed(1);
+  const spdBase = stats.attackSpeed;
+  const spdEff  = gem.auraBonus > 0
+    ? (spdBase * (1 + gem.auraBonus)).toFixed(2)
+    : spdBase;
+  const spdHTML = gem.auraBonus > 0
+    ? `${spdEff}/s<div class="info-aura-note">+${Math.round(gem.auraBonus * 100)}% Opal aura</div>`
+    : `${spdBase}/s`;
+
+  let html = `
+    <div class="info-section-title">Selected Gem</div>
+    <div class="info-gem-name">${gem.quality} ${gem.type}</div>
+    <div class="info-row">
+      <span class="info-label">Damage</span>
+      <span class="info-value">${stats.damageMin}–${stats.damageMax}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Speed</span>
+      <span class="info-value">${spdHTML}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Range</span>
+      <span class="info-value">${tiles} tiles</span>
+    </div>`;
+
+  if (stats.effect) {
+    html += `<div class="info-effect">${formatEffect(stats.effect)}</div>`;
+  }
+
+  if (gem.kills > 0) {
+    html += `<div class="info-kills">Kills: ${gem.kills} &nbsp; Dmg: ${Math.round(gem.totalDamage)}</div>`;
+  }
+
+  return html;
+}
+
+function _buildEnemyHTML(enemy, state) {
+  const now    = performance.now();
+  const pct    = enemy.maxHp > 0 ? Math.max(0, Math.min(100, (enemy.hp / enemy.maxHp) * 100)) : 0;
+  const hpColor = pct > 50 ? '#00ff44' : pct > 25 ? '#ffcc00' : '#ff4444';
+
+  let html = `
+    <div class="info-section-title">Selected Enemy</div>
+    <div class="info-enemy-name">Wave ${enemy.wave} ${enemy.flying ? 'Flyer' : 'Enemy'}</div>
+    <div class="hp-bar-track">
+      <div class="hp-bar-fill" style="width:${pct.toFixed(1)}%;background:${hpColor}"></div>
+    </div>
+    <div class="info-row">
+      <span class="info-label">HP</span>
+      <span class="info-value">${Math.ceil(enemy.hp)} / ${enemy.maxHp}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Armor</span>
+      <span class="info-value">${Math.round(enemy.armor * 2)}%</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Speed</span>
+      <span class="info-value">${Math.round(enemy.speed)} px/s</span>
+    </div>`;
+
+  const tags = [];
+  if (now < enemy.slowUntil)   tags.push(`<span class="info-status-tag tag-slowed">Slowed</span>`);
+  if (now < enemy.poisonUntil) tags.push(`<span class="info-status-tag tag-poison">Poison ${enemy.poisonDps}dps</span>`);
+  if (tags.length > 0) html += `<div class="info-status-tags">${tags.join('')}</div>`;
+
+  return html;
+}
+
+function _buildDefaultHTML(state) {
+  if (state.phase === 'build') {
+    const entry = GEM_CHANCE_LEVELS[state.gemChanceLevel - 1];
+    const c     = entry?.chances;
+    if (!c) return '';
+    const qualities = [
+      ['Chipped',  c.chipped],
+      ['Flawed',   c.flawed],
+      ['Standard', c.standard],
+      ['Flawless', c.flawless],
+      ['Perfect',  c.perfect],
+    ];
+    const rows = qualities.map(([name, val]) => `
+      <div class="chance-row">
+        <span class="chance-label">${name}</span>
+        <span class="chance-value">${val}%</span>
+      </div>`).join('');
+    return `<div class="info-section-title">Gem Chances — Lvl ${state.gemChanceLevel}</div>${rows}`;
+  }
+
+  // Defend / between phases
+  const remaining = state.enemies.filter(e => !e.dead && !e.exited).length;
+  return `
+    <div class="info-section-title">Wave In Progress</div>
+    <div class="info-wave-stat">${state.wave}</div>
+    <div class="info-wave-sub">Wave ${state.wave} of 10</div>
+    <div class="info-row" style="margin-top:14px">
+      <span class="info-label">Enemies left</span>
+      <span class="info-value">${remaining}</span>
+    </div>`;
+}
+
+/**
+ * Updates the DOM info panel to the right of the canvas.
+ * Called every frame from gameloop.js.
+ */
+export function updateInfoPanel(state, inputState) {
+  const el = document.getElementById('panel-content');
+  if (!el) return;
+
+  const gemId = inputState?.selectedGemId;
+  if (gemId && state.gems[gemId]) {
+    el.innerHTML = _buildGemHTML(state.gems[gemId]);
+    return;
+  }
+
+  const enemyId = inputState?.selectedEnemyId;
+  if (enemyId && state.phase === 'defend') {
+    const enemy = state.enemies.find(e => e.id === enemyId && !e.dead && !e.exited);
+    if (enemy) { el.innerHTML = _buildEnemyHTML(enemy, state); return; }
+  }
+
+  el.innerHTML = _buildDefaultHTML(state);
+}
+
+// ---------------------------------------------------------------------------
 // Tooltip drawing helper
 // ---------------------------------------------------------------------------
 
@@ -219,8 +348,7 @@ function drawTooltip(ctx, gem, state, inputState) {
  * @param {Object} inputState  — { hoveredCell, hoveredGemId, selectedGemId, combineStep }
  */
 // ---------------------------------------------------------------------------
-// Stats panel — floats in the upper-right corner of the canvas
-// Shows stats for the selected gem (any phase) or selected enemy (defend phase)
+// formatEffect — shared by tooltip, info panel builders
 // ---------------------------------------------------------------------------
 
 function formatEffect(effect) {
@@ -234,80 +362,7 @@ function formatEffect(effect) {
   return effect.type;
 }
 
-// Draws a single info line in the right half of the HUD bar (y = GRID_ROWS * CELL_SIZE).
-// This keeps all info outside the grid area.
-function drawStatsPanel(ctx, state, inputState) {
-  if (!inputState) return;
-
-  const hudY    = GRID_ROWS * CELL_SIZE; // 752 — same as HUD_Y in gameloop.js
-  const midY    = hudY + HUD_HEIGHT / 2;
-  const rightX  = 668; // 4px from right edge
-
-  ctx.save();
-  ctx.font = '10px Arial';
-  ctx.textAlign = 'right';
-  ctx.textBaseline = 'middle';
-
-  // --- Gem selected ---
-  const gemId = inputState.selectedGemId;
-  if (gemId && state.gems[gemId]) {
-    const gem    = state.gems[gemId];
-    const stats  = getStats(gem.type, gem.quality);
-    const effect = formatEffect(stats.effect);
-    const tiles  = (stats.range / 15).toFixed(1);
-    const spdBase    = stats.attackSpeed;
-    const spdEffective = gem.auraBonus > 0
-      ? (spdBase * (1 + gem.auraBonus)).toFixed(2)
-      : spdBase;
-    const spdLabel = gem.auraBonus > 0
-      ? `${spdEffective}/s (+${Math.round(gem.auraBonus * 100)}% Opal)`
-      : `${spdBase}/s`;
-    let text = `${gem.quality} ${gem.type}  DMG ${stats.damageMin}-${stats.damageMax}  SPD ${spdLabel}  RNG ${tiles}t`;
-    if (effect) text += `  ${effect}`;
-    ctx.fillStyle = '#aaddff';
-    ctx.fillText(text, rightX, midY);
-    ctx.restore();
-    return;
-  }
-
-  // --- Enemy selected (defend phase) ---
-  const enemyId = inputState.selectedEnemyId;
-  if (enemyId && state.phase === 'defend') {
-    const enemy = state.enemies.find(e => e.id === enemyId && !e.dead && !e.exited);
-    if (enemy) {
-      const now = performance.now();
-      const parts = [
-        `Wave ${enemy.wave} Enemy`,
-        `HP ${Math.ceil(enemy.hp)}/${enemy.maxHp}`,
-        `ARM ${enemy.armor * 2}%`,
-        `SPD ${Math.round(enemy.speed)}px/s`,
-      ];
-      if (now < enemy.slowUntil)   parts.push('Slowed');
-      if (now < enemy.poisonUntil) parts.push(`Poison ${enemy.poisonDps}dps`);
-      ctx.fillStyle = '#ffaaaa';
-      ctx.fillText(parts.join('  '), rightX, midY);
-    }
-    ctx.restore();
-    return;
-  }
-
-  // --- Nothing selected — show current gem chances ---
-  if (state.phase === 'build') {
-    const entry   = GEM_CHANCE_LEVELS[state.gemChanceLevel - 1];
-    const c       = entry ? entry.chances : null;
-    if (c) {
-      const text = `Chances: C${c.chipped}%  F${c.flawed}%  S${c.standard}%  FL${c.flawless}%  P${c.perfect}%`;
-      ctx.fillStyle = '#aaaaaa';
-      ctx.fillText(text, rightX, midY);
-    }
-  }
-
-  ctx.restore();
-}
-
 export function drawUI(ctx, state, inputState) {
-  // Stats panel is shown in all phases
-  drawStatsPanel(ctx, state, inputState);
 
   // Range circle around selected gem (any phase)
   if (inputState?.selectedGemId) {

@@ -12,7 +12,7 @@ import { WaveSpawner } from './wave.js';
 import { attackEnemy, canAttack, isInRange, tickPoison } from './combat.js';
 import { render, HUD_HEIGHT } from './renderer.js';
 import { InputHandler } from './input.js';
-import { drawUI, PANEL_H } from './ui.js';
+import { drawUI, updateInfoPanel, PANEL_H } from './ui.js';
 
 // ---------------------------------------------------------------------------
 // Module-level state
@@ -37,6 +37,10 @@ function init() {
 
   canvas.width  = GRID_COLS * CELL_SIZE;                         // 672
   canvas.height = GRID_ROWS * CELL_SIZE + HUD_HEIGHT + PANEL_H; // 752 + 24 + 46 = 822
+
+  // Sync info panel height to canvas
+  const infoPanel = document.getElementById('info-panel');
+  if (infoPanel) infoPanel.style.height = canvas.height + 'px';
 
   document.getElementById('loading').classList.add('hidden');
 
@@ -80,6 +84,7 @@ function gameLoop(timestamp) {
   const HUD_Y = GRID_ROWS * CELL_SIZE; // 752 — grid ends here, HUD starts here
   render(gameState, canvas, HUD_Y);
   drawUI(ctx, gameState, inputHandler.getState());
+  updateInfoPanel(gameState, inputHandler.getState());
 
   if (!gameState.gameOver && !gameState.gameWon) {
     requestAnimationFrame(gameLoop);
