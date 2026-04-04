@@ -218,7 +218,10 @@ export class InputHandler {
         const { x: gx, y: gy } = this.hoveredCell;
         const cell = this._grid?.[gy]?.[gx];
         if (cell?.type === 'rock') {
-          this.selectedRockPos = { x: gx, y: gy };
+          // Snap to top-left of the 2×2 block regardless of which cell was clicked
+          const rx = this._grid?.[gy]?.[gx - 1]?.type === 'rock' ? gx - 1 : gx;
+          const ry = this._grid?.[gy - 1]?.[rx]?.type === 'rock' ? gy - 1 : gy;
+          this.selectedRockPos = { x: rx, y: ry };
           this.selectedGemId   = null;
           return;
         }
