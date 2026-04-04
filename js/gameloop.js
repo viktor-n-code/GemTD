@@ -45,8 +45,9 @@ function init() {
   if (saved && confirm('Continue previous game?')) {
     gameState = saved;
     // Ensure new fields exist on loaded saves
-    if (gameState.gameOver  === undefined) gameState.gameOver  = false;
-    if (gameState.gameWon   === undefined) gameState.gameWon   = false;
+    if (gameState.gameOver   === undefined) gameState.gameOver   = false;
+    if (gameState.gameWon    === undefined) gameState.gameWon    = false;
+    if (!gameState.critNumbers)            gameState.critNumbers = [];
   } else {
     clearState();
     gameState = createInitialState();
