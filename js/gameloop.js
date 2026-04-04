@@ -12,7 +12,7 @@ import { WaveSpawner } from './wave.js';
 import { attackEnemy, canAttack, isInRange, tickPoison } from './combat.js';
 import { render, HUD_HEIGHT } from './renderer.js';
 import { InputHandler } from './input.js';
-import { drawUI, PANEL_H } from './ui.js';
+import { drawUI, updateInfoPanel, PANEL_H } from './ui.js';
 
 // ---------------------------------------------------------------------------
 // Module-level state
@@ -37,6 +37,10 @@ function init() {
 
   canvas.width  = GRID_COLS * CELL_SIZE;                         // 672
   canvas.height = GRID_ROWS * CELL_SIZE + HUD_HEIGHT + PANEL_H; // 752 + 24 + 46 = 822
+
+  // Sync info panel height to canvas
+  const infoPanel = document.getElementById('info-panel');
+  if (infoPanel) infoPanel.style.height = canvas.height + 'px';
 
   document.getElementById('loading').classList.add('hidden');
 
@@ -80,6 +84,7 @@ function gameLoop(timestamp) {
   const HUD_Y = GRID_ROWS * CELL_SIZE; // 752 — grid ends here, HUD starts here
   render(gameState, canvas, HUD_Y);
   drawUI(ctx, gameState, inputHandler.getState());
+  updateInfoPanel(gameState, inputHandler.getState());
 
   if (!gameState.gameOver && !gameState.gameWon) {
     requestAnimationFrame(gameLoop);
@@ -332,6 +337,10 @@ function updateDefend(dt, now) {
     if (target) {
       const result = attackEnemy(gem, target, gameState.enemies, now);
       gem.lastTargetId = target.id;
+      gem.totalDamage += result.damage + result.splashDamage;
+      if (target.dead) gem.kills++;
+      gem.kills += result.splashKills;
+
       const color = getVisual(gem.type, gem.quality).color;
       gameState.projectiles.push({
         x1: gem.x * CELL_SIZE,
@@ -353,6 +362,8 @@ function updateDefend(dt, now) {
           .slice(0, stats.effect.targets - 1);
         for (const extra of extras) {
           const extraResult = attackEnemy(gem, extra, gameState.enemies, now);
+          gem.totalDamage += extraResult.damage;
+          if (extra.dead) gem.kills++;
           gameState.projectiles.push({ x1: gem.x * CELL_SIZE, y1: gem.y * CELL_SIZE, x2: extra.x, y2: extra.y, color });
           if (extraResult.crit) {
             gameState.critNumbers.push({ x: extra.x, y: extra.y - 12, value: extraResult.damage, createdAt: now });

@@ -21,11 +21,17 @@
             height: 100vh;
             background-color: #1a1a2e;
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             align-items: center;
             justify-content: center;
             font-family: Arial, sans-serif;
             overflow: hidden;
+        }
+
+        #game-wrapper {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
         }
 
         #game {
@@ -46,25 +52,189 @@
             transform: translate(-50%, -50%);
         }
 
-        #title {
+        /* ── Right info panel ── */
+
+        #info-panel {
+            width: 220px;
+            background: #0d1b2a;
+            border-left: 1px solid #1e3a5f;
+            border-top: 2px solid #0f3460;
+            border-right: 2px solid #0f3460;
+            border-bottom: 2px solid #0f3460;
+            display: flex;
+            flex-direction: column;
+            padding: 14px 14px 10px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        #panel-header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        #panel-title {
             color: #00d4ff;
-            font-size: 32px;
+            font-size: 20px;
             font-weight: bold;
-            margin-bottom: 20px;
+            letter-spacing: 3px;
             text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
         }
 
-        #version {
-            font-size: 16px;
-            font-weight: normal;
-            opacity: 0.6;
-            vertical-align: middle;
+        #panel-version {
+            color: #4488aa;
+            font-size: 11px;
+            margin-top: 3px;
+            opacity: 0.8;
+        }
+
+        #panel-divider {
+            border: none;
+            border-top: 1px solid #1e3a5f;
+            margin-bottom: 14px;
+        }
+
+        #panel-content {
+            color: #cce0f0;
+            font-size: 12px;
+            line-height: 1.6;
+            flex: 1;
+        }
+
+        /* ── Panel content classes (written by JS innerHTML) ── */
+
+        .info-section-title {
+            color: #00d4ff;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            opacity: 0.85;
+        }
+
+        .info-gem-name {
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .info-enemy-name {
+            color: #ffaaaa;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 4px;
+        }
+
+        .info-label {
+            color: #6699bb;
+            font-size: 11px;
+        }
+
+        .info-value {
+            color: #ddeeff;
+            font-size: 11px;
+            text-align: right;
+        }
+
+        .info-effect {
+            color: #aadd88;
+            font-size: 11px;
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px solid #1e3a5f;
+        }
+
+        .info-aura-note {
+            color: #88ff88;
+            font-size: 10px;
+            margin-top: 2px;
+        }
+
+        .info-kills {
+            color: #aaaaaa;
+            font-size: 10px;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #1e3a5f;
+        }
+
+        .hp-bar-track {
+            background: #2a0000;
+            border-radius: 3px;
+            height: 7px;
+            margin: 5px 0 10px;
+            width: 100%;
+        }
+
+        .hp-bar-fill {
+            background: linear-gradient(90deg, #00cc33, #00ff44);
+            border-radius: 3px;
+            height: 7px;
+            transition: width 0.1s;
+        }
+
+        .info-status-tags {
+            margin-top: 8px;
+        }
+
+        .info-status-tag {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            margin-right: 4px;
+            margin-top: 3px;
+        }
+
+        .tag-slowed { background: #1a3388; color: #99bbff; }
+        .tag-poison { background: #1a3322; color: #88ff99; }
+
+        .chance-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px solid #162636;
+        }
+
+        .chance-label { color: #88aacc; font-size: 11px; }
+        .chance-value { color: #ffffff;  font-size: 11px; font-weight: bold; }
+
+        .info-wave-stat {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffffff;
+            text-align: center;
+            margin: 10px 0 4px;
+        }
+
+        .info-wave-sub {
+            color: #88aacc;
+            font-size: 11px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
-    <div id="title">Gem TD <span id="version">v0.7.4</span></div>
-    <canvas id="game"></canvas>
+    <div id="game-wrapper">
+        <canvas id="game"></canvas>
+        <div id="info-panel">
+            <div id="panel-header">
+                <div id="panel-title">GEM TD</div>
+                <div id="panel-version">v0.8.0</div>
+            </div>
+            <hr id="panel-divider">
+            <div id="panel-content"></div>
+        </div>
+    </div>
     <div id="loading">Loading...</div>
 
     <script type="module" src="js/gameloop.js"></script>
