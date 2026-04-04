@@ -148,6 +148,55 @@ function drawButton(ctx, rect, label, active, activeColor = '#3a6a3a') {
 // Info panel — DOM-based right-side panel
 // ---------------------------------------------------------------------------
 
+function _row(label, value) {
+  return `<div class="info-row"><span class="info-label">${label}</span><span class="info-value">${value}</span></div>`;
+}
+
+function _buildEffectHTML(effect) {
+  if (!effect) return '';
+  const wrap = (rows) => `<div class="info-effect">${rows}</div>`;
+
+  switch (effect.type) {
+    case 'poison':
+      return wrap(
+        _row('Effect', 'Poison') +
+        _row('DoT', `${effect.dps} dps for ${effect.duration}s`) +
+        _row('Slow', `-${Math.round(effect.slow * 100)}% for ${effect.duration}s`)
+      );
+    case 'slow':
+      return wrap(
+        _row('Effect', 'Slow') +
+        _row('Amount', `-${Math.round(effect.amount * 100)}% speed`) +
+        _row('Duration', `${effect.duration}s`)
+      );
+    case 'splash':
+      return wrap(
+        _row('Effect', 'Splash') +
+        _row('Radius', `${(effect.radius / CELL_SIZE).toFixed(1)} tiles`) +
+        _row('Damage', '100% to all in range')
+      );
+    case 'crit':
+      return wrap(
+        _row('Effect', 'Critical Strike') +
+        _row('Chance', `${Math.round(effect.chance * 100)}%`) +
+        _row('Multiplier', `×${effect.multiplier}`)
+      );
+    case 'multi':
+      return wrap(
+        _row('Effect', 'Multi-target') +
+        _row('Targets', `${effect.targets} simultaneous`)
+      );
+    case 'aura':
+      return wrap(
+        _row('Effect', 'Attack Speed Aura') +
+        _row('Bonus', `+${Math.round(effect.bonus * 100)}% atk spd`) +
+        _row('Radius', `${(effect.auraRange / 15).toFixed(1)} tiles`)
+      );
+    default:
+      return wrap(effect.type);
+  }
+}
+
 function _buildGemHTML(gem) {
   const stats  = getStats(gem.type, gem.quality);
   const tiles  = (stats.range / 15).toFixed(1);
@@ -176,7 +225,7 @@ function _buildGemHTML(gem) {
     </div>`;
 
   if (stats.effect) {
-    html += `<div class="info-effect">${formatEffect(stats.effect)}</div>`;
+    html += _buildEffectHTML(stats.effect);
   }
 
   if (gem.kills > 0) {
@@ -353,7 +402,7 @@ function drawTooltip(ctx, gem, state, inputState) {
 
 function formatEffect(effect) {
   if (!effect) return null;
-  if (effect.type === 'poison')  return `Poison ${effect.dps}dps / ${effect.duration}s`;
+  if (effect.type === 'poison')  return `Poison ${effect.dps}dps, -${Math.round(effect.slow * 100)}% slow / ${effect.duration}s`;
   if (effect.type === 'slow')    return `Slow ${Math.round(effect.amount * 100)}% / ${effect.duration}s`;
   if (effect.type === 'splash')  return `Splash r=${(effect.radius / CELL_SIZE).toFixed(1)}t`;
   if (effect.type === 'crit')    return `Crit ${Math.round(effect.chance * 100)}% x${effect.multiplier}`;
