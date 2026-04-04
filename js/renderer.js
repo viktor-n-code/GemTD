@@ -331,7 +331,7 @@ function drawCritNumbers(ctx, critNumbers) {
     const t = Math.min(1, (now - n.createdAt) / 600);
     const alpha = 1 - t;
     const offsetY = t * 22;
-    ctx.fillStyle = `rgba(255, 210, 50, ${alpha})`;
+    ctx.fillStyle = `rgba(255, 60, 60, ${alpha})`;
     ctx.fillText(n.value, n.x, n.y - offsetY);
   }
   ctx.restore();
