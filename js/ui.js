@@ -26,6 +26,7 @@ export const BTN_COMBINE  = { x: 232, y: PANEL_Y + 9, w: 70,  h: 28 };
 export const BTN_KEEP     = { x: 308, y: PANEL_Y + 9, w: 60,  h: 28 };
 export const BTN_UPGRADE  = { x: 374, y: PANEL_Y + 9, w: 90,  h: 28 };
 export const BTN_RESTART  = { x: 470, y: PANEL_Y + 9, w: 80,  h: 28 };
+export const BTN_REMOVE   = { x: 558, y: PANEL_Y + 9, w: 80,  h: 28 };
 
 // ---------------------------------------------------------------------------
 // Private shape helpers (draw gem shapes centred at cx, cy with radius r)
@@ -457,20 +458,38 @@ export function drawUI(ctx, state, inputState) {
     }
   }
 
-  // Rock deletion highlight — red tint when hovering a rock in build phase
-  if (state.phase === 'build' && inputState?.hoveredCell) {
-    const { x: gx, y: gy } = inputState.hoveredCell;
-    const cell = state.grid?.[gy]?.[gx];
-    if (cell?.type === 'rock') {
+  // Rock highlights — build phase only
+  if (state.phase === 'build') {
+    // Selected rock: orange dashed border
+    if (inputState?.selectedRockPos) {
+      const { x: gx, y: gy } = inputState.selectedRockPos;
       const px = (gx - 1) * CELL_SIZE;
       const py = (gy - 1) * CELL_SIZE;
       ctx.save();
-      ctx.fillStyle = 'rgba(255,80,80,0.25)';
+      ctx.fillStyle = 'rgba(255,160,60,0.20)';
       ctx.fillRect(px, py, CELL_SIZE * 2, CELL_SIZE * 2);
-      ctx.strokeStyle = 'rgba(255,100,100,0.7)';
-      ctx.lineWidth = 1;
+      ctx.strokeStyle = 'rgba(255,160,60,0.95)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([3, 2]);
       ctx.strokeRect(px + 0.5, py + 0.5, CELL_SIZE * 2 - 1, CELL_SIZE * 2 - 1);
       ctx.restore();
+    }
+    // Hovered rock (not already selected): subtle red hint
+    if (inputState?.hoveredCell) {
+      const { x: gx, y: gy } = inputState.hoveredCell;
+      const cell = state.grid?.[gy]?.[gx];
+      const alreadySelected = inputState.selectedRockPos?.x === gx && inputState.selectedRockPos?.y === gy;
+      if (cell?.type === 'rock' && !alreadySelected) {
+        const px = (gx - 1) * CELL_SIZE;
+        const py = (gy - 1) * CELL_SIZE;
+        ctx.save();
+        ctx.fillStyle = 'rgba(255,80,80,0.18)';
+        ctx.fillRect(px, py, CELL_SIZE * 2, CELL_SIZE * 2);
+        ctx.strokeStyle = 'rgba(255,100,100,0.5)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(px + 0.5, py + 0.5, CELL_SIZE * 2 - 1, CELL_SIZE * 2 - 1);
+        ctx.restore();
+      }
     }
   }
 
@@ -612,6 +631,10 @@ export function drawUI(ctx, state, inputState) {
     state.keptGemId === null
   );
   drawButton(ctx, BTN_KEEP, 'Keep', keepActive, '#3a6a3a');
+
+  // Remove — active when a rock is selected
+  const removeActive = inputState?.selectedRockPos !== null && inputState?.selectedRockPos !== undefined;
+  drawButton(ctx, BTN_REMOVE, 'Remove', removeActive, '#6a1a1a');
 
   // (Upgrade and Restart drawn in always-visible block above)
 
