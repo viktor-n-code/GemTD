@@ -72,6 +72,7 @@ export function spawnEnemy(waveNumber, path) {
     path: stats.flying ? [...CHECKPOINTS, EXIT] : path,
     pathIndex: 0,         // current target index in path (or CHECKPOINTS for flying)
     slowUntil: 0,         // timestamp (ms) when slow expires; 0 = not slowed
+    slowAmount: 0,        // fraction of speed removed (0–1); 0 = not slowed
     currentSpeed: stats.speed * SPEED_SCALE,
     poisonDps: 0,         // current poison damage per second; 0 = not poisoned
     poisonUntil: 0,       // timestamp (ms) when poison expires
@@ -93,9 +94,10 @@ export function moveEnemy(enemy, dt, now) {
 
   // Update speed based on slow state
   if (now < enemy.slowUntil) {
-    enemy.currentSpeed = enemy.minSpeed;
+    enemy.currentSpeed = Math.max(enemy.minSpeed, enemy.speed * (1 - enemy.slowAmount));
   } else {
-    enemy.currentSpeed = enemy.speed;
+    enemy.slowAmount    = 0;
+    enemy.currentSpeed  = enemy.speed;
   }
 
   // Choose waypoint list (flying enemies have path pre-populated with CHECKPOINTS+EXIT)

@@ -87,18 +87,20 @@ export function applyEffect(enemy, effect, now) {
       enemy.poisonDps   = effect.dps;
       enemy.poisonUntil = now + effect.duration * 1000;
     }
-    // Slow part of poison: extend slowUntil if the new expiry is later
+    // Slow part of poison: apply if stronger or longer
     const newSlowUntil = now + effect.duration * 1000;
-    if (newSlowUntil > enemy.slowUntil) {
-      enemy.slowUntil = newSlowUntil;
+    if (effect.slow > enemy.slowAmount || newSlowUntil > enemy.slowUntil) {
+      if (effect.slow > enemy.slowAmount) enemy.slowAmount = effect.slow;
+      if (newSlowUntil > enemy.slowUntil) enemy.slowUntil = newSlowUntil;
     }
     return;
   }
 
   if (effect.type === 'slow') {
     const newSlowUntil = now + effect.duration * 1000;
-    if (newSlowUntil > enemy.slowUntil) {
-      enemy.slowUntil = newSlowUntil;
+    if (effect.amount > enemy.slowAmount || newSlowUntil > enemy.slowUntil) {
+      if (effect.amount > enemy.slowAmount) enemy.slowAmount = effect.amount;
+      if (newSlowUntil > enemy.slowUntil) enemy.slowUntil = newSlowUntil;
     }
     return;
   }
