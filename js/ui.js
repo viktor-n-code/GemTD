@@ -1,7 +1,7 @@
 // ui.js — Build panel HUD rendering
 // Draws the semi-transparent panel at the bottom of the canvas during 'build' phase.
 
-import { getVisual, getStats, GEM_CHANCE_LEVELS, GEM_TYPES } from './gem.js';
+import { getVisual, getStats, getLeveledStats, GEM_CHANCE_LEVELS, GEM_TYPES } from './gem.js';
 import { GRID_ROWS, CELL_SIZE } from './grid.js';
 import { HUD_HEIGHT } from './renderer.js';
 
@@ -207,22 +207,32 @@ function _buildEffectHTML(effect) {
 }
 
 function _buildGemHTML(gem) {
-  const stats  = getStats(gem.type, gem.quality);
-  const tiles  = (stats.range / 15).toFixed(1);
-  const spdBase = stats.attackSpeed;
+  const level  = gem.level || 1;
+  const ls     = getLeveledStats(gem.type, gem.quality, level);
+  const tiles  = (ls.range / 15).toFixed(1);
+  const spdBase = ls.attackSpeed;
   const spdEff  = gem.auraBonus > 0
     ? (spdBase * (1 + gem.auraBonus)).toFixed(2)
-    : spdBase;
+    : spdBase.toFixed(2).replace(/\.?0+$/, '');
   const spdHTML = gem.auraBonus > 0
     ? `${spdEff}/s<div class="info-aura-note">+${Math.round(gem.auraBonus * 100)}% Opal aura</div>`
-    : `${spdBase}/s`;
+    : `${spdEff}/s`;
+
+  const levelLabel = level > 1
+    ? ` <span class="info-gem-level">Lv ${level}</span>`
+    : '';
+
+  // Damage: show leveled values; if leveled, note the % bonus
+  const dmgHTML = level > 1
+    ? `${ls.damageMin}–${ls.damageMax} <span class="info-level-note">(+${(level - 1) * 10}% lvl)</span>`
+    : `${ls.damageMin}–${ls.damageMax}`;
 
   let html = `
     <div class="info-section-title">Selected Gem</div>
-    <div class="info-gem-name">${gem.quality} ${gem.type}</div>
+    <div class="info-gem-name">${gem.quality} ${gem.type}${levelLabel}</div>
     <div class="info-row">
       <span class="info-label">Damage</span>
-      <span class="info-value">${stats.damageMin}–${stats.damageMax}</span>
+      <span class="info-value">${dmgHTML}</span>
     </div>
     <div class="info-row">
       <span class="info-label">Speed</span>
@@ -238,8 +248,8 @@ function _buildGemHTML(gem) {
     html += `<div class="info-note">${typeNote}</div>`;
   }
 
-  if (stats.effect) {
-    html += _buildEffectHTML(stats.effect);
+  if (ls.effect) {
+    html += _buildEffectHTML(ls.effect);
   }
 
   if (gem.kills > 0) {
@@ -353,10 +363,11 @@ export function updateInfoPanel(state, inputState) {
 
 function drawTooltip(ctx, gem, state, inputState) {
   const { type, quality } = gem;
-  const stats = getStats(type, quality);
+  const level = gem.level || 1;
+  const stats = getLeveledStats(type, quality, level);
 
   // Build text lines
-  const titleLine = `${quality} ${type}`;
+  const titleLine = level > 1 ? `${quality} ${type}  Lv ${level}` : `${quality} ${type}`;
   const statsLine = `DMG: ${stats.damageMin}-${stats.damageMax}  SPD: ${stats.attackSpeed}  RNG: ${stats.range}`;
   let effectLine = null;
   if (stats.effect) {
@@ -454,10 +465,10 @@ export function drawUI(ctx, state, inputState) {
   if (inputState?.selectedGemId) {
     const gem = state.gems[inputState.selectedGemId];
     if (gem) {
-      const stats  = getStats(gem.type, gem.quality);
+      const ls     = getLeveledStats(gem.type, gem.quality, gem.level || 1);
       const cx     = gem.x * CELL_SIZE;
       const cy     = gem.y * CELL_SIZE;
-      const radius = stats.range * (CELL_SIZE / 15);
+      const radius = ls.range * (CELL_SIZE / 15);
       ctx.save();
       ctx.strokeStyle = 'rgba(255,255,255,0.5)';
       ctx.lineWidth   = 1;
@@ -467,8 +478,8 @@ export function drawUI(ctx, state, inputState) {
       ctx.stroke();
 
       // Opal: draw a separate green dashed circle showing the aura range
-      if (stats.effect?.type === 'aura') {
-        const auraRadius = stats.effect.auraRange * (CELL_SIZE / 15);
+      if (ls.effect?.type === 'aura') {
+        const auraRadius = ls.effect.auraRange * (CELL_SIZE / 15);
         ctx.strokeStyle = 'rgba(100,255,100,0.65)';
         ctx.beginPath();
         ctx.arc(cx, cy, auraRadius, 0, Math.PI * 2);

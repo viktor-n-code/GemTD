@@ -4,7 +4,7 @@
  */
 
 import { CELL_SIZE } from './grid.js';
-import { getStats } from './gem.js';
+import { getLeveledStats } from './gem.js';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -46,7 +46,7 @@ export function isInRange(gem, enemy) {
   // Diamond only attacks ground enemies
   if (gem.type === 'Diamond' && enemy.flying) return false;
 
-  const stats = getStats(gem.type, gem.quality);
+  const stats = getLeveledStats(gem.type, gem.quality, gem.level);
 
   // Gem pixel centre: grid coords are top-left of the 2×2 block.
   // Use the same formula as the renderer: gem.x * CELL_SIZE (top-left corner).
@@ -123,7 +123,7 @@ export function applyEffect(enemy, effect, now) {
  * @param {number} now           - Current timestamp in ms
  */
 export function applySplash(gem, primaryEnemy, enemies, primaryDamage, now) {
-  const stats  = getStats(gem.type, gem.quality);
+  const stats  = getLeveledStats(gem.type, gem.quality, gem.level);
   const radius = stats.effect.radius;
   let splashKills  = 0;
   let splashDamage = 0;
@@ -169,7 +169,7 @@ export function attackEnemy(gem, enemy, enemies, now) {
   if (gem.type === 'Amethyst' && !enemy.flying) return { damage: 0, crit: false };
   if (gem.type === 'Diamond'   &&  enemy.flying) return { damage: 0, crit: false };
 
-  const stats = getStats(gem.type, gem.quality);
+  const stats = getLeveledStats(gem.type, gem.quality, gem.level);
 
   // 1. Roll damage
   let damage = Math.floor(Math.random() * (stats.damageMax - stats.damageMin + 1)) + stats.damageMin;
