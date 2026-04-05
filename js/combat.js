@@ -176,7 +176,10 @@ export function attackEnemy(gem, enemy, enemies, now) {
   // 1. Roll damage
   let damage = Math.floor(Math.random() * (stats.damageMax - stats.damageMin + 1)) + stats.damageMin;
 
-  // 1b. Diamond crit — 25% chance to double damage (before armor)
+  // 1b. MVP bonus — flat % multiplier earned from winning rounds
+  if (gem.mvpBonus > 0) damage = Math.round(damage * (1 + gem.mvpBonus * 0.01));
+
+  // 1d. Diamond crit — chance to multiply damage (before armor)
   let isCrit = false;
   if (stats.effect?.type === 'crit' && Math.random() < stats.effect.chance) {
     damage *= stats.effect.multiplier;
