@@ -249,6 +249,14 @@ function _buildGemHTML(gem) {
   return html;
 }
 
+function _enemySpeedHTML(enemy, now) {
+  const base = Math.round(enemy.speed);
+  if (now >= enemy.slowUntil) return `${base} px/s`;
+  const cur  = Math.round(enemy.currentSpeed);
+  const diff = base - cur;
+  return `${cur} px/s <span class="info-slowed-speed">(-${diff})</span>`;
+}
+
 function _buildEnemyHTML(enemy, state) {
   const now    = performance.now();
   const pct    = enemy.maxHp > 0 ? Math.max(0, Math.min(100, (enemy.hp / enemy.maxHp) * 100)) : 0;
@@ -266,11 +274,11 @@ function _buildEnemyHTML(enemy, state) {
     </div>
     <div class="info-row">
       <span class="info-label">Armor</span>
-      <span class="info-value">${Math.round(enemy.armor * 2)}%</span>
+      <span class="info-value">${Math.round(enemy.armor * 3)}%</span>
     </div>
     <div class="info-row">
       <span class="info-label">Speed</span>
-      <span class="info-value">${Math.round(enemy.speed)} px/s</span>
+      <span class="info-value">${_enemySpeedHTML(enemy, now)}</span>
     </div>`;
 
   const tags = [];

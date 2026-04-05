@@ -179,8 +179,8 @@ export function attackEnemy(gem, enemy, enemies, now) {
     isCrit = true;
   }
 
-  // 2. Apply armor reduction (enemy.armor / 50 — e.g. 16 armor → 32% reduction)
-  damage = Math.round(damage * (1 - enemy.armor / 50));
+  // 2. Apply armor reduction (3% per armor point — e.g. 16 armor → 48% reduction)
+  damage = Math.round(damage * Math.max(0, 1 - enemy.armor * 0.03));
 
   // 3. Apply type advantage: Amethyst vs flying enemies
   if (enemy.flying && gem.type === 'Amethyst') {
