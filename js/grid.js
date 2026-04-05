@@ -333,10 +333,11 @@ export function validatePlacement(grid, x, y) {
  * @param {number} y
  */
 export function placeRock(grid, x, y) {
-  grid[y    ][x    ].type = 'rock';
-  grid[y    ][x + 1].type = 'rock';
-  grid[y + 1][x    ].type = 'rock';
-  grid[y + 1][x + 1].type = 'rock';
+  const topLeft = { x, y };
+  grid[y    ][x    ] = { type: 'rock', rockTopLeft: topLeft };
+  grid[y    ][x + 1] = { type: 'rock', rockTopLeft: topLeft };
+  grid[y + 1][x    ] = { type: 'rock', rockTopLeft: topLeft };
+  grid[y + 1][x + 1] = { type: 'rock', rockTopLeft: topLeft };
 }
 
 /**

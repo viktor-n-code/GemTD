@@ -218,23 +218,9 @@ export class InputHandler {
         const { x: gx, y: gy } = this.hoveredCell;
         const cell = this._grid?.[gy]?.[gx];
         if (cell?.type === 'rock') {
-          // Find the top-left of the valid 2×2 block this cell belongs to
-          const candidates = [[gx, gy], [gx-1, gy], [gx, gy-1], [gx-1, gy-1]];
-          let rockPos = null;
-          for (const [rx, ry] of candidates) {
-            if (
-              this._grid[ry  ]?.[rx-1]?.type !== 'rock' &&
-              this._grid[ry-1]?.[rx  ]?.type !== 'rock' &&
-              this._grid[ry  ]?.[rx  ]?.type === 'rock' &&
-              this._grid[ry  ]?.[rx+1]?.type === 'rock' &&
-              this._grid[ry+1]?.[rx  ]?.type === 'rock' &&
-              this._grid[ry+1]?.[rx+1]?.type === 'rock'
-            ) {
-              rockPos = { x: rx, y: ry };
-              break;
-            }
-          }
-          this.selectedRockPos = rockPos;
+          // Each rock cell stores its block's top-left at placement time
+          const tl = cell.rockTopLeft;
+          this.selectedRockPos = tl ? { x: tl.x, y: tl.y } : null;
           this.selectedGemId   = null;
           return;
         }
