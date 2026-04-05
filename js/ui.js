@@ -217,16 +217,24 @@ function _buildEffectHTML(effect, baseEffect) {
 }
 
 function _buildGemHTML(gem) {
-  const level  = gem.level || 1;
-  const ls     = getLeveledStats(gem.type, gem.quality, level);
-  const tiles  = (ls.range / 15).toFixed(1);
-  const spdBase = ls.attackSpeed;
-  const spdEff  = gem.auraBonus > 0
+  const level     = gem.level || 1;
+  const ls        = getLeveledStats(gem.type, gem.quality, level);
+  const baseStats = level > 1 ? getStats(gem.type, gem.quality) : null;
+
+  // Range row
+  const tiles         = (ls.range / 15).toFixed(1);
+  const rangeLvlNote  = _lvlNote(ls.range, baseStats?.range, d => (d / 15).toFixed(1) + 't');
+
+  // Speed row — level note on the base speed; aura note shown separately below it
+  const spdBase    = ls.attackSpeed;
+  const spdEff     = gem.auraBonus > 0
     ? (spdBase * (1 + gem.auraBonus)).toFixed(2)
     : spdBase.toFixed(2).replace(/\.?0+$/, '');
-  const spdHTML = gem.auraBonus > 0
-    ? `${spdEff}/s<div class="info-aura-note">+${Math.round(gem.auraBonus * 100)}% Opal aura</div>`
-    : `${spdEff}/s`;
+  const spdLvlNote = _lvlNote(ls.attackSpeed, baseStats?.attackSpeed,
+    d => d.toFixed(3).replace(/\.?0+$/, '') + '/s');
+  const spdHTML    = gem.auraBonus > 0
+    ? `${spdEff}/s${spdLvlNote}<div class="info-aura-note">+${Math.round(gem.auraBonus * 100)}% Opal aura</div>`
+    : `${spdEff}/s${spdLvlNote}`;
 
   const levelLabel = level > 1
     ? ` <span class="info-gem-level">Lv ${level}</span>`
@@ -250,7 +258,7 @@ function _buildGemHTML(gem) {
     </div>
     <div class="info-row">
       <span class="info-label">Range</span>
-      <span class="info-value">${tiles} tiles</span>
+      <span class="info-value">${tiles} tiles${rangeLvlNote}</span>
     </div>`;
 
   const typeNote = GEM_TYPES[gem.type]?.note;
@@ -259,7 +267,7 @@ function _buildGemHTML(gem) {
   }
 
   if (ls.effect) {
-    const baseEffect = level > 1 ? getStats(gem.type, gem.quality).effect : null;
+    const baseEffect = level > 1 ? baseStats.effect : null;
     html += _buildEffectHTML(ls.effect, baseEffect);
   }
 
