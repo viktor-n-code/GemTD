@@ -71,13 +71,14 @@ export function isInRange(gem, enemy) {
  * Only the most powerful instance of each effect type applies (no stacking).
  *
  * @param {Object}      enemy  - Enemy object (mutated in place)
- * @param {Object|null} effect - Effect descriptor from getStats(), e.g.
+ * @param {Object|null} effect - Effect descriptor from getLeveledStats(), e.g.
  *                               { type:'poison', dps, slow, duration }
  *                               { type:'slow', amount, duration }
  *                               null (Amethyst / air)
  * @param {number}      now    - Current timestamp in ms
+ * @param {string|null} gemId  - ID of the gem applying the effect (for kill attribution)
  */
-export function applyEffect(enemy, effect, now) {
+export function applyEffect(enemy, effect, now, gemId) {
   if (enemy.dead || enemy.exited) return;
   if (!effect) return;
 
@@ -86,6 +87,7 @@ export function applyEffect(enemy, effect, now) {
     if (effect.dps > enemy.poisonDps) {
       enemy.poisonDps   = effect.dps;
       enemy.poisonUntil = now + effect.duration * 1000;
+      enemy.poisonGemId = gemId ?? null;
     }
     // Slow part of poison: apply if stronger or longer
     const newSlowUntil = now + effect.duration * 1000;
@@ -198,7 +200,7 @@ export function attackEnemy(gem, enemy, enemies, now) {
   }
 
   // 6. Apply gem effect (poison, slow, etc.)
-  applyEffect(enemy, stats.effect, now);
+  applyEffect(enemy, stats.effect, now, gem.id);
 
   // 7. Ruby splash damage
   let splashKills = 0;
@@ -225,16 +227,33 @@ export function attackEnemy(gem, enemy, enemies, now) {
  * @param {number} dt    - Delta time in seconds
  * @param {number} now   - Current timestamp in ms
  */
+/**
+ * Applies ongoing poison damage to an enemy. Call every frame.
+ * Returns { damage, killed } for kill/damage attribution to the source gem.
+ *
+ * @param {Object} enemy - Enemy object (mutated in place)
+ * @param {number} dt    - Delta time in seconds
+ * @param {number} now   - Current timestamp in ms
+ * @returns {{ damage: number, killed: boolean }}
+ */
 export function tickPoison(enemy, dt, now) {
+  let damage = 0;
+  let killed = false;
+
   if (enemy.poisonDps > 0 && now < enemy.poisonUntil) {
-    enemy.hp -= enemy.poisonDps * dt;
-    if (enemy.hp <= 0) {
+    damage = enemy.poisonDps * dt;
+    enemy.hp -= damage;
+    if (enemy.hp <= 0 && !enemy.dead) {
       enemy.dead = true;
+      killed = true;
     }
   }
 
   // Expire poison when duration ends
   if (enemy.poisonDps > 0 && now >= enemy.poisonUntil) {
-    enemy.poisonDps = 0;
+    enemy.poisonDps   = 0;
+    enemy.poisonGemId = null;
   }
+
+  return { damage, killed };
 }

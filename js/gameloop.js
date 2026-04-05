@@ -53,8 +53,11 @@ function init() {
     if (gameState.gameWon    === undefined) gameState.gameWon    = false;
     if (!gameState.critNumbers)            gameState.critNumbers = [];
     for (const gem of Object.values(gameState.gems || {})) {
-      if (gem.level === undefined) gem.level = 1;
+      if (gem.level     === undefined) gem.level     = 1;
       if (gem.auraBonus === undefined) gem.auraBonus = 0;
+    }
+    for (const enemy of (gameState.enemies || [])) {
+      if (enemy.poisonGemId === undefined) enemy.poisonGemId = null;
     }
   } else {
     clearState();
@@ -350,7 +353,17 @@ function updateDefend(dt, now) {
   for (const e of gameState.enemies) {
     if (e.dead || e.exited) continue;
     moveEnemy(e, dt, now);
-    tickPoison(e, dt, now);
+    const poisonResult = tickPoison(e, dt, now);
+    if (poisonResult.damage > 0 && e.poisonGemId) {
+      const pg = gameState.gems[e.poisonGemId];
+      if (pg) {
+        pg.totalDamage += poisonResult.damage;
+        if (poisonResult.killed) {
+          pg.kills++;
+          _checkLevelUp(pg);
+        }
+      }
+    }
     if (e.exited) {
       gameState.lives -= 1;
       if (gameState.lives <= 0) {
