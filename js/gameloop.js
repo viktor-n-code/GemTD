@@ -136,11 +136,9 @@ function updateBuild(dt, now) {
       const { type, quality } = rollGem(gameState.gemChanceLevel);
       const id = `gem_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
       const stats = getStats(type, quality);
-      const counterKey = `${quality}_${type}`;
-      gameState.gemCounters[counterKey] = (gameState.gemCounters[counterKey] || 0) + 1;
       gameState.gems[id] = {
         id, type, quality, x, y,
-        name: `${quality} ${type} ${gameState.gemCounters[counterKey]}`,
+        name: null, // assigned in startDefendPhase once quality is final
         level: 1,
         kills: 0, totalDamage: 0, roundDamage: 0,
         mvpBonus: 0,
@@ -301,6 +299,15 @@ function startDefendPhase() {
 
   // Create wave spawner
   waveSpawner = new WaveSpawner(gameState.wave, groundPath);
+
+  // Assign final name to the kept gem now that its quality is settled
+  // (combine may have upgraded the quality, so naming at placement time was too early)
+  const keptGem = gameState.gems[gameState.keptGemId];
+  if (keptGem) {
+    const k = `${keptGem.quality}_${keptGem.type}`;
+    gameState.gemCounters[k] = (gameState.gemCounters[k] || 0) + 1;
+    keptGem.name = `${keptGem.quality} ${keptGem.type} ${gameState.gemCounters[k]}`;
+  }
 
   // Reset per-round damage counters for all active gems
   for (const gem of Object.values(gameState.gems)) {
