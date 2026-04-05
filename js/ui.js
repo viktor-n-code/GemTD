@@ -161,44 +161,54 @@ function _row(label, value) {
   return `<div class="info-row"><span class="info-label">${label}</span><span class="info-value">${value}</span></div>`;
 }
 
-function _buildEffectHTML(effect) {
+// Returns a level-bonus annotation span if the value has changed from base.
+// fmt receives the raw delta and returns a display string (without the leading '+').
+function _lvlNote(current, base, fmt) {
+  if (base == null) return '';
+  const delta = current - base;
+  if (Math.abs(delta) < 0.00001) return '';
+  return ` <span class="info-level-note">(+${fmt(delta)} lvl)</span>`;
+}
+
+function _buildEffectHTML(effect, baseEffect) {
   if (!effect) return '';
+  const b    = baseEffect || effect; // base values for delta display
   const wrap = (rows) => `<div class="info-effect">${rows}</div>`;
 
   switch (effect.type) {
     case 'poison':
       return wrap(
         _row('Effect', 'Poison') +
-        _row('DoT', `${effect.dps} dps for ${effect.duration}s`) +
-        _row('Slow', `-${Math.round(effect.slow * 100)}% for ${effect.duration}s`)
+        _row('DoT', `${effect.dps} dps${_lvlNote(effect.dps, b.dps, d => d)} for ${effect.duration}s`) +
+        _row('Slow', `-${Math.round(effect.slow * 100)}%${_lvlNote(effect.slow, b.slow, d => Math.round(d * 100) + '%')} for ${effect.duration}s`)
       );
     case 'slow':
       return wrap(
         _row('Effect', 'Slow') +
-        _row('Amount', `-${Math.round(effect.amount * 100)}% speed`) +
-        _row('Duration', `${effect.duration}s`)
+        _row('Amount', `-${Math.round(effect.amount * 100)}% speed${_lvlNote(effect.amount, b.amount, d => Math.round(d * 100) + '%')}`) +
+        _row('Duration', `${effect.duration.toFixed(1)}s${_lvlNote(effect.duration, b.duration, d => d.toFixed(1) + 's')}`)
       );
     case 'splash':
       return wrap(
         _row('Effect', 'Splash') +
-        _row('Radius', `${(effect.radius / CELL_SIZE).toFixed(1)} tiles`) +
-        _row('Damage', `${Math.round((effect.dmgMod ?? 1) * 100)}% to all in range`)
+        _row('Radius', `${(effect.radius / CELL_SIZE).toFixed(1)} tiles${_lvlNote(effect.radius, b.radius, d => (d / CELL_SIZE).toFixed(1) + 't')}`) +
+        _row('Damage', `${Math.round((effect.dmgMod ?? 1) * 100)}%${_lvlNote(effect.dmgMod, b.dmgMod, d => Math.round(d * 100) + '%')} to all in range`)
       );
     case 'crit':
       return wrap(
         _row('Effect', 'Critical Strike') +
-        _row('Chance', `${Math.round(effect.chance * 100)}%`) +
-        _row('Multiplier', `×${effect.multiplier}`)
+        _row('Chance', `${Math.round(effect.chance * 100)}%${_lvlNote(effect.chance, b.chance, d => Math.round(d * 100) + '%')}`) +
+        _row('Multiplier', `×${effect.multiplier.toFixed(1)}${_lvlNote(effect.multiplier, b.multiplier, d => d.toFixed(1) + '×')}`)
       );
     case 'multi':
       return wrap(
         _row('Effect', 'Multi-target') +
-        _row('Targets', `${effect.targets} simultaneous`)
+        _row('Targets', `${effect.targets} simultaneous${_lvlNote(effect.targets, b.targets, d => d)}`)
       );
     case 'aura':
       return wrap(
         _row('Effect', 'Attack Speed Aura') +
-        _row('Bonus', `+${Math.round(effect.bonus * 100)}% atk spd`) +
+        _row('Bonus', `+${Math.round(effect.bonus * 100)}% atk spd${_lvlNote(effect.bonus, b.bonus, d => Math.round(d * 100) + '%')}`) +
         _row('Radius', `${(effect.auraRange / 15).toFixed(1)} tiles`)
       );
     default:
@@ -249,7 +259,8 @@ function _buildGemHTML(gem) {
   }
 
   if (ls.effect) {
-    html += _buildEffectHTML(ls.effect);
+    const baseEffect = level > 1 ? getStats(gem.type, gem.quality).effect : null;
+    html += _buildEffectHTML(ls.effect, baseEffect);
   }
 
   if (gem.kills > 0) {
