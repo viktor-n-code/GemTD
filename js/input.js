@@ -218,10 +218,21 @@ export class InputHandler {
         const { x: gx, y: gy } = this.hoveredCell;
         const cell = this._grid?.[gy]?.[gx];
         if (cell?.type === 'rock') {
-          // Snap to top-left of the 2×2 block regardless of which cell was clicked
-          const rx = this._grid?.[gy]?.[gx - 1]?.type === 'rock' ? gx - 1 : gx;
-          const ry = this._grid?.[gy - 1]?.[rx]?.type === 'rock' ? gy - 1 : gy;
-          this.selectedRockPos = { x: rx, y: ry };
+          // Find the top-left of the valid 2×2 block this cell belongs to
+          const candidates = [[gx, gy], [gx-1, gy], [gx, gy-1], [gx-1, gy-1]];
+          let rockPos = null;
+          for (const [rx, ry] of candidates) {
+            if (
+              this._grid[ry  ]?.[rx  ]?.type === 'rock' &&
+              this._grid[ry  ]?.[rx+1]?.type === 'rock' &&
+              this._grid[ry+1]?.[rx  ]?.type === 'rock' &&
+              this._grid[ry+1]?.[rx+1]?.type === 'rock'
+            ) {
+              rockPos = { x: rx, y: ry };
+              break;
+            }
+          }
+          this.selectedRockPos = rockPos;
           this.selectedGemId   = null;
           return;
         }
