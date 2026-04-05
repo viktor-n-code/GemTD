@@ -223,6 +223,8 @@ export class InputHandler {
           let rockPos = null;
           for (const [rx, ry] of candidates) {
             if (
+              this._grid[ry  ]?.[rx-1]?.type !== 'rock' &&
+              this._grid[ry-1]?.[rx  ]?.type !== 'rock' &&
               this._grid[ry  ]?.[rx  ]?.type === 'rock' &&
               this._grid[ry  ]?.[rx+1]?.type === 'rock' &&
               this._grid[ry+1]?.[rx  ]?.type === 'rock' &&
