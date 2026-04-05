@@ -160,7 +160,7 @@ function drawZones(ctx) {
   fillZone(ctx, 1, 9, 1, 10, 'rgba(40, 180, 60, 0.70)');
 
   // Exit — 2 yellow tiles on right border
-  fillZone(ctx, 42, 38, 42, 39, 'rgba(220, 200, 40, 0.70)');
+  fillZone(ctx, EXIT.x, EXIT.y, EXIT.x, EXIT.y + 1, 'rgba(220, 200, 40, 0.70)');
 
   // Checkpoint arrow zones
   for (let i = 0; i < CP_ZONES.length; i++) {
