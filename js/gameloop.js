@@ -336,16 +336,20 @@ function computeFullPath(grid) {
 
 /**
  * Checks if a gem has earned enough kills to level up, and applies the level-up
- * if so (recomputing its attack cooldown at the new level).
+ * if so. Returns true if a level-up occurred so the caller can trigger side effects.
  * Called after each kill credit in updateDefend.
  */
 function _checkLevelUp(gem) {
   const expectedLevel = Math.floor(gem.kills / 10) + 1;
   if (expectedLevel > gem.level) {
     gem.level = expectedLevel;
-    const ls = getLeveledStats(gem.type, gem.quality, gem.level);
-    gem.attackCooldown = Math.round(1000 / (ls.attackSpeed * (1 + gem.auraBonus)));
+    // Re-run full aura pass: if this gem is an Opal its increased bonus must
+    // propagate to nearby gems; if it's any other gem its new base speed must
+    // be combined with whatever aura is currently in range.
+    applyAuraBuffs(gameState);
+    return true;
   }
+  return false;
 }
 
 // ---------------------------------------------------------------------------
