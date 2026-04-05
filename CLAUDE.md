@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Git Workflow
 
 - `master` — read-only for Claude; game design data and docs only
-- `feature/demo` — main dev branch; all source code; Claude never pushes here directly
+- `feature/demo` — main dev branch; all source code; Claude never pushes here directly (no exceptions)
 - `feature/<topic>` — short-lived branches cut from `feature/demo`, merged back via GitHub PR
 
 **Starting a feature:**
@@ -20,7 +20,11 @@ git checkout -b feature/<topic>
 git push -u origin feature/<topic>
 ```
 
-**Commits:** One logical change per commit, imperative mood. Example: `Implement gem rolling mechanics`
+**Commits:** One logical change per commit, imperative mood subject line. The body must explain *what* changed and *why* — enough that the git log serves as a readable changelog. Include the user-visible effect where relevant.
+
+- Good subject: `Attribute poison DoT damage and kills to the Emerald gem`
+- Good body: `Enemies now track poisonGemId so tickPoison can credit the source Emerald with damage dealt and kills. Fixes kills/totalDamage never updating for Emerald when enemies die to DoT.`
+- Poor: `Fix bug` / `Update ui.js` / `Bump version to v0.9.1`
 
 **Pushing:** Claude proposes a push when a logical stopping point is reached: "Ready to push `feature/<topic>`. Approve?" On approval, Claude pushes. User opens and merges the PR on GitHub.
 
