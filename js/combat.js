@@ -135,9 +135,10 @@ export function applySplash(gem, primaryEnemy, enemies, primaryDamage, now) {
     const dist = Math.sqrt(dx * dx + dy * dy);
 
     if (dist <= radius) {
-      // Splash deals raw damage only; no status effects applied to splash targets.
-      enemy.hp -= primaryDamage;
-      splashDamage += primaryDamage;
+      // Splash deals a fraction of primary damage; no status effects applied to splash targets.
+      const splash = primaryDamage * (stats.effect.dmgMod ?? 1);
+      enemy.hp -= splash;
+      splashDamage += splash;
       if (enemy.hp <= 0) {
         enemy.dead = true;
         splashKills++;
@@ -178,8 +179,8 @@ export function attackEnemy(gem, enemy, enemies, now) {
     isCrit = true;
   }
 
-  // 2. Apply armor reduction (enemy.armor / 50 — e.g. 16 armor → 32% reduction)
-  damage = Math.round(damage * (1 - enemy.armor / 50));
+  // 2. Apply armor reduction (3% per armor point — e.g. 16 armor → 48% reduction)
+  damage = Math.round(damage * Math.max(0, 1 - enemy.armor * 0.03));
 
   // 3. Apply type advantage: Amethyst vs flying enemies
   if (enemy.flying && gem.type === 'Amethyst') {

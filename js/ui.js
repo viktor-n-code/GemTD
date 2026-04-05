@@ -1,7 +1,7 @@
 // ui.js — Build panel HUD rendering
 // Draws the semi-transparent panel at the bottom of the canvas during 'build' phase.
 
-import { getVisual, getStats, GEM_CHANCE_LEVELS } from './gem.js';
+import { getVisual, getStats, GEM_CHANCE_LEVELS, GEM_TYPES } from './gem.js';
 import { GRID_ROWS, CELL_SIZE } from './grid.js';
 import { HUD_HEIGHT } from './renderer.js';
 
@@ -182,7 +182,7 @@ function _buildEffectHTML(effect) {
       return wrap(
         _row('Effect', 'Splash') +
         _row('Radius', `${(effect.radius / CELL_SIZE).toFixed(1)} tiles`) +
-        _row('Damage', '100% to all in range')
+        _row('Damage', `${Math.round((effect.dmgMod ?? 1) * 100)}% to all in range`)
       );
     case 'crit':
       return wrap(
@@ -233,6 +233,11 @@ function _buildGemHTML(gem) {
       <span class="info-value">${tiles} tiles</span>
     </div>`;
 
+  const typeNote = GEM_TYPES[gem.type]?.note;
+  if (typeNote) {
+    html += `<div class="info-note">${typeNote}</div>`;
+  }
+
   if (stats.effect) {
     html += _buildEffectHTML(stats.effect);
   }
@@ -242,6 +247,14 @@ function _buildGemHTML(gem) {
   }
 
   return html;
+}
+
+function _enemySpeedHTML(enemy, now) {
+  const base = Math.round(enemy.speed);
+  if (now >= enemy.slowUntil) return `${base} px/s`;
+  const cur  = Math.round(enemy.currentSpeed);
+  const diff = base - cur;
+  return `${cur} px/s <span class="info-slowed-speed">(-${diff})</span>`;
 }
 
 function _buildEnemyHTML(enemy, state) {
@@ -261,11 +274,11 @@ function _buildEnemyHTML(enemy, state) {
     </div>
     <div class="info-row">
       <span class="info-label">Armor</span>
-      <span class="info-value">${Math.round(enemy.armor * 2)}%</span>
+      <span class="info-value">${Math.round(enemy.armor * 3)}%</span>
     </div>
     <div class="info-row">
       <span class="info-label">Speed</span>
-      <span class="info-value">${Math.round(enemy.speed)} px/s</span>
+      <span class="info-value">${_enemySpeedHTML(enemy, now)}</span>
     </div>`;
 
   const tags = [];
