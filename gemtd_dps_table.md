@@ -1,4 +1,4 @@
-# Gem DPS Reference Table — v0.8.6
+# Gem DPS Reference Table — v0.9.0
 
 ## Methodology
 
@@ -115,3 +115,65 @@
 - Opal's combat value is low by design — the aura (+10–35% atk spd to nearby gems) is its primary contribution
 - Sapphire's high perfect-tier number reflects extreme time-in-range (13.3s) from the combined range + slow effect
 - Topaz and Aquamarine perfect values assume optimal placement (multiple targets in range / high attack count landing)
+
+---
+
+## Level 10 Gem Stats (v0.9.0)
+
+Gems gain a level every 10 kills. Each level gives +10% damage permanently. Effects also scale per level as listed below.
+
+### Per-Level Effect Scaling
+
+| Gem | Effect scaled | Rate per level | At level 10 |
+|-----|--------------|----------------|-------------|
+| Emerald | DoT dps | +1 dps | +10 dps |
+| Emerald | Slow % | +1% | +10% |
+| Ruby | Splash dmgMod | +1% | +10% |
+| Ruby | Splash radius | +0.1 tiles | +1 tile (+16px) |
+| Sapphire | Slow % | +1% | +10% |
+| Sapphire | Duration | +0.1s | +1s |
+| Amethyst | Range | +0.5 tiles | +5 tiles (+80px) |
+| Diamond | Crit chance | +1% | +10% |
+| Diamond | Crit multiplier | +0.1× | +1.0× |
+| Topaz | Targets | +1 per 5 levels | +2 targets |
+| Aquamarine | Attack speed | +0.025 | +0.25 |
+| Aquamarine | Range | +0.1 tiles | +1 tile (+16px) |
+| Opal | Aura bonus | +1% | +10% |
+
+### Level 10 Effect Values by Tier
+
+| Tier | Emerald (DoT/Slow) | Ruby (dmgMod) | Sapphire (Slow/Dur) | Amethyst (Range) | Diamond (Chance×Mult) | Topaz (Targets) | Aquamarine (Spd/Range) | Opal (Aura) |
+|------|--------------------|--------------|---------------------|------------------|-----------------------|----------------|------------------------|-------------|
+| Chipped  | 12dps / 20% | 30% | 30% / 6s | 223px | 35% × 3.0 | 4 | 2.95 / 66px | +20% |
+| Flawed   | 13dps / 25% | 35% | 35% / 6s | 241px | 35% × 3.5 | 5 | 3.00 / 68px | +25% |
+| Standard | 15dps / 30% | 40% | 40% / 6s | 259px | 35% × 4.0 | 5 | 3.05 / 70px | +30% |
+| Flawless | 18dps / 35% | 45% | 45% / 6s | 266px | 40% × 4.0 | 6 | 3.10 / 77px | +35% |
+| Perfect  | 26dps / 40% | 60% | 50% / 6s | 295px | 43% × 4.5 | 7 | 3.15 / 95px | +45% |
+
+### Effective Damage per Enemy — Level 10
+
+Same methodology as level 1 table. Damage ×2.0 from level bonus; effects use level-10 values above.
+
+| Tier | Emerald | Ruby | Sapphire | Amethyst | Diamond | Topaz | Aquamarine | Opal |
+|------|---------|------|----------|----------|---------|-------|------------|------|
+| Chipped  | 134  | 104  | 48   | 252  | 129  | 112  | 104  | 36   |
+| Flawed   | 201  | 189  | 132  | 420  | 186  | 225  | 234  | 76   |
+| Standard | 352  | 273  | 288  | 759  | 406  | 405  | 477  | 195  |
+| Flawless | 633  | 595  | 621  | 1474 | 1074 | 882  | 1020 | 395  |
+| Perfect  | 1779 | 1776 | 2144 | 3757 | 2535 | 2835 | 2704 | 1014 |
+
+### L1 → L10 Multiplier
+
+| Tier | Emerald | Ruby | Sapphire | Amethyst | Diamond | Topaz | Aquamarine | Opal |
+|------|---------|------|----------|----------|---------|-------|------------|------|
+| Chipped  | 4.1× | 2.2× | 2.0× | 3.0× | 2.7× | 4.0× | 2.7× | 2.0× |
+| Flawed   | 3.0× | 2.1× | 2.4× | 2.9× | 2.7× | 3.3× | 3.0× | 2.0× |
+| Standard | 2.8× | 2.1× | 2.3× | 2.8× | 2.7× | 3.3× | 3.0× | 2.0× |
+| Flawless | 2.4× | 2.1× | 2.3× | 2.7× | 2.8× | 3.0× | 2.9× | 2.0× |
+| Perfect  | 2.1× | 2.1× | 2.5× | 2.9× | 2.7× | 2.8× | 2.6× | 2.0× |
+
+**Level 10 notes:**
+- Perfect Sapphire (2144) becomes the strongest non-exclusive gem — 50% slow + 16s time-in-range drives extreme hit count
+- Perfect Amethyst (3757) is the highest overall but restricted to air waves
+- Emerald gains the most at low tiers (4.1× chipped) — DoT compounds hard relative to low base damage
+- Opal always multiplies at exactly 2.0× since its effect (aura) has no synergy with the time-in-range metric used here; its real value is the board-wide atk speed buff
