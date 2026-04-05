@@ -11,6 +11,7 @@ export function createInitialState() {
     gemChanceLevel: 1,
     grid: null,
     gems: {},
+    gemCounters: {},
     placedThisRound: [],
     keptGemId: null,
     enemies: [],

@@ -52,9 +52,17 @@ function init() {
     if (gameState.gameOver   === undefined) gameState.gameOver   = false;
     if (gameState.gameWon    === undefined) gameState.gameWon    = false;
     if (!gameState.critNumbers)            gameState.critNumbers = [];
+    if (!gameState.gemCounters) gameState.gemCounters = {};
     for (const gem of Object.values(gameState.gems || {})) {
-      if (gem.level     === undefined) gem.level     = 1;
-      if (gem.auraBonus === undefined) gem.auraBonus = 0;
+      if (gem.level       === undefined) gem.level       = 1;
+      if (gem.auraBonus   === undefined) gem.auraBonus   = 0;
+      if (gem.roundDamage === undefined) gem.roundDamage = 0;
+      if (gem.mvpBonus    === undefined) gem.mvpBonus    = 0;
+      if (!gem.name) {
+        const k = `${gem.quality}_${gem.type}`;
+        gameState.gemCounters[k] = (gameState.gemCounters[k] || 0) + 1;
+        gem.name = `${gem.quality} ${gem.type} ${gameState.gemCounters[k]}`;
+      }
     }
     for (const enemy of (gameState.enemies || [])) {
       if (enemy.poisonGemId === undefined) enemy.poisonGemId = null;
@@ -128,10 +136,14 @@ function updateBuild(dt, now) {
       const { type, quality } = rollGem(gameState.gemChanceLevel);
       const id = `gem_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
       const stats = getStats(type, quality);
+      const counterKey = `${quality}_${type}`;
+      gameState.gemCounters[counterKey] = (gameState.gemCounters[counterKey] || 0) + 1;
       gameState.gems[id] = {
         id, type, quality, x, y,
+        name: `${quality} ${type} ${gameState.gemCounters[counterKey]}`,
         level: 1,
-        kills: 0, totalDamage: 0,
+        kills: 0, totalDamage: 0, roundDamage: 0,
+        mvpBonus: 0,
         lastAttackTime: 0,
         attackCooldown: Math.round(1000 / stats.attackSpeed),
         auraBonus: 0,
@@ -290,6 +302,11 @@ function startDefendPhase() {
   // Create wave spawner
   waveSpawner = new WaveSpawner(gameState.wave, groundPath);
 
+  // Reset per-round damage counters for all active gems
+  for (const gem of Object.values(gameState.gems)) {
+    gem.roundDamage = 0;
+  }
+
   // Reset round state
   gameState.placedThisRound = [];
   gameState.keptGemId = null;
@@ -357,7 +374,8 @@ function updateDefend(dt, now) {
     if (poisonResult.damage > 0 && e.poisonGemId) {
       const pg = gameState.gems[e.poisonGemId];
       if (pg) {
-        pg.totalDamage += poisonResult.damage;
+        pg.totalDamage  += poisonResult.damage;
+        pg.roundDamage  += poisonResult.damage;
         if (poisonResult.killed) {
           pg.kills++;
           _checkLevelUp(pg);
@@ -380,7 +398,8 @@ function updateDefend(dt, now) {
     if (target) {
       const result = attackEnemy(gem, target, gameState.enemies, now);
       gem.lastTargetId = target.id;
-      gem.totalDamage += result.damage + result.splashDamage;
+      gem.totalDamage  += result.damage + result.splashDamage;
+      gem.roundDamage  += result.damage + result.splashDamage;
       if (target.dead) gem.kills++;
       gem.kills += result.splashKills;
       _checkLevelUp(gem);
@@ -406,7 +425,8 @@ function updateDefend(dt, now) {
           .slice(0, stats.effect.targets - 1);
         for (const extra of extras) {
           const extraResult = attackEnemy(gem, extra, gameState.enemies, now);
-          gem.totalDamage += extraResult.damage;
+          gem.totalDamage  += extraResult.damage;
+          gem.roundDamage  += extraResult.damage;
           if (extra.dead) { gem.kills++; _checkLevelUp(gem); }
           gameState.projectiles.push({ x1: gem.x * CELL_SIZE, y1: gem.y * CELL_SIZE, x2: extra.x, y2: extra.y, color });
           if (extraResult.crit) {
@@ -464,6 +484,13 @@ function findTarget(gem) {
 function updateBetween() {
   const bonus = GOLD_PER_WAVE[gameState.wave - 1].bonusGold;
   gameState.gold += bonus;
+
+  // Award MVP: gem with the highest roundDamage this wave gets +1% permanent damage
+  const gemList = Object.values(gameState.gems);
+  if (gemList.length > 0) {
+    const mvp = gemList.reduce((best, g) => g.roundDamage > best.roundDamage ? g : best);
+    if (mvp.roundDamage > 0) mvp.mvpBonus += 1;
+  }
 
   saveState(gameState);
 

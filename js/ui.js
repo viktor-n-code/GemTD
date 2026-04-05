@@ -240,14 +240,15 @@ function _buildGemHTML(gem) {
     ? ` <span class="info-gem-level">Lv ${level}</span>`
     : '';
 
-  // Damage: show leveled values; if leveled, note the % bonus
-  const dmgHTML = level > 1
-    ? `${ls.damageMin}–${ls.damageMax} <span class="info-level-note">(+${(level - 1) * 10}% lvl)</span>`
-    : `${ls.damageMin}–${ls.damageMax}`;
+  // Damage: show leveled values with level and MVP bonus annotations
+  const mvpBonus = gem.mvpBonus || 0;
+  let dmgHTML = `${ls.damageMin}–${ls.damageMax}`;
+  if (level > 1)   dmgHTML += ` <span class="info-level-note">(+${(level - 1) * 10}% lvl)</span>`;
+  if (mvpBonus > 0) dmgHTML += ` <span class="info-mvp-note">(+${mvpBonus}% MVP)</span>`;
 
   let html = `
     <div class="info-section-title">Selected Gem</div>
-    <div class="info-gem-name">${gem.quality} ${gem.type}${levelLabel}</div>
+    <div class="info-gem-name">${gem.name || gem.quality + ' ' + gem.type}${levelLabel}</div>
     <div class="info-row">
       <span class="info-label">Damage</span>
       <span class="info-value">${dmgHTML}</span>
@@ -273,6 +274,9 @@ function _buildGemHTML(gem) {
 
   if (gem.kills > 0) {
     html += `<div class="info-kills">Kills: ${gem.kills} &nbsp; Dmg: ${Math.round(gem.totalDamage)}</div>`;
+  }
+  if (mvpBonus > 0) {
+    html += `<div class="info-mvp">MVP wins: ${mvpBonus} &nbsp; (+${mvpBonus}% dmg)</div>`;
   }
 
   return html;
@@ -347,6 +351,30 @@ function _buildWaveHTML(state) {
     </div>`;
 }
 
+function _buildLeaderboardHTML(state) {
+  const gems = Object.values(state.gems);
+  if (gems.length === 0) return '';
+
+  const renderRows = (list, key) =>
+    list.map((g, i) =>
+      `<div class="lb-row">
+        <span class="lb-rank">${i + 1}</span>
+        <span class="lb-name">${g.name || g.type}</span>
+        <span class="lb-value">${Math.round(g[key]).toLocaleString()}</span>
+      </div>`
+    ).join('');
+
+  // Round leaderboard: show once any defend phase has run (wave > 0)
+  const showRound = state.wave > 0;
+  const top5round = [...gems].sort((a, b) => b.roundDamage - a.roundDamage).slice(0, 5);
+  const top5all   = [...gems].sort((a, b) => b.totalDamage  - a.totalDamage ).slice(0, 5);
+
+  return (showRound
+    ? `<div class="info-section-title lb-title">Round Damage</div>${renderRows(top5round, 'roundDamage')}`
+    : '')
+    + `<div class="info-section-title lb-title">All-Time Damage</div>${renderRows(top5all, 'totalDamage')}`;
+}
+
 /**
  * Updates the DOM info panel to the right of the canvas.
  * Called every frame from gameloop.js.
@@ -359,17 +387,18 @@ export function updateInfoPanel(state, inputState) {
   // — Selection section (top) —
   const gemId = inputState?.selectedGemId;
   if (gemId && state.gems[gemId]) {
-    selEl.innerHTML = _buildGemHTML(state.gems[gemId]);
+    selEl.innerHTML = _buildGemHTML(state.gems[gemId]) + _buildLeaderboardHTML(state);
   } else {
     const enemyId = inputState?.selectedEnemyId;
     const enemy = enemyId && state.phase === 'defend'
       ? state.enemies.find(e => e.id === enemyId && !e.dead && !e.exited)
       : null;
-    selEl.innerHTML = enemy
+    selEl.innerHTML = (enemy
       ? _buildEnemyHTML(enemy, state)
       : (state.phase === 'defend' || state.phase === 'between')
         ? _buildWaveHTML(state)
-        : '';
+        : '')
+      + _buildLeaderboardHTML(state);
   }
 
   // — Gem chances section (bottom, always shown) —
