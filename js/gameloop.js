@@ -505,7 +505,7 @@ function updateBetween() {
 
   saveState(gameState);
 
-  if (gameState.wave >= 10) {
+  if (gameState.wave >= 20) {
     gameState.gameWon = true;
     gameState.phase = 'gamewon'; // terminal state — prevents re-entry
     return;

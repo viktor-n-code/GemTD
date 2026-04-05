@@ -22,8 +22,18 @@ export const ENEMY_STATS = [
   { hp: 120, armor: 11, speed: 0.75, minSpeed: 0.25, flying: false }, // wave 6
   { hp: 178, armor: 11, speed: 0.75, minSpeed: 0.25, flying: false }, // wave 7
   { hp: 240, armor: 11, speed: 0.75, minSpeed: 0.25, flying: true  }, // wave 8
-  { hp: 300, armor: 12, speed: 0.75, minSpeed: 0.25, flying: false }, // wave 9
-  { hp: 470, armor: 12, speed: 0.75, minSpeed: 0.25, flying: false }, // wave 10
+  { hp:  300, armor: 12, speed: 0.75, minSpeed: 0.25, flying: false }, // wave 9
+  { hp:  470, armor: 12, speed: 0.75, minSpeed: 0.25, flying: false }, // wave 10
+  { hp:  650, armor: 12, speed: 0.75, minSpeed: 0.25, flying: false }, // wave 11
+  { hp:  550, armor: 12, speed: 0.75, minSpeed: 0.25, flying: true  }, // wave 12
+  { hp:  800, armor: 13, speed: 0.75, minSpeed: 0.25, flying: false }, // wave 13
+  { hp:  925, armor: 13, speed: 0.75, minSpeed: 0.25, flying: false }, // wave 14
+  { hp: 1350, armor: 13, speed: 0.75, minSpeed: 0.25, flying: false }, // wave 15
+  { hp:  850, armor: 13, speed: 0.75, minSpeed: 0.25, flying: true  }, // wave 16
+  { hp: 1650, armor: 14, speed: 0.75, minSpeed: 0.38, flying: false }, // wave 17
+  { hp: 2000, armor: 14, speed: 0.75, minSpeed: 0.42, flying: false }, // wave 18
+  { hp: 2500, armor: 14, speed: 0.75, minSpeed: 0.45, flying: false }, // wave 19
+  { hp: 1550, armor: 14, speed: 0.75, minSpeed: 0.38, flying: false }, // wave 20
 ];
 // Armor formula: min(10 + floor((wave - 1) / 4), 25)
 
@@ -42,12 +52,22 @@ export const GOLD_PER_WAVE = [
   { killGold: 3.0,  bonusGold: 23 }, // wave 8
   { killGold: 3.25, bonusGold: 25 }, // wave 9
   { killGold: 3.5,  bonusGold: 27 }, // wave 10
+  { killGold: 3.75, bonusGold: 29 }, // wave 11
+  { killGold: 4.0,  bonusGold: 31 }, // wave 12
+  { killGold: 4.25, bonusGold: 33 }, // wave 13
+  { killGold: 4.5,  bonusGold: 35 }, // wave 14
+  { killGold: 4.75, bonusGold: 37 }, // wave 15
+  { killGold: 5.0,  bonusGold: 41 }, // wave 16
+  { killGold: 5.25, bonusGold: 43 }, // wave 17  (extrapolated)
+  { killGold: 5.5,  bonusGold: 45 }, // wave 18  (extrapolated)
+  { killGold: 5.75, bonusGold: 47 }, // wave 19  (extrapolated)
+  { killGold: 6.0,  bonusGold: 49 }, // wave 20  (extrapolated)
 ];
 
 /**
  * Spawns a new enemy for the given wave.
  *
- * @param {number} waveNumber - 1-indexed wave number (1–10)
+ * @param {number} waveNumber - 1-indexed wave number (1–20)
  * @param {Array<{x:number,y:number}>|null} path - A* ground path, or null for flying enemies
  * @returns {Object} Enemy instance
  */

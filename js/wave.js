@@ -21,6 +21,16 @@ export const WAVE_DEFS = [
   { wave:  8, count: 10, intervalSec: 1.0 },
   { wave:  9, count: 10, intervalSec: 1.0 },
   { wave: 10, count: 10, intervalSec: 1.0 },
+  { wave: 11, count: 10, intervalSec: 1.0 },
+  { wave: 12, count: 10, intervalSec: 1.0 },
+  { wave: 13, count: 10, intervalSec: 1.0 },
+  { wave: 14, count: 10, intervalSec: 1.0 },
+  { wave: 15, count: 10, intervalSec: 1.0 },
+  { wave: 16, count: 10, intervalSec: 1.0 },
+  { wave: 17, count: 10, intervalSec: 1.0 },
+  { wave: 18, count: 10, intervalSec: 1.0 },
+  { wave: 19, count: 10, intervalSec: 1.0 },
+  { wave: 20, count: 10, intervalSec: 1.0 },
 ];
 
 /**
