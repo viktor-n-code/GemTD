@@ -5,22 +5,22 @@ export const GEM_TYPES = {
     color: '#2d8a4e',
     effect: 'poison',
     stats: {
-      chipped:  { damageMin: 3,   damageMax: 7,   attackSpeed: 1.25, range: 72,  effect: { type: 'poison', dps: 2,  slow: 0.15, duration: 3 } },
-      flawed:   { damageMin: 9,   damageMax: 13,  attackSpeed: 1.0,  range: 79,  effect: { type: 'poison', dps: 3,  slow: 0.20, duration: 4 } },
-      standard: { damageMin: 14,  damageMax: 25,  attackSpeed: 1.0,  range: 86,  effect: { type: 'poison', dps: 5,  slow: 0.25, duration: 5 } },
-      flawless: { damageMin: 29,  damageMax: 38,  attackSpeed: 1.0,  range: 100, effect: { type: 'poison', dps: 8,  slow: 0.35, duration: 6 } },
-      perfect:  { damageMin: 79,  damageMax: 90,  attackSpeed: 1.0,  range: 114, effect: { type: 'poison', dps: 16, slow: 0.50, duration: 8 } },
+      chipped:  { damageMin: 3,   damageMax: 7,   attackSpeed: 1.25, range: 72,  effect: { type: 'poison', dps: 2,  slow: 0.10, duration: 3 } },
+      flawed:   { damageMin: 9,   damageMax: 13,  attackSpeed: 1.0,  range: 79,  effect: { type: 'poison', dps: 3,  slow: 0.15, duration: 4 } },
+      standard: { damageMin: 14,  damageMax: 25,  attackSpeed: 1.0,  range: 86,  effect: { type: 'poison', dps: 5,  slow: 0.20, duration: 5 } },
+      flawless: { damageMin: 29,  damageMax: 38,  attackSpeed: 1.0,  range: 100, effect: { type: 'poison', dps: 8,  slow: 0.25, duration: 6 } },
+      perfect:  { damageMin: 79,  damageMax: 90,  attackSpeed: 1.0,  range: 114, effect: { type: 'poison', dps: 16, slow: 0.30, duration: 8 } },
     },
   },
   Ruby: {
     color: '#c0392b',
     effect: 'splash',
     stats: {
-      chipped:  { damageMin: 7,   damageMax: 9,   attackSpeed: 1.0, range: 114, effect: { type: 'splash', radius: 20 } },
-      flawed:   { damageMin: 12,  damageMax: 16,  attackSpeed: 1.0, range: 114, effect: { type: 'splash', radius: 25 } },
-      standard: { damageMin: 17,  damageMax: 22,  attackSpeed: 1.0, range: 114, effect: { type: 'splash', radius: 28 } },
-      flawless: { damageMin: 37,  damageMax: 45,  attackSpeed: 1.0, range: 114, effect: { type: 'splash', radius: 30 } },
-      perfect:  { damageMin: 79,  damageMax: 104, attackSpeed: 1.0, range: 129, effect: { type: 'splash', radius: 35 } },
+      chipped:  { damageMin: 7,   damageMax: 9,   attackSpeed: 1.0, range: 114, effect: { type: 'splash', radius: 20, dmgMod: 0.20 } },
+      flawed:   { damageMin: 12,  damageMax: 16,  attackSpeed: 1.0, range: 114, effect: { type: 'splash', radius: 25, dmgMod: 0.25 } },
+      standard: { damageMin: 17,  damageMax: 22,  attackSpeed: 1.0, range: 114, effect: { type: 'splash', radius: 28, dmgMod: 0.30 } },
+      flawless: { damageMin: 37,  damageMax: 45,  attackSpeed: 1.0, range: 114, effect: { type: 'splash', radius: 30, dmgMod: 0.35 } },
+      perfect:  { damageMin: 79,  damageMax: 104, attackSpeed: 1.0, range: 129, effect: { type: 'splash', radius: 35, dmgMod: 0.40 } },
     },
   },
   Sapphire: {
@@ -37,6 +37,7 @@ export const GEM_TYPES = {
   Amethyst: {
     color: '#8e44ad',
     effect: 'air',
+    note: 'Targets air units only',
     stats: {
       chipped:  { damageMin: 8,   damageMax: 13,  attackSpeed: 1.25, range: 143, effect: null },
       flawed:   { damageMin: 17,  damageMax: 25,  attackSpeed: 1.0,  range: 161, effect: null },
@@ -48,12 +49,13 @@ export const GEM_TYPES = {
   Diamond: {
     color: '#c8f0ff',
     effect: 'crit',
+    note: 'Targets ground units only',
     stats: {
-      chipped:  { damageMin: 7,   damageMax: 12,  attackSpeed: 1.25, range: 72,  effect: { type: 'crit', chance: 0.25, multiplier: 2 } },
-      flawed:   { damageMin: 15,  damageMax: 18,  attackSpeed: 1.0,  range: 79,  effect: { type: 'crit', chance: 0.25, multiplier: 2 } },
-      standard: { damageMin: 29,  damageMax: 37,  attackSpeed: 1.0,  range: 86,  effect: { type: 'crit', chance: 0.25, multiplier: 2 } },
-      flawless: { damageMin: 57,  damageMax: 65,  attackSpeed: 1.0,  range: 93,  effect: { type: 'crit', chance: 0.25, multiplier: 2 } },
-      perfect:  { damageMin: 100, damageMax: 120, attackSpeed: 1.0,  range: 107, effect: { type: 'crit', chance: 0.25, multiplier: 2 } },
+      chipped:  { damageMin: 7,   damageMax: 12,  attackSpeed: 1.25, range: 72,  effect: { type: 'crit', chance: 0.25, multiplier: 2.0 } },
+      flawed:   { damageMin: 15,  damageMax: 18,  attackSpeed: 1.0,  range: 79,  effect: { type: 'crit', chance: 0.25, multiplier: 2.5 } },
+      standard: { damageMin: 29,  damageMax: 37,  attackSpeed: 1.0,  range: 86,  effect: { type: 'crit', chance: 0.25, multiplier: 3.0 } },
+      flawless: { damageMin: 57,  damageMax: 65,  attackSpeed: 1.0,  range: 93,  effect: { type: 'crit', chance: 0.30, multiplier: 3.0 } },
+      perfect:  { damageMin: 100, damageMax: 120, attackSpeed: 1.0,  range: 107, effect: { type: 'crit', chance: 0.33, multiplier: 3.5 } },
     },
   },
   Topaz: {
@@ -62,20 +64,21 @@ export const GEM_TYPES = {
     stats: {
       chipped:  { damageMin: 3,  damageMax: 4,  attackSpeed: 1.25, range: 72, effect: { type: 'multi', targets: 2 } },
       flawed:   { damageMin: 7,  damageMax: 8,  attackSpeed: 1.0,  range: 72, effect: { type: 'multi', targets: 3 } },
-      standard: { damageMin: 13, damageMax: 14, attackSpeed: 1.0,  range: 72, effect: { type: 'multi', targets: 4 } },
-      flawless: { damageMin: 24, damageMax: 25, attackSpeed: 1.0,  range: 72, effect: { type: 'multi', targets: 5 } },
-      perfect:  { damageMin: 74, damageMax: 75, attackSpeed: 1.0,  range: 86, effect: { type: 'multi', targets: 6 } },
+      standard: { damageMin: 13, damageMax: 14, attackSpeed: 1.0,  range: 72, effect: { type: 'multi', targets: 3 } },
+      flawless: { damageMin: 24, damageMax: 25, attackSpeed: 1.0,  range: 72, effect: { type: 'multi', targets: 4 } },
+      perfect:  { damageMin: 74, damageMax: 75, attackSpeed: 1.0,  range: 86, effect: { type: 'multi', targets: 5 } },
     },
   },
   Aquamarine: {
     color: '#44ddaa',
     effect: null,
+    note: 'Very fast attack speed',
     stats: {
-      chipped:  { damageMin: 5,  damageMax: 8,   attackSpeed: 2.85, range: 50, effect: null },
-      flawed:   { damageMin: 11, damageMax: 15,  attackSpeed: 2.85, range: 52, effect: null },
-      standard: { damageMin: 23, damageMax: 30,  attackSpeed: 2.85, range: 54, effect: null },
+      chipped:  { damageMin: 5,  damageMax: 8,   attackSpeed: 2.70, range: 50, effect: null },
+      flawed:   { damageMin: 11, damageMax: 15,  attackSpeed: 2.75, range: 52, effect: null },
+      standard: { damageMin: 23, damageMax: 30,  attackSpeed: 2.80, range: 54, effect: null },
       flawless: { damageMin: 47, damageMax: 55,  attackSpeed: 2.85, range: 61, effect: null },
-      perfect:  { damageMin: 99, damageMax: 120, attackSpeed: 2.85, range: 79, effect: null },
+      perfect:  { damageMin: 99, damageMax: 120, attackSpeed: 2.90, range: 79, effect: null },
     },
   },
   Opal: {

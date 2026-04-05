@@ -135,9 +135,10 @@ export function applySplash(gem, primaryEnemy, enemies, primaryDamage, now) {
     const dist = Math.sqrt(dx * dx + dy * dy);
 
     if (dist <= radius) {
-      // Splash deals raw damage only; no status effects applied to splash targets.
-      enemy.hp -= primaryDamage;
-      splashDamage += primaryDamage;
+      // Splash deals a fraction of primary damage; no status effects applied to splash targets.
+      const splash = primaryDamage * (stats.effect.dmgMod ?? 1);
+      enemy.hp -= splash;
+      splashDamage += splash;
       if (enemy.hp <= 0) {
         enemy.dead = true;
         splashKills++;

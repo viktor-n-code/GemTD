@@ -1,7 +1,7 @@
 // ui.js — Build panel HUD rendering
 // Draws the semi-transparent panel at the bottom of the canvas during 'build' phase.
 
-import { getVisual, getStats, GEM_CHANCE_LEVELS } from './gem.js';
+import { getVisual, getStats, GEM_CHANCE_LEVELS, GEM_TYPES } from './gem.js';
 import { GRID_ROWS, CELL_SIZE } from './grid.js';
 import { HUD_HEIGHT } from './renderer.js';
 
@@ -182,7 +182,7 @@ function _buildEffectHTML(effect) {
       return wrap(
         _row('Effect', 'Splash') +
         _row('Radius', `${(effect.radius / CELL_SIZE).toFixed(1)} tiles`) +
-        _row('Damage', '100% to all in range')
+        _row('Damage', `${Math.round((effect.dmgMod ?? 1) * 100)}% to all in range`)
       );
     case 'crit':
       return wrap(
@@ -232,6 +232,11 @@ function _buildGemHTML(gem) {
       <span class="info-label">Range</span>
       <span class="info-value">${tiles} tiles</span>
     </div>`;
+
+  const typeNote = GEM_TYPES[gem.type]?.note;
+  if (typeNote) {
+    html += `<div class="info-note">${typeNote}</div>`;
+  }
 
   if (stats.effect) {
     html += _buildEffectHTML(stats.effect);
