@@ -20,7 +20,7 @@ export const GEM_TYPES = {
       flawed:   { damageMin: 12,  damageMax: 16,  attackSpeed: 1.0, range: 114, effect: { type: 'splash', radius: 25, dmgMod: 0.25 } },
       standard: { damageMin: 17,  damageMax: 22,  attackSpeed: 1.0, range: 114, effect: { type: 'splash', radius: 28, dmgMod: 0.30 } },
       flawless: { damageMin: 37,  damageMax: 45,  attackSpeed: 1.0, range: 114, effect: { type: 'splash', radius: 30, dmgMod: 0.35 } },
-      perfect:  { damageMin: 79,  damageMax: 104, attackSpeed: 1.0, range: 129, effect: { type: 'splash', radius: 35, dmgMod: 0.50 } },
+      perfect:  { damageMin: 91,  damageMax: 120, attackSpeed: 1.0, range: 129, effect: { type: 'splash', radius: 35, dmgMod: 0.50 } },
     },
   },
   Sapphire: {
@@ -66,7 +66,7 @@ export const GEM_TYPES = {
       flawed:   { damageMin: 7,  damageMax: 8,  attackSpeed: 1.0,  range: 72, effect: { type: 'multi', targets: 3 } },
       standard: { damageMin: 13, damageMax: 14, attackSpeed: 1.0,  range: 72, effect: { type: 'multi', targets: 3 } },
       flawless: { damageMin: 24, damageMax: 25, attackSpeed: 1.0,  range: 72, effect: { type: 'multi', targets: 4 } },
-      perfect:  { damageMin: 74, damageMax: 75, attackSpeed: 1.0,  range: 80, effect: { type: 'multi', targets: 5 } },
+      perfect:  { damageMin: 67, damageMax: 68, attackSpeed: 1.0,  range: 80, effect: { type: 'multi', targets: 5 } },
     },
   },
   Aquamarine: {
