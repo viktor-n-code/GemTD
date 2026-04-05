@@ -153,3 +153,65 @@ export function getStats(type, quality) {
     effect:      s.effect,
   };
 }
+
+/**
+ * Returns stats for a gem at the given level (1-indexed).
+ * Level 1 is identical to getStats(). Each level above 1 adds +10% damage
+ * and scales per-gem effects.
+ */
+export function getLeveledStats(type, quality, level) {
+  const base = getStats(type, quality);
+  if (!level || level <= 1) return base;
+
+  const bonus = level - 1; // levels gained above base
+  const dmgMult = 1 + bonus * 0.10;
+
+  // Deep-clone effect so we don't mutate the shared definition
+  let effect = base.effect ? { ...base.effect } : null;
+
+  if (effect) {
+    switch (type) {
+      case 'Emerald':
+        effect.dps      = effect.dps  + bonus;
+        effect.slow     = effect.slow + bonus * 0.01;
+        break;
+      case 'Ruby':
+        effect.dmgMod   = effect.dmgMod + bonus * 0.01;
+        effect.radius   = effect.radius + bonus * 1.6; // 0.1 tile × 16px
+        break;
+      case 'Sapphire':
+        effect.amount   = effect.amount   + bonus * 0.01;
+        effect.duration = effect.duration + bonus * 0.1;
+        break;
+      case 'Diamond':
+        effect.chance     = effect.chance     + bonus * 0.01;
+        effect.multiplier = effect.multiplier + bonus * 0.1;
+        break;
+      case 'Topaz':
+        effect.targets  = effect.targets + Math.floor(bonus / 5);
+        break;
+      case 'Opal':
+        effect.bonus    = effect.bonus + bonus * 0.01;
+        break;
+    }
+  }
+
+  let attackSpeed = base.attackSpeed;
+  let range       = base.range;
+
+  if (type === 'Aquamarine') {
+    attackSpeed = base.attackSpeed + bonus * 0.025;
+    range       = base.range       + bonus * 1.5; // 0.1 tile × 15 units/tile
+  }
+  if (type === 'Amethyst') {
+    range = base.range + bonus * 7.5; // 0.5 tiles × 15 units/tile
+  }
+
+  return {
+    damageMin:   Math.round(base.damageMin * dmgMult),
+    damageMax:   Math.round(base.damageMax * dmgMult),
+    attackSpeed,
+    range,
+    effect,
+  };
+}

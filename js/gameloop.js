@@ -6,7 +6,7 @@
 import { createInitialState, saveState, loadState, clearState } from './state.js';
 import { createGrid, validatePlacement, placeGem, placeRock, removeRock, findPath,
          GRID_COLS, GRID_ROWS, CELL_SIZE, ENTRY, CHECKPOINTS, EXIT } from './grid.js';
-import { rollGem, getStats, getVisual, GEM_CHANCE_LEVELS, QUALITY_LEVELS } from './gem.js';
+import { rollGem, getStats, getLeveledStats, getVisual, GEM_CHANCE_LEVELS, QUALITY_LEVELS } from './gem.js';
 import { moveEnemy, GOLD_PER_WAVE } from './enemy.js';
 import { WaveSpawner } from './wave.js';
 import { attackEnemy, canAttack, isInRange, tickPoison } from './combat.js';
@@ -52,6 +52,13 @@ function init() {
     if (gameState.gameOver   === undefined) gameState.gameOver   = false;
     if (gameState.gameWon    === undefined) gameState.gameWon    = false;
     if (!gameState.critNumbers)            gameState.critNumbers = [];
+    for (const gem of Object.values(gameState.gems || {})) {
+      if (gem.level     === undefined) gem.level     = 1;
+      if (gem.auraBonus === undefined) gem.auraBonus = 0;
+    }
+    for (const enemy of (gameState.enemies || [])) {
+      if (enemy.poisonGemId === undefined) enemy.poisonGemId = null;
+    }
   } else {
     clearState();
     gameState = createInitialState();
@@ -123,9 +130,11 @@ function updateBuild(dt, now) {
       const stats = getStats(type, quality);
       gameState.gems[id] = {
         id, type, quality, x, y,
+        level: 1,
         kills: 0, totalDamage: 0,
         lastAttackTime: 0,
         attackCooldown: Math.round(1000 / stats.attackSpeed),
+        auraBonus: 0,
         lastTargetId: null,
       };
       placeGem(gameState.grid, x, y, id);
@@ -179,7 +188,7 @@ function updateBuild(dt, now) {
           // Upgrade quality of survivor by one level
           const qi = QUALITY_LEVELS.indexOf(g1.quality);
           g1.quality = QUALITY_LEVELS[Math.min(qi + 1, QUALITY_LEVELS.length - 1)];
-          g1.attackCooldown = Math.round(1000 / getStats(g1.type, g1.quality).attackSpeed);
+          g1.attackCooldown = Math.round(1000 / getLeveledStats(g1.type, g1.quality, g1.level || 1).attackSpeed);
           // Removed gem's position becomes a permanent rock
           placeRock(gameState.grid, g2.x, g2.y);
           for (let dy = 0; dy <= 1; dy++)
@@ -237,16 +246,16 @@ function updateBuild(dt, now) {
  * Stores gem.auraBonus (0 if none) so the stats panel can show boosted speed.
  */
 function applyAuraBuffs(state) {
-  // 1. Reset to base cooldown and clear previous aura bonus
+  // 1. Reset to base (leveled) cooldown and clear previous aura bonus
   for (const gem of Object.values(state.gems)) {
-    const base = getStats(gem.type, gem.quality);
+    const ls = getLeveledStats(gem.type, gem.quality, gem.level);
     gem.auraBonus      = 0;
-    gem.attackCooldown = Math.round(1000 / base.attackSpeed);
+    gem.attackCooldown = Math.round(1000 / ls.attackSpeed);
   }
 
   // 2. Apply strongest aura from any Opal in range (no stacking)
   for (const opal of Object.values(state.gems)) {
-    const opalStats = getStats(opal.type, opal.quality);
+    const opalStats = getLeveledStats(opal.type, opal.quality, opal.level);
     if (opalStats.effect?.type !== 'aura') continue;
     const { bonus, auraRange } = opalStats.effect;
     const radiusPx = auraRange * (CELL_SIZE / 15);
@@ -257,8 +266,8 @@ function applyAuraBuffs(state) {
       const dy = gem.y * CELL_SIZE - opy;
       if (Math.sqrt(dx * dx + dy * dy) <= radiusPx && bonus > gem.auraBonus) {
         gem.auraBonus = bonus;
-        const base = getStats(gem.type, gem.quality);
-        gem.attackCooldown = Math.round(1000 / (base.attackSpeed * (1 + bonus)));
+        const ls = getLeveledStats(gem.type, gem.quality, gem.level);
+        gem.attackCooldown = Math.round(1000 / (ls.attackSpeed * (1 + bonus)));
       }
     }
   }
@@ -305,6 +314,24 @@ function computeFullPath(grid) {
 }
 
 // ---------------------------------------------------------------------------
+// _checkLevelUp
+// ---------------------------------------------------------------------------
+
+/**
+ * Checks if a gem has earned enough kills to level up, and applies the level-up
+ * if so (recomputing its attack cooldown at the new level).
+ * Called after each kill credit in updateDefend.
+ */
+function _checkLevelUp(gem) {
+  const expectedLevel = Math.floor(gem.kills / 10) + 1;
+  if (expectedLevel > gem.level) {
+    gem.level = expectedLevel;
+    const ls = getLeveledStats(gem.type, gem.quality, gem.level);
+    gem.attackCooldown = Math.round(1000 / (ls.attackSpeed * (1 + gem.auraBonus)));
+  }
+}
+
+// ---------------------------------------------------------------------------
 // updateDefend
 // ---------------------------------------------------------------------------
 
@@ -326,7 +353,17 @@ function updateDefend(dt, now) {
   for (const e of gameState.enemies) {
     if (e.dead || e.exited) continue;
     moveEnemy(e, dt, now);
-    tickPoison(e, dt, now);
+    const poisonResult = tickPoison(e, dt, now);
+    if (poisonResult.damage > 0 && e.poisonGemId) {
+      const pg = gameState.gems[e.poisonGemId];
+      if (pg) {
+        pg.totalDamage += poisonResult.damage;
+        if (poisonResult.killed) {
+          pg.kills++;
+          _checkLevelUp(pg);
+        }
+      }
+    }
     if (e.exited) {
       gameState.lives -= 1;
       if (gameState.lives <= 0) {
@@ -346,6 +383,7 @@ function updateDefend(dt, now) {
       gem.totalDamage += result.damage + result.splashDamage;
       if (target.dead) gem.kills++;
       gem.kills += result.splashKills;
+      _checkLevelUp(gem);
 
       const color = getVisual(gem.type, gem.quality).color;
       gameState.projectiles.push({
@@ -360,7 +398,7 @@ function updateDefend(dt, now) {
       }
 
       // Topaz: attack additional targets (all in range, excluding primary)
-      const stats = getStats(gem.type, gem.quality);
+      const stats = getLeveledStats(gem.type, gem.quality, gem.level);
       if (stats.effect?.type === 'multi') {
         const extras = gameState.enemies
           .filter(e => !e.dead && !e.exited && e !== target && isInRange(gem, e))
@@ -369,7 +407,7 @@ function updateDefend(dt, now) {
         for (const extra of extras) {
           const extraResult = attackEnemy(gem, extra, gameState.enemies, now);
           gem.totalDamage += extraResult.damage;
-          if (extra.dead) gem.kills++;
+          if (extra.dead) { gem.kills++; _checkLevelUp(gem); }
           gameState.projectiles.push({ x1: gem.x * CELL_SIZE, y1: gem.y * CELL_SIZE, x2: extra.x, y2: extra.y, color });
           if (extraResult.crit) {
             gameState.critNumbers.push({ x: extra.x, y: extra.y - 12, value: extraResult.damage, createdAt: now });

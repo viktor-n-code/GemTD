@@ -76,6 +76,7 @@ export function spawnEnemy(waveNumber, path) {
     currentSpeed: stats.speed * SPEED_SCALE,
     poisonDps: 0,         // current poison damage per second; 0 = not poisoned
     poisonUntil: 0,       // timestamp (ms) when poison expires
+    poisonGemId: null,    // id of the gem that applied the current poison instance
     dead: false,
     exited: false,
   };

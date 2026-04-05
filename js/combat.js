@@ -4,7 +4,7 @@
  */
 
 import { CELL_SIZE } from './grid.js';
-import { getStats } from './gem.js';
+import { getLeveledStats } from './gem.js';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -46,7 +46,7 @@ export function isInRange(gem, enemy) {
   // Diamond only attacks ground enemies
   if (gem.type === 'Diamond' && enemy.flying) return false;
 
-  const stats = getStats(gem.type, gem.quality);
+  const stats = getLeveledStats(gem.type, gem.quality, gem.level);
 
   // Gem pixel centre: grid coords are top-left of the 2×2 block.
   // Use the same formula as the renderer: gem.x * CELL_SIZE (top-left corner).
@@ -71,13 +71,14 @@ export function isInRange(gem, enemy) {
  * Only the most powerful instance of each effect type applies (no stacking).
  *
  * @param {Object}      enemy  - Enemy object (mutated in place)
- * @param {Object|null} effect - Effect descriptor from getStats(), e.g.
+ * @param {Object|null} effect - Effect descriptor from getLeveledStats(), e.g.
  *                               { type:'poison', dps, slow, duration }
  *                               { type:'slow', amount, duration }
  *                               null (Amethyst / air)
  * @param {number}      now    - Current timestamp in ms
+ * @param {string|null} gemId  - ID of the gem applying the effect (for kill attribution)
  */
-export function applyEffect(enemy, effect, now) {
+export function applyEffect(enemy, effect, now, gemId) {
   if (enemy.dead || enemy.exited) return;
   if (!effect) return;
 
@@ -86,6 +87,7 @@ export function applyEffect(enemy, effect, now) {
     if (effect.dps > enemy.poisonDps) {
       enemy.poisonDps   = effect.dps;
       enemy.poisonUntil = now + effect.duration * 1000;
+      enemy.poisonGemId = gemId ?? null;
     }
     // Slow part of poison: apply if stronger or longer
     const newSlowUntil = now + effect.duration * 1000;
@@ -123,7 +125,7 @@ export function applyEffect(enemy, effect, now) {
  * @param {number} now           - Current timestamp in ms
  */
 export function applySplash(gem, primaryEnemy, enemies, primaryDamage, now) {
-  const stats  = getStats(gem.type, gem.quality);
+  const stats  = getLeveledStats(gem.type, gem.quality, gem.level);
   const radius = stats.effect.radius;
   let splashKills  = 0;
   let splashDamage = 0;
@@ -169,7 +171,7 @@ export function attackEnemy(gem, enemy, enemies, now) {
   if (gem.type === 'Amethyst' && !enemy.flying) return { damage: 0, crit: false };
   if (gem.type === 'Diamond'   &&  enemy.flying) return { damage: 0, crit: false };
 
-  const stats = getStats(gem.type, gem.quality);
+  const stats = getLeveledStats(gem.type, gem.quality, gem.level);
 
   // 1. Roll damage
   let damage = Math.floor(Math.random() * (stats.damageMax - stats.damageMin + 1)) + stats.damageMin;
@@ -198,7 +200,7 @@ export function attackEnemy(gem, enemy, enemies, now) {
   }
 
   // 6. Apply gem effect (poison, slow, etc.)
-  applyEffect(enemy, stats.effect, now);
+  applyEffect(enemy, stats.effect, now, gem.id);
 
   // 7. Ruby splash damage
   let splashKills = 0;
@@ -225,16 +227,33 @@ export function attackEnemy(gem, enemy, enemies, now) {
  * @param {number} dt    - Delta time in seconds
  * @param {number} now   - Current timestamp in ms
  */
+/**
+ * Applies ongoing poison damage to an enemy. Call every frame.
+ * Returns { damage, killed } for kill/damage attribution to the source gem.
+ *
+ * @param {Object} enemy - Enemy object (mutated in place)
+ * @param {number} dt    - Delta time in seconds
+ * @param {number} now   - Current timestamp in ms
+ * @returns {{ damage: number, killed: boolean }}
+ */
 export function tickPoison(enemy, dt, now) {
+  let damage = 0;
+  let killed = false;
+
   if (enemy.poisonDps > 0 && now < enemy.poisonUntil) {
-    enemy.hp -= enemy.poisonDps * dt;
-    if (enemy.hp <= 0) {
+    damage = enemy.poisonDps * dt;
+    enemy.hp -= damage;
+    if (enemy.hp <= 0 && !enemy.dead) {
       enemy.dead = true;
+      killed = true;
     }
   }
 
   // Expire poison when duration ends
   if (enemy.poisonDps > 0 && now >= enemy.poisonUntil) {
-    enemy.poisonDps = 0;
+    enemy.poisonDps   = 0;
+    enemy.poisonGemId = null;
   }
+
+  return { damage, killed };
 }
