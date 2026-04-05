@@ -271,11 +271,11 @@ function _buildGemHTML(gem) {
 }
 
 function _enemySpeedHTML(enemy, now) {
-  const base = Math.round(enemy.speed);
-  if (now >= enemy.slowUntil) return `${base} px/s`;
-  const cur  = Math.round(enemy.currentSpeed);
-  const diff = base - cur;
-  return `${cur} px/s <span class="info-slowed-speed">(-${diff})</span>`;
+  const tileBase = (enemy.speed / CELL_SIZE).toFixed(1);
+  if (now >= enemy.slowUntil) return `${tileBase} t/s`;
+  const tileCur  = (enemy.currentSpeed / CELL_SIZE).toFixed(1);
+  const tileDiff = ((enemy.speed - enemy.currentSpeed) / CELL_SIZE).toFixed(1);
+  return `${tileCur} t/s <span class="info-slowed-speed">(-${tileDiff})</span>`;
 }
 
 function _buildEnemyHTML(enemy, state) {
