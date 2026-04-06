@@ -4,7 +4,7 @@
 import { getVisual, getStats, getLeveledStats, GEM_CHANCE_LEVELS, GEM_TYPES } from './gem.js';
 import { GRID_ROWS, CELL_SIZE } from './grid.js';
 import { HUD_HEIGHT } from './renderer.js';
-import { SPECIAL_GEM_DEFS, getSpecialGemLeveledStats, findAvailableRecipes } from './specialgem.js';
+import { SPECIAL_GEM_DEFS, getSpecialGemLeveledStats, getSpecialVisual, findAvailableRecipes } from './specialgem.js';
 
 // ---------------------------------------------------------------------------
 // Layout constants (exported so input.js can do hit-testing)
@@ -769,7 +769,9 @@ export function drawUI(ctx, state, inputState) {
     if (gemId !== undefined && gemId !== null) {
       const gem    = state.gems[gemId];
       if (gem) {
-        const visual = getVisual(gem.type, gem.quality);
+        const visual = gem.type === 'special'
+          ? { color: getSpecialVisual(gem.specialType).color, shape: 'hexagon' }
+          : getVisual(gem.type, gem.quality);
 
         // Slot background (slightly darkened gem colour via the fill)
         ctx.fillStyle = visual.color;
@@ -781,11 +783,12 @@ export function drawUI(ctx, state, inputState) {
         drawShapeInSlot(ctx, visual.shape, visual.color, cx, cy - 6, 14);
 
         // Gem name label below the shape
+        const slotLabel = gem.type === 'special' ? gem.name : `${gem.quality} ${gem.type}`;
         ctx.fillStyle = '#ffffff';
         ctx.font      = '8px Arial';
         ctx.textAlign    = 'center';
         ctx.textBaseline = 'alphabetic';
-        ctx.fillText(`${gem.quality} ${gem.type}`, cx, slot.y + slot.h - 2);
+        ctx.fillText(slotLabel, cx, slot.y + slot.h - 2);
 
         // Kept gem: gold border
         if (gemId === state.keptGemId) {

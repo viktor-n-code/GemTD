@@ -91,7 +91,9 @@ function drawGrid(ctx, state) {
       } else if (cell.type === 'gem' && cell.gemId !== null) {
         const gem = gems[cell.gemId];
         if (gem) {
-          const visual = getVisual(gem.type, gem.quality);
+          const visual = gem.type === 'special'
+            ? getSpecialVisual(gem.specialType)
+            : getVisual(gem.type, gem.quality);
           fillColor = visual.color;
         } else {
           fillColor = COLOR_EMPTY;
