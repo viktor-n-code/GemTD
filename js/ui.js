@@ -242,6 +242,24 @@ function _buildEffectHTML(effect, baseEffect) {
         _row('DPS', `${effect.auraDps} to all in range${_lvlNote(effect.auraDps, b.auraDps, d => d)}`) +
         _row('Radius', `${(effect.auraRange / 15).toFixed(1)} tiles`)
       );
+    case 'air_crystal':
+      return wrap(
+        _row('Targeting', 'Air only') +
+        _row('Armor Aura', `−${effect.armorAura} armor to flying in range`) +
+        _row('Aura Radius', `${(effect.auraRange / 15).toFixed(1)} tiles`)
+      );
+    case 'crit_ground':
+      return wrap(
+        _row('Targeting', 'Ground only') +
+        _row('Crit Chance', `${Math.round(effect.critChance * 100)}%`) +
+        _row('Crit Mult', `×${effect.critMult}`)
+      );
+    case 'armor_debuff':
+      return wrap(
+        _row('Crit Chance', `${Math.round(effect.critChance * 100)}%`) +
+        _row('Crit Mult', `×${effect.critMult}`) +
+        _row('Armor Debuff', `−${effect.armorDebuff} armor for ${effect.debuffDuration}s`)
+      );
     case 'aura':
       return wrap(
         _row('Effect', 'Attack Speed Aura') +

@@ -583,7 +583,29 @@ function updateDefend(dt, now) {
     }
   }
 
-  // 3b. Star Ruby: passive burn aura damages all enemies within aura range
+  // 3b. Red Crystal: passive armor aura debuffs flying enemies within range
+  for (const gem of Object.values(gameState.gems)) {
+    if (gem.type !== 'special') continue;
+    const sStats = getSpecialGemLeveledStats(gem.specialType, gem.level);
+    if (sStats?.effect?.type !== 'air_crystal') continue;
+    const auraRadiusPx = sStats.effect.auraRange * (CELL_SIZE / 15);
+    const armorAmt     = sStats.effect.armorAura;
+    const gemCx = gem.x * CELL_SIZE;
+    const gemCy = gem.y * CELL_SIZE;
+    for (const enemy of gameState.enemies) {
+      if (enemy.dead || enemy.exited || !enemy.flying) continue;
+      const dx = enemy.x - gemCx;
+      const dy = enemy.y - gemCy;
+      if (Math.sqrt(dx * dx + dy * dy) > auraRadiusPx) continue;
+      // Refresh debuff each frame; take strongest if multiple Red Crystals
+      if (armorAmt >= (enemy.armorDebuff ?? 0)) {
+        enemy.armorDebuff      = armorAmt;
+        enemy.armorDebuffUntil = now + 200; // 200 ms — expires shortly after leaving range
+      }
+    }
+  }
+
+  // 3c. Star Ruby: passive burn aura damages all enemies within aura range
   for (const gem of Object.values(gameState.gems)) {
     if (gem.type !== 'special') continue;
     const sStats = getSpecialGemLeveledStats(gem.specialType, gem.level);

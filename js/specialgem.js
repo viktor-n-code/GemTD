@@ -15,6 +15,12 @@
  *   'multi'       — identical to Topaz multi-target (targets)
  *   'splash_slow' — Silver: full-damage splash + slow to all hit enemies
  *   'burn_aura'   — Star Ruby: passive per-frame damage to all enemies in range
+ *   'air_crystal' — Red Crystal: air-only attack; passive armor aura for flying enemies
+ *                   (armorAura: reduction amount, auraRange: px)
+ *   'crit_ground' — Pink Diamond: ground-only attack with crit
+ *                   (critChance, critMult)
+ *   'armor_debuff'— Gold: any-target attack with crit + armor reduction on hit
+ *                   (critChance, critMult, armorDebuff: amount, debuffDuration: seconds)
  */
 export const SPECIAL_GEM_DEFS = [
   // ── Jade chain ─────────────────────────────────────────────────────────────
@@ -180,6 +186,104 @@ export const SPECIAL_GEM_DEFS = [
     stats: {
       damageMin: 24, damageMax: 25, attackSpeed: 4.0, range: 52,
       effect: { type: 'burn_aura', auraDps: 100, auraRange: 52 },
+    },
+    upgradeTo: null,
+    upgradeCost: null,
+  },
+
+  // ── Red Crystal chain ──────────────────────────────────────────────────────
+  {
+    id: 'red_crystal',
+    name: 'Red Crystal',
+    color: '#e84040',
+    ingredients: [
+      { type: 'Emerald',  quality: 'flawless' },
+      { type: 'Ruby',     quality: 'standard' },
+      { type: 'Amethyst', quality: 'flawed'   },
+    ],
+    stats: {
+      damageMin: 49, damageMax: 75, attackSpeed: 1.25, range: 186,
+      effect: { type: 'air_crystal', armorAura: 4, auraRange: 200 },
+    },
+    upgradeTo: 'red_crystal_facet',
+    upgradeCost: 100,
+  },
+  {
+    id: 'red_crystal_facet',
+    name: 'Red Crystal Facet',
+    color: '#d03030',
+    stats: {
+      damageMin: 74, damageMax: 100, attackSpeed: 1.25, range: 200,
+      effect: { type: 'air_crystal', armorAura: 5, auraRange: 200 },
+    },
+    upgradeTo: 'rose_quartz_crystal',
+    upgradeCost: 100,
+  },
+  {
+    id: 'rose_quartz_crystal',
+    name: 'Rose Quartz Crystal',
+    color: '#ff8099',
+    stats: {
+      damageMin: 99, damageMax: 125, attackSpeed: 1.25, range: 215,
+      effect: { type: 'air_crystal', armorAura: 6, auraRange: 215 },
+    },
+    upgradeTo: null,
+    upgradeCost: null,
+  },
+
+  // ── Pink Diamond chain ─────────────────────────────────────────────────────
+  {
+    id: 'pink_diamond',
+    name: 'Pink Diamond',
+    color: '#ff88cc',
+    ingredients: [
+      { type: 'Diamond', quality: 'perfect'  },
+      { type: 'Diamond', quality: 'standard' },
+      { type: 'Topaz',   quality: 'standard' },
+    ],
+    stats: {
+      damageMin: 149, damageMax: 175, attackSpeed: 1.0, range: 114,
+      effect: { type: 'crit_ground', critChance: 0.10, critMult: 5 },
+    },
+    upgradeTo: 'great_pink_diamond',
+    upgradeCost: 175,
+  },
+  {
+    id: 'great_pink_diamond',
+    name: 'Great Pink Diamond',
+    color: '#ff55aa',
+    stats: {
+      damageMin: 174, damageMax: 195, attackSpeed: 1.538, range: 122,
+      effect: { type: 'crit_ground', critChance: 0.10, critMult: 8 },
+    },
+    upgradeTo: null,
+    upgradeCost: null,
+  },
+
+  // ── Gold chain ─────────────────────────────────────────────────────────────
+  {
+    id: 'gold',
+    name: 'Gold',
+    color: '#f5c518',
+    ingredients: [
+      { type: 'Amethyst', quality: 'perfect'  },
+      { type: 'Amethyst', quality: 'flawless' },
+      { type: 'Diamond',  quality: 'flawed'   },
+    ],
+    stats: {
+      damageMin: 159, damageMax: 190, attackSpeed: 1.0, range: 114,
+      effect: { type: 'armor_debuff', critChance: 0.25, critMult: 2, armorDebuff: 5, debuffDuration: 3 },
+    },
+    upgradeTo: 'egyptian_gold',
+    upgradeCost: 210,
+  },
+  {
+    id: 'egyptian_gold',
+    name: 'Egyptian Gold',
+    color: '#e6a800',
+    stats: {
+      damageMin: 159, damageMax: 200, attackSpeed: 1.429, range: 114,
+      effect: { type: 'armor_debuff', critChance: 0.30, critMult: 2, armorDebuff: 8, debuffDuration: 3 },
     },
     upgradeTo: null,
     upgradeCost: null,

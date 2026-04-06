@@ -282,7 +282,7 @@ function drawGems(ctx, state) {
           break;
       }
 
-      // Star Ruby aura ring — faint red circle showing burn aura radius
+      // Aura rings for special gems with passive area effects
       if (gem.type === 'special') {
         const sStats = getSpecialGemLeveledStats(gem.specialType, gem.level || 1);
         if (sStats?.effect?.type === 'burn_aura') {
@@ -292,6 +292,18 @@ function drawGems(ctx, state) {
           ctx.lineWidth   = 1;
           ctx.beginPath();
           ctx.arc(cx, cy, auraR, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+        if (sStats?.effect?.type === 'air_crystal') {
+          const auraR = sStats.effect.auraRange * (CELL_SIZE / 15);
+          ctx.save();
+          ctx.strokeStyle = 'rgba(232,64,64,0.4)';
+          ctx.fillStyle   = 'rgba(232,64,64,0.08)';
+          ctx.lineWidth   = 1;
+          ctx.beginPath();
+          ctx.arc(cx, cy, auraR, 0, Math.PI * 2);
+          ctx.fill();
           ctx.stroke();
           ctx.restore();
         }
