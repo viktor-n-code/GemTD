@@ -63,6 +63,13 @@ export function isInRange(gem, enemy) {
   // Diamond only attacks ground enemies
   if (gem.type === 'Diamond' && enemy.flying) return false;
 
+  // Special gem targeting filters
+  if (gem.type === 'special') {
+    const sStats = getSpecialGemLeveledStats(gem.specialType, gem.level);
+    if (sStats?.effect?.type === 'air_crystal' && !enemy.flying) return false;
+    if (sStats?.effect?.type === 'crit_ground' &&  enemy.flying) return false;
+  }
+
   const stats = getGemStats(gem);
 
   // Gem pixel centre: grid coords are top-left of the 2×2 block.
@@ -206,13 +213,17 @@ export function attackEnemy(gem, enemy, enemies, now) {
 
   const stats = getGemStats(gem);
 
+  // Guard: air_crystal only attacks flying; crit_ground only attacks ground
+  if (stats.effect?.type === 'air_crystal' && !enemy.flying) return { damage: 0, crit: false, splashKills: 0, splashDamage: 0, goldAmount: 0 };
+  if (stats.effect?.type === 'crit_ground' &&  enemy.flying) return { damage: 0, crit: false, splashKills: 0, splashDamage: 0, goldAmount: 0 };
+
   // 1. Roll damage
   let damage = Math.floor(Math.random() * (stats.damageMax - stats.damageMin + 1)) + stats.damageMin;
 
   // 1b. MVP bonus — flat % multiplier earned from winning rounds
   if (gem.mvpBonus > 0) damage = Math.round(damage * (1 + gem.mvpBonus * 0.01));
 
-  // 1d. Crit chance — Diamond (effect.type === 'crit') or Lucky Asian Jade (effect.type === 'lucky_jade')
+  // 1d. Crit chance — Diamond, Lucky Asian Jade, Pink Diamond, or Gold
   let isCrit = false;
   if (stats.effect?.type === 'crit' && Math.random() < stats.effect.chance) {
     damage *= stats.effect.multiplier;
@@ -220,10 +231,16 @@ export function attackEnemy(gem, enemy, enemies, now) {
   } else if (stats.effect?.type === 'lucky_jade' && Math.random() < stats.effect.critChance) {
     damage *= stats.effect.critMult;
     isCrit = true;
+  } else if ((stats.effect?.type === 'crit_ground' || stats.effect?.type === 'armor_debuff') && Math.random() < stats.effect.critChance) {
+    damage *= stats.effect.critMult;
+    isCrit = true;
   }
 
-  // 2. Apply armor reduction (3% per armor point — e.g. 16 armor → 48% reduction)
-  damage = Math.round(damage * Math.max(0, 1 - enemy.armor * 0.03));
+  // 2. Apply armor reduction (3% per armor point); active armor debuff reduces effective armor
+  const effectiveArmor = (now < (enemy.armorDebuffUntil ?? 0))
+    ? Math.max(0, enemy.armor - enemy.armorDebuff)
+    : enemy.armor;
+  damage = Math.round(damage * Math.max(0, 1 - effectiveArmor * 0.03));
 
   // 3. Apply type advantage: Amethyst vs flying enemies
   if (enemy.flying && gem.type === 'Amethyst') {
@@ -276,6 +293,12 @@ export function attackEnemy(gem, enemy, enemies, now) {
     if (Math.random() < stats.effect.goldChance) {
       goldAmount = Math.floor(gem.level / 2);
     }
+  }
+
+  // 8b. Gold/Egyptian Gold: apply armor debuff to target
+  if (stats.effect?.type === 'armor_debuff' && !enemy.dead) {
+    enemy.armorDebuff      = stats.effect.armorDebuff;
+    enemy.armorDebuffUntil = now + stats.effect.debuffDuration * 1000;
   }
 
   // 9. Update attack timing
