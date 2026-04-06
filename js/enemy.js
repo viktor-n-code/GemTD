@@ -33,7 +33,7 @@ export const ENEMY_STATS = [
   { hp: 1650, armor: 14, speed: 0.75, minSpeed: 0.38, flying: false }, // wave 17
   { hp: 2000, armor: 14, speed: 0.75, minSpeed: 0.42, flying: false }, // wave 18
   { hp: 2500, armor: 14, speed: 0.75, minSpeed: 0.45, flying: false }, // wave 19
-  { hp: 1550, armor: 14, speed: 0.75, minSpeed: 0.38, flying: false }, // wave 20
+  { hp: 1300, armor: 14, speed: 0.75, minSpeed: 0.38, flying: true  }, // wave 20
 ];
 // Armor formula: min(10 + floor((wave - 1) / 4), 25)
 

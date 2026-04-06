@@ -240,10 +240,13 @@ function _buildGemHTML(gem) {
     ? ` <span class="info-gem-level">Lv ${level}</span>`
     : '';
 
-  // Damage: show leveled values with level and MVP bonus annotations
+  // Damage: show MVP-adjusted range so the bonus is visible in the tooltip
   const mvpBonus = gem.mvpBonus || 0;
-  let dmgHTML = `${ls.damageMin}–${ls.damageMax}`;
-  if (level > 1)   dmgHTML += ` <span class="info-level-note">(+${(level - 1) * 10}% lvl)</span>`;
+  const mvpMult  = 1 + mvpBonus * 0.01;
+  const minDmg   = mvpBonus > 0 ? Math.round(ls.damageMin * mvpMult) : ls.damageMin;
+  const maxDmg   = mvpBonus > 0 ? Math.round(ls.damageMax * mvpMult) : ls.damageMax;
+  let dmgHTML = `${minDmg}–${maxDmg}`;
+  if (level > 1)    dmgHTML += ` <span class="info-level-note">(+${(level - 1) * 10}% lvl)</span>`;
   if (mvpBonus > 0) dmgHTML += ` <span class="info-mvp-note">(+${mvpBonus}% MVP)</span>`;
 
   let html = `
