@@ -7,9 +7,10 @@ import { createInitialState, saveState, loadState, clearState } from './state.js
 import { createGrid, validatePlacement, placeGem, placeRock, removeRock, findPath,
          GRID_COLS, GRID_ROWS, CELL_SIZE, ENTRY, CHECKPOINTS, EXIT } from './grid.js';
 import { rollGem, getStats, getLeveledStats, getVisual, GEM_CHANCE_LEVELS, QUALITY_LEVELS } from './gem.js';
+import { SPECIAL_GEM_DEFS, getSpecialGemLeveledStats, getSpecialVisual, findAvailableRecipes } from './specialgem.js';
 import { moveEnemy, GOLD_PER_WAVE } from './enemy.js';
 import { WaveSpawner } from './wave.js';
-import { attackEnemy, canAttack, isInRange, tickPoison } from './combat.js';
+import { attackEnemy, canAttack, isInRange, tickPoison, getGemStats } from './combat.js';
 import { render, HUD_HEIGHT } from './renderer.js';
 import { InputHandler } from './input.js';
 import { drawUI, updateInfoPanel, PANEL_H } from './ui.js';
@@ -224,6 +225,11 @@ function updateBuild(dt, now) {
         break;
       }
 
+      case 'combineSpecial': {
+        _handleCombineSpecial(action.selectedGemId, 'build');
+        break;
+      }
+
       case 'removeRock': {
         removeRock(gameState.grid, action.x, action.y);
         applyAuraBuffs(gameState);
@@ -258,14 +264,14 @@ function updateBuild(dt, now) {
 function applyAuraBuffs(state) {
   // 1. Reset to base (leveled) cooldown and clear previous aura bonus
   for (const gem of Object.values(state.gems)) {
-    const ls = getLeveledStats(gem.type, gem.quality, gem.level);
+    const ls = getGemStats(gem);
     gem.auraBonus      = 0;
     gem.attackCooldown = Math.round(1000 / ls.attackSpeed);
   }
 
   // 2. Apply strongest aura from any Opal in range (no stacking)
   for (const opal of Object.values(state.gems)) {
-    const opalStats = getLeveledStats(opal.type, opal.quality, opal.level);
+    const opalStats = getGemStats(opal);
     if (opalStats.effect?.type !== 'aura') continue;
     const { bonus, auraRange } = opalStats.effect;
     const radiusPx = auraRange * (CELL_SIZE / 15);
@@ -276,11 +282,127 @@ function applyAuraBuffs(state) {
       const dy = gem.y * CELL_SIZE - opy;
       if (Math.sqrt(dx * dx + dy * dy) <= radiusPx && bonus > gem.auraBonus) {
         gem.auraBonus = bonus;
-        const ls = getLeveledStats(gem.type, gem.quality, gem.level);
+        const ls = getGemStats(gem);
         gem.attackCooldown = Math.round(1000 / (ls.attackSpeed * (1 + bonus)));
       }
     }
   }
+}
+
+// ---------------------------------------------------------------------------
+// _handleCombineSpecial
+// ---------------------------------------------------------------------------
+
+/**
+ * Executes a special gem combine for the given master gem.
+ * Picks the first completable recipe for that gem, sums kills/damage/mvpBonus
+ * from all ingredients into the master, converts ingredient gems to rocks,
+ * and (in build phase) also converts any remaining placed gems to rocks then
+ * starts the defend phase.
+ *
+ * @param {string} selectedGemId — the master gem (transform destination)
+ * @param {'build'|'defend'} phase
+ */
+function _handleCombineSpecial(selectedGemId, phase) {
+  const recipes = findAvailableRecipes(
+    selectedGemId, gameState.gems, gameState.placedThisRound, phase
+  );
+  if (recipes.length === 0) return;
+
+  const { def, ingredientIds } = recipes[0];
+  const master = gameState.gems[selectedGemId];
+  if (!master) return;
+
+  // Gather all participants: master + all non-master ingredients
+  const partnerIds = ingredientIds.filter(id => id !== selectedGemId);
+  const allParticipants = [master, ...partnerIds.map(id => gameState.gems[id]).filter(Boolean)];
+
+  // Sum stats from all participants
+  const totalKills = allParticipants.reduce((s, g) => s + (g.kills || 0), 0);
+  const totalDmg   = allParticipants.reduce((s, g) => s + (g.totalDamage || 0), 0);
+  const totalMvp   = allParticipants.reduce((s, g) => s + (g.mvpBonus || 0), 0);
+  const newLevel   = Math.max(1, Math.floor(totalKills / 10) + 1);
+
+  // Transform master gem into the special gem
+  const sStats = getSpecialGemLeveledStats(def.id, newLevel);
+  master.type        = 'special';
+  master.specialType = def.id;
+  master.quality     = null;
+  master.kills       = totalKills;
+  master.totalDamage = totalDmg;
+  master.mvpBonus    = totalMvp;
+  master.level       = newLevel;
+  master.attackCooldown = Math.round(1000 / sStats.attackSpeed);
+
+  // Name: 'Jade', or 'Jade 2' if a second one exists
+  const nameKey = `special_${def.id}`;
+  gameState.gemCounters[nameKey] = (gameState.gemCounters[nameKey] || 0) + 1;
+  master.name = gameState.gemCounters[nameKey] === 1
+    ? def.name
+    : `${def.name} ${gameState.gemCounters[nameKey]}`;
+
+  // Remove ingredient gems (non-master) → rocks
+  for (const id of partnerIds) {
+    const g = gameState.gems[id];
+    if (!g) continue;
+    placeRock(gameState.grid, g.x, g.y);
+    for (let dy = 0; dy <= 1; dy++)
+      for (let dx = 0; dx <= 1; dx++)
+        gameState.grid[g.y + dy][g.x + dx].gemId = null;
+    delete gameState.gems[id];
+    gameState.placedThisRound = gameState.placedThisRound.filter(i => i !== id);
+  }
+
+  if (phase === 'build') {
+    // Convert any remaining placed-this-round gems (non-master) to rocks
+    for (const id of [...gameState.placedThisRound]) {
+      if (id === selectedGemId) continue;
+      const g = gameState.gems[id];
+      if (!g) continue;
+      placeRock(gameState.grid, g.x, g.y);
+      for (let dy = 0; dy <= 1; dy++)
+        for (let dx = 0; dx <= 1; dx++)
+          gameState.grid[g.y + dy][g.x + dx].gemId = null;
+      delete gameState.gems[id];
+    }
+    gameState.keptGemId = selectedGemId;
+    startDefendPhase();
+  } else {
+    applyAuraBuffs(gameState);
+    saveState(gameState);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// _handleUpgradeSpecial
+// ---------------------------------------------------------------------------
+
+/**
+ * Upgrades a special gem to its next tier using gold.
+ * Carries over all stats (kills, damage, level, mvpBonus); only the name
+ * and base attack stats change.
+ *
+ * @param {string} gemId
+ */
+function _handleUpgradeSpecial(gemId) {
+  const gem = gameState.gems[gemId];
+  if (!gem || gem.type !== 'special') return;
+
+  const def = SPECIAL_GEM_DEFS.find(d => d.id === gem.specialType);
+  if (!def?.upgradeTo || !def.upgradeCost) return;
+  if (gameState.gold < def.upgradeCost) return;
+
+  gameState.gold -= def.upgradeCost;
+  gem.specialType = def.upgradeTo;
+
+  const nextDef = SPECIAL_GEM_DEFS.find(d => d.id === gem.specialType);
+  gem.name = nextDef.name; // name changes; no counter increment
+
+  const sStats = getSpecialGemLeveledStats(gem.specialType, gem.level);
+  gem.attackCooldown = Math.round(1000 / sStats.attackSpeed);
+
+  applyAuraBuffs(gameState);
+  saveState(gameState);
 }
 
 // ---------------------------------------------------------------------------
@@ -300,10 +422,10 @@ function startDefendPhase() {
   // Create wave spawner
   waveSpawner = new WaveSpawner(gameState.wave, groundPath);
 
-  // Assign final name to the kept gem now that its quality is settled
-  // (combine may have upgraded the quality, so naming at placement time was too early)
+  // Assign final name to the kept gem now that its quality is settled.
+  // Skip special gems — they are named at combine time.
   const keptGem = gameState.gems[gameState.keptGemId];
-  if (keptGem) {
+  if (keptGem && keptGem.type !== 'special') {
     const k = `${keptGem.quality}_${keptGem.type}`;
     gameState.gemCounters[k] = (gameState.gemCounters[k] || 0) + 1;
     keptGem.name = `${keptGem.quality} ${keptGem.type} ${gameState.gemCounters[k]}`;
@@ -364,10 +486,12 @@ function _checkLevelUp(gem) {
 // ---------------------------------------------------------------------------
 
 function updateDefend(dt, now) {
-  // Check for restart (works in any phase)
+  // Check for actions (restart, upgrade, special gem combine/upgrade)
   const action = inputHandler.consumeAction();
   if (action?.type === 'restart') { clearState(); location.reload(); return; }
   if (action?.type === 'upgrade') { handleUpgrade(); }
+  if (action?.type === 'combineSpecial')  { _handleCombineSpecial(action.selectedGemId, 'defend'); }
+  if (action?.type === 'upgradeSpecial')  { _handleUpgradeSpecial(action.gemId); }
 
   // Clear last frame's projectiles; expire old crit numbers
   gameState.projectiles = [];
@@ -415,7 +539,9 @@ function updateDefend(dt, now) {
       gem.kills += result.splashKills;
       _checkLevelUp(gem);
 
-      const color = getVisual(gem.type, gem.quality).color;
+      const color = gem.type === 'special'
+        ? getSpecialVisual(gem.specialType).color
+        : getVisual(gem.type, gem.quality).color;
       gameState.projectiles.push({
         x1: gem.x * CELL_SIZE,
         y1: gem.y * CELL_SIZE,
@@ -427,8 +553,8 @@ function updateDefend(dt, now) {
         gameState.critNumbers.push({ x: target.x, y: target.y - 12, value: result.damage, createdAt: now });
       }
 
-      // Topaz: attack additional targets (all in range, excluding primary)
-      const stats = getLeveledStats(gem.type, gem.quality, gem.level);
+      // Multi-target: Topaz and Malachite family attack additional enemies
+      const stats = getGemStats(gem);
       if (stats.effect?.type === 'multi') {
         const extras = gameState.enemies
           .filter(e => !e.dead && !e.exited && e !== target && isInRange(gem, e))
@@ -444,6 +570,31 @@ function updateDefend(dt, now) {
             gameState.critNumbers.push({ x: extra.x, y: extra.y - 12, value: extraResult.damage, createdAt: now });
           }
         }
+      }
+    }
+  }
+
+  // 3b. Star Ruby: passive burn aura damages all enemies within aura range
+  for (const gem of Object.values(gameState.gems)) {
+    if (gem.type !== 'special') continue;
+    const sStats = getSpecialGemLeveledStats(gem.specialType, gem.level);
+    if (sStats?.effect?.type !== 'burn_aura') continue;
+    const auraRadiusPx = sStats.effect.auraRange * (CELL_SIZE / 15);
+    const gemCx = gem.x * CELL_SIZE;
+    const gemCy = gem.y * CELL_SIZE;
+    for (const enemy of gameState.enemies) {
+      if (enemy.dead || enemy.exited) continue;
+      const dx = enemy.x - gemCx;
+      const dy = enemy.y - gemCy;
+      if (Math.sqrt(dx * dx + dy * dy) > auraRadiusPx) continue;
+      const dmg = sStats.effect.auraDps * dt;
+      enemy.hp       -= dmg;
+      gem.totalDamage += dmg;
+      gem.roundDamage += dmg;
+      if (enemy.hp <= 0 && !enemy.dead) {
+        enemy.dead = true;
+        gem.kills++;
+        _checkLevelUp(gem);
       }
     }
   }
