@@ -22,16 +22,16 @@ export const GEM_SLOTS = [
   { x: 184, y: PANEL_Y + 3, w: 40, h: 40 },
 ];
 
-// Action buttons
+// Action buttons — row 1
 export const BTN_COMBINE  = { x: 232, y: PANEL_Y + 9, w: 70,  h: 28 };
 export const BTN_KEEP     = { x: 308, y: PANEL_Y + 9, w: 60,  h: 28 };
 export const BTN_UPGRADE  = { x: 374, y: PANEL_Y + 9, w: 90,  h: 28 };
-export const BTN_RESTART  = { x: 470, y: PANEL_Y + 9, w: 80,  h: 28 };
 export const BTN_REMOVE   = { x: 558, y: PANEL_Y + 9, w: 80,  h: 28 };
 
-// Second-row buttons (special gem actions — visible in all phases)
+// Action buttons — row 2 (special gem actions + restart, separated from Remove)
 export const BTN_COMBINE_SPECIAL = { x: 232, y: PANEL_Y + 50, w: 108, h: 24 };
 export const BTN_UPGRADE_GEM     = { x: 344, y: PANEL_Y + 50, w: 120, h: 24 };
+export const BTN_RESTART         = { x: 476, y: PANEL_Y + 50, w: 84,  h: 24 };
 
 // ---------------------------------------------------------------------------
 // Private shape helpers (draw gem shapes centred at cx, cy with radius r)
@@ -221,6 +221,15 @@ function _buildEffectHTML(effect, baseEffect) {
         _row('Effect', 'Multi-target') +
         _row('Targets', `${effect.targets} simultaneous${_lvlNote(effect.targets, b.targets, d => d)}`)
       );
+    case 'lucky_jade':
+      return wrap(
+        _row('Effect', 'Poison + Slow') +
+        _row('DoT', `${effect.dps} dps for ${effect.duration}s`) +
+        _row('Slow', `-${Math.round(effect.slow * 100)}% for ${effect.duration}s`) +
+        _row('5% Crit', `×${effect.critMult} damage`) +
+        _row('1% Stun', `${effect.stunDuration}s`) +
+        _row('5% Gold', `+floor(level/2) gold`)
+      );
     case 'splash_slow':
       return wrap(
         _row('Effect', 'Splash + Slow') +
@@ -408,6 +417,7 @@ function _buildEnemyHTML(enemy, state) {
     </div>`;
 
   const tags = [];
+  if (now < (enemy.stunUntil ?? 0)) tags.push(`<span class="info-status-tag tag-stunned">Stunned</span>`);
   if (now < enemy.slowUntil)   tags.push(`<span class="info-status-tag tag-slowed">Slowed</span>`);
   if (now < enemy.poisonUntil) tags.push(`<span class="info-status-tag tag-poison">Poison ${enemy.poisonDps}dps</span>`);
   if (tags.length > 0) html += `<div class="info-status-tags">${tags.join('')}</div>`;
@@ -602,6 +612,7 @@ function formatEffect(effect) {
   if (effect.type === 'crit')    return `Crit ${Math.round(effect.chance * 100)}% x${effect.multiplier}`;
   if (effect.type === 'multi')       return `Hits ${effect.targets} targets`;
   if (effect.type === 'aura')        return `Aura +${Math.round(effect.bonus * 100)}% atk spd`;
+  if (effect.type === 'lucky_jade')  return `Poison+Slow / 5% ×${effect.critMult} crit / 1% stun / 5% gold`;
   if (effect.type === 'splash_slow') return `Splash+Slow r=${(effect.radius / CELL_SIZE).toFixed(1)}t -${Math.round(effect.slow * 100)}%`;
   if (effect.type === 'burn_aura')   return `Burn aura ${effect.auraDps}dps r=${(effect.auraRange / 15).toFixed(1)}t`;
   return effect.type;
@@ -722,7 +733,6 @@ export function drawUI(ctx, state, inputState) {
   const upgradeActive = upgradeCost !== null && state.gold >= upgradeCost;
   const upgradeLabel  = upgradeCost !== null ? `Upgrade (${upgradeCost}g)` : 'Upgrade (max)';
   drawButton(ctx, BTN_UPGRADE, upgradeLabel, upgradeActive, '#3a4a6a');
-  drawButton(ctx, BTN_RESTART, 'Restart', true, '#6a1a1a');
 
   // Second-row buttons: Combine Special + Upgrade Gem
   const selGemForSpecial = inputState?.selectedGemId ? state.gems[inputState.selectedGemId] : null;
@@ -749,6 +759,12 @@ export function drawUI(ctx, state, inputState) {
     }
   }
   drawButton(ctx, BTN_UPGRADE_GEM, upgradeGemLabel, upgradeGemActive, '#3a4a6a');
+
+  // Restart — two-click confirm; shows as 'Restart?' in orange during confirm window
+  const confirmPending = inputState?.restartConfirmUntil > performance.now();
+  const restartLabel  = confirmPending ? 'Restart?' : 'Restart';
+  const restartColor  = confirmPending ? '#8a4a00' : '#5a1a1a';
+  drawButton(ctx, BTN_RESTART, restartLabel, true, restartColor);
 
   ctx.restore();
 

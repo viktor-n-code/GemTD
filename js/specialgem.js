@@ -51,7 +51,15 @@ export const SPECIAL_GEM_DEFS = [
     color: '#1a8a3a',
     stats: {
       damageMin: 54, damageMax: 55, attackSpeed: 2.85, range: 122,
-      effect: { type: 'poison', dps: 10, slow: 0.50, duration: 4 },
+      effect: {
+        type: 'lucky_jade',
+        // Poison + slow (same as Asian Jade but 4 s)
+        dps: 10, slow: 0.50, duration: 4,
+        // Special procs
+        critChance: 0.05, critMult: 4,       // 5% × 4
+        stunChance: 0.01, stunDuration: 2,   // 1% stun 2 s
+        goldChance: 0.05,                    // 5% → floor(level/2) gold
+      },
     },
     upgradeTo: null,
     upgradeCost: null,
@@ -210,10 +218,6 @@ export function getSpecialGemLeveledStats(specialType, level) {
   const bonus   = lv - 1;
   const dmgMult = 1 + bonus * 0.10;
   const effect  = base.effect ? { ...base.effect } : null;
-
-  if (effect?.type === 'burn_aura') {
-    effect.auraDps = Math.round(base.effect.auraDps * dmgMult);
-  }
 
   return {
     damageMin:   Math.round(base.damageMin * dmgMult),

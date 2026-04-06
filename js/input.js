@@ -49,6 +49,7 @@ export class InputHandler {
     this.selectedEnemyId = null;  // enemy id selected by clicking during defend
     this.selectedRockPos = null;  // { x, y } of a selected rock cell, or null
     this.combineStep     = 0;     // 0 = idle, 1 = first gem, 2 = second gem
+    this.restartConfirmUntil = 0; // timestamp until which the restart confirm is active
 
     // Cached from update() for use in click handler
     this._phase          = 'build';
@@ -66,12 +67,13 @@ export class InputHandler {
   /** Returns a snapshot of the current input state for ui.js / renderer.js. */
   getState() {
     return {
-      hoveredCell:     this.hoveredCell,
-      hoveredGemId:    this.hoveredGemId,
-      selectedGemId:   this.selectedGemId,
-      selectedEnemyId: this.selectedEnemyId,
-      selectedRockPos: this.selectedRockPos,
-      combineStep:     this.combineStep,
+      hoveredCell:          this.hoveredCell,
+      hoveredGemId:         this.hoveredGemId,
+      selectedGemId:        this.selectedGemId,
+      selectedEnemyId:      this.selectedEnemyId,
+      selectedRockPos:      this.selectedRockPos,
+      combineStep:          this.combineStep,
+      restartConfirmUntil:  this.restartConfirmUntil,
     };
   }
 
@@ -189,7 +191,14 @@ export class InputHandler {
         return;
       }
       if (hitTest(BTN_RESTART, x, y)) {
-        this.pendingAction = { type: 'restart' };
+        if (Date.now() < this.restartConfirmUntil) {
+          // Second click within window — confirmed
+          this.restartConfirmUntil = 0;
+          this.pendingAction = { type: 'restart' };
+        } else {
+          // First click — arm confirm window (3 s)
+          this.restartConfirmUntil = Date.now() + 3000;
+        }
         return;
       }
       if (hitTest(BTN_REMOVE, x, y)) {
