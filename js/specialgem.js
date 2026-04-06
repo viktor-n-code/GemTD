@@ -211,10 +211,6 @@ export function getSpecialGemLeveledStats(specialType, level) {
   const dmgMult = 1 + bonus * 0.10;
   const effect  = base.effect ? { ...base.effect } : null;
 
-  if (effect?.type === 'burn_aura') {
-    effect.auraDps = Math.round(base.effect.auraDps * dmgMult);
-  }
-
   return {
     damageMin:   Math.round(base.damageMin * dmgMult),
     damageMax:   Math.round(base.damageMax * dmgMult),

@@ -230,6 +230,11 @@ function updateBuild(dt, now) {
         break;
       }
 
+      case 'upgradeSpecial': {
+        _handleUpgradeSpecial(action.gemId);
+        break;
+      }
+
       case 'removeRock': {
         removeRock(gameState.grid, action.x, action.y);
         applyAuraBuffs(gameState);
