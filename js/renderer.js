@@ -273,6 +273,33 @@ function drawGems(ctx, state) {
 }
 
 // ---------------------------------------------------------------------------
+// Draw build-phase highlights
+// ---------------------------------------------------------------------------
+
+/**
+ * During the build phase, draws a bright outline around the 5 newly placed gems
+ * so they stand out from the established maze.
+ */
+function drawBuildHighlights(ctx, state) {
+  if (state.phase !== 'build' || !state.placedThisRound?.length) return;
+
+  const placed = new Set(state.placedThisRound);
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255, 255, 160, 0.92)';
+  ctx.lineWidth = 2;
+
+  for (const gem of Object.values(state.gems)) {
+    if (!placed.has(gem.id)) continue;
+    // 2×2 block top-left pixel = ((gem.x - 1) * CS, (gem.y - 1) * CS)
+    const px = (gem.x - 1) * CELL_SIZE + 1;
+    const py = (gem.y - 1) * CELL_SIZE + 1;
+    ctx.strokeRect(px, py, CELL_SIZE * 2 - 2, CELL_SIZE * 2 - 2);
+  }
+
+  ctx.restore();
+}
+
+// ---------------------------------------------------------------------------
 // Draw enemies
 // ---------------------------------------------------------------------------
 
@@ -388,6 +415,9 @@ export function render(state, canvas, hudY) {
 
   // 3. Gem tower shapes (drawn over the colored cells)
   drawGems(ctx, state);
+
+  // 3b. Build-phase highlights — bright outline on newly placed gems
+  drawBuildHighlights(ctx, state);
 
   // 4. Enemies
   drawEnemies(ctx, state.enemies);
