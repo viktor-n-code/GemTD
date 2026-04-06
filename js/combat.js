@@ -5,6 +5,23 @@
 
 import { CELL_SIZE } from './grid.js';
 import { getLeveledStats } from './gem.js';
+import { getSpecialGemLeveledStats } from './specialgem.js';
+
+// ---------------------------------------------------------------------------
+// getGemStats — unified stat lookup for regular and special gems
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns leveled stats for any gem, routing to the correct lookup based on
+ * whether the gem is a base type or a special gem.
+ *
+ * @param {Object} gem — gem object with type, quality, specialType, level fields
+ * @returns {Object}   — { damageMin, damageMax, attackSpeed, range, effect }
+ */
+export function getGemStats(gem) {
+  if (gem.type === 'special') return getSpecialGemLeveledStats(gem.specialType, gem.level);
+  return getLeveledStats(gem.type, gem.quality, gem.level);
+}
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -46,7 +63,7 @@ export function isInRange(gem, enemy) {
   // Diamond only attacks ground enemies
   if (gem.type === 'Diamond' && enemy.flying) return false;
 
-  const stats = getLeveledStats(gem.type, gem.quality, gem.level);
+  const stats = getGemStats(gem);
 
   // Gem pixel centre: grid coords are top-left of the 2×2 block.
   // Use the same formula as the renderer: gem.x * CELL_SIZE (top-left corner).
@@ -171,7 +188,7 @@ export function attackEnemy(gem, enemy, enemies, now) {
   if (gem.type === 'Amethyst' && !enemy.flying) return { damage: 0, crit: false };
   if (gem.type === 'Diamond'   &&  enemy.flying) return { damage: 0, crit: false };
 
-  const stats = getLeveledStats(gem.type, gem.quality, gem.level);
+  const stats = getGemStats(gem);
 
   // 1. Roll damage
   let damage = Math.floor(Math.random() * (stats.damageMax - stats.damageMin + 1)) + stats.damageMin;
@@ -205,11 +222,29 @@ export function attackEnemy(gem, enemy, enemies, now) {
   // 6. Apply gem effect (poison, slow, etc.)
   applyEffect(enemy, stats.effect, now, gem.id);
 
-  // 7. Ruby splash damage
+  // 7. Splash damage (Ruby) or splash + slow (Silver-family special gems)
   let splashKills = 0;
   let splashDamage = 0;
   if (gem.type === 'Ruby') {
     ({ kills: splashKills, damage: splashDamage } = applySplash(gem, enemy, enemies, damage, now));
+  } else if (stats.effect?.type === 'splash_slow') {
+    // Apply slow to primary target
+    applyEffect(enemy, { type: 'slow', amount: stats.effect.slow, duration: stats.effect.duration }, now, gem.id);
+    // Full-damage splash + slow to all enemies in radius
+    for (const e of enemies) {
+      if (e === enemy || e.dead || e.exited) continue;
+      const dx = e.x - enemy.x;
+      const dy = e.y - enemy.y;
+      if (Math.sqrt(dx * dx + dy * dy) <= stats.effect.radius) {
+        e.hp -= damage;
+        applyEffect(e, { type: 'slow', amount: stats.effect.slow, duration: stats.effect.duration }, now, gem.id);
+        splashDamage += damage;
+        if (e.hp <= 0 && !e.dead) {
+          e.dead = true;
+          splashKills++;
+        }
+      }
+    }
   }
 
   // 8. Update attack timing

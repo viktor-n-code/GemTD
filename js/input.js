@@ -2,7 +2,9 @@
 // Tracks mouse position, derives hover state, and queues pending actions.
 
 import { CELL_SIZE, GRID_COLS, GRID_ROWS } from './grid.js';
-import { GEM_SLOTS, BTN_COMBINE, BTN_KEEP, BTN_UPGRADE, BTN_RESTART, BTN_REMOVE, PANEL_Y } from './ui.js';
+import { GEM_SLOTS, BTN_COMBINE, BTN_KEEP, BTN_UPGRADE, BTN_RESTART, BTN_REMOVE,
+         BTN_COMBINE_SPECIAL, BTN_UPGRADE_GEM, PANEL_Y } from './ui.js';
+import { findAvailableRecipes } from './specialgem.js';
 
 // ---------------------------------------------------------------------------
 // Private helper
@@ -98,6 +100,7 @@ export class InputHandler {
     this._enemies         = state.enemies || [];
     this._placedThisRound = state.placedThisRound || [];
     this._grid            = state.grid || null;
+    this._gems            = state.gems || {};
     if (this.mouseY >= PANEL_Y) {
       // Find which gem slot (if any) the cursor is over
       let found = null;
@@ -193,6 +196,28 @@ export class InputHandler {
         if (this.selectedRockPos !== null) {
           this.pendingAction   = { type: 'removeRock', x: this.selectedRockPos.x, y: this.selectedRockPos.y };
           this.selectedRockPos = null;
+        }
+        return;
+      }
+      if (hitTest(BTN_COMBINE_SPECIAL, x, y)) {
+        if (this.selectedGemId !== null) {
+          const phase   = this._phase === 'build' ? 'build' : 'defend';
+          const recipes = findAvailableRecipes(
+            this.selectedGemId, this._gems, this._placedThisRound, phase
+          );
+          if (recipes.length > 0) {
+            this.pendingAction = {
+              type: 'combineSpecial',
+              selectedGemId: this.selectedGemId,
+              recipeId: recipes[0].def.id,
+            };
+          }
+        }
+        return;
+      }
+      if (hitTest(BTN_UPGRADE_GEM, x, y)) {
+        if (this.selectedGemId !== null) {
+          this.pendingAction = { type: 'upgradeSpecial', gemId: this.selectedGemId };
         }
         return;
       }

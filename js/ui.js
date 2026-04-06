@@ -4,12 +4,13 @@
 import { getVisual, getStats, getLeveledStats, GEM_CHANCE_LEVELS, GEM_TYPES } from './gem.js';
 import { GRID_ROWS, CELL_SIZE } from './grid.js';
 import { HUD_HEIGHT } from './renderer.js';
+import { SPECIAL_GEM_DEFS, getSpecialGemLeveledStats, findAvailableRecipes } from './specialgem.js';
 
 // ---------------------------------------------------------------------------
 // Layout constants (exported so input.js can do hit-testing)
 // ---------------------------------------------------------------------------
 
-export const PANEL_H = 46;
+export const PANEL_H = 78;
 export const PANEL_Y = GRID_ROWS * CELL_SIZE + HUD_HEIGHT; // 752 + 24 = 776 — below grid and HUD
 
 // 5 gem slots for gems placed this round
@@ -27,6 +28,10 @@ export const BTN_KEEP     = { x: 308, y: PANEL_Y + 9, w: 60,  h: 28 };
 export const BTN_UPGRADE  = { x: 374, y: PANEL_Y + 9, w: 90,  h: 28 };
 export const BTN_RESTART  = { x: 470, y: PANEL_Y + 9, w: 80,  h: 28 };
 export const BTN_REMOVE   = { x: 558, y: PANEL_Y + 9, w: 80,  h: 28 };
+
+// Second-row buttons (special gem actions — visible in all phases)
+export const BTN_COMBINE_SPECIAL = { x: 232, y: PANEL_Y + 50, w: 108, h: 24 };
+export const BTN_UPGRADE_GEM     = { x: 344, y: PANEL_Y + 50, w: 120, h: 24 };
 
 // ---------------------------------------------------------------------------
 // Private shape helpers (draw gem shapes centred at cx, cy with radius r)
@@ -112,6 +117,17 @@ function drawShapeInSlot(ctx, shape, color, cx, cy, r) {
     case 'star':
       drawStar(ctx, cx, cy, r, r * 0.45);
       ctx.fill();
+      ctx.stroke();
+      break;
+
+    case 'hexagon':
+      drawPolygon(ctx, cx, cy, r, 6);
+      ctx.fill();
+      ctx.stroke();
+      // Gold outer ring
+      ctx.strokeStyle = 'rgba(255,220,80,0.7)';
+      ctx.lineWidth = 1.5;
+      drawPolygon(ctx, cx, cy, r + 2, 6);
       ctx.stroke();
       break;
 
@@ -205,6 +221,18 @@ function _buildEffectHTML(effect, baseEffect) {
         _row('Effect', 'Multi-target') +
         _row('Targets', `${effect.targets} simultaneous${_lvlNote(effect.targets, b.targets, d => d)}`)
       );
+    case 'splash_slow':
+      return wrap(
+        _row('Effect', 'Splash + Slow') +
+        _row('Radius', `${(effect.radius / CELL_SIZE).toFixed(1)} tiles`) +
+        _row('Slow', `-${Math.round(effect.slow * 100)}% for ${effect.duration}s`)
+      );
+    case 'burn_aura':
+      return wrap(
+        _row('Effect', 'Burn Aura') +
+        _row('DPS', `${effect.auraDps} to all in range${_lvlNote(effect.auraDps, b.auraDps, d => d)}`) +
+        _row('Radius', `${(effect.auraRange / 15).toFixed(1)} tiles`)
+      );
     case 'aura':
       return wrap(
         _row('Effect', 'Attack Speed Aura') +
@@ -216,7 +244,60 @@ function _buildEffectHTML(effect, baseEffect) {
   }
 }
 
-function _buildGemHTML(gem) {
+function _buildSpecialGemHTML(gem, state) {
+  const level = gem.level || 1;
+  const ls    = getSpecialGemLeveledStats(gem.specialType, level);
+  if (!ls) return `<div class="info-gem-name">${gem.name}</div>`;
+
+  const def = SPECIAL_GEM_DEFS.find(d => d.id === gem.specialType);
+
+  const levelLabel = level > 1 ? ` <span class="info-gem-level">Lv ${level}</span>` : '';
+  const mvpBonus   = gem.mvpBonus || 0;
+  const mvpMult    = 1 + mvpBonus * 0.01;
+  const minDmg     = mvpBonus > 0 ? Math.round(ls.damageMin * mvpMult) : ls.damageMin;
+  const maxDmg     = mvpBonus > 0 ? Math.round(ls.damageMax * mvpMult) : ls.damageMax;
+  let dmgHTML = `${minDmg}–${maxDmg}`;
+  if (level > 1)    dmgHTML += ` <span class="info-level-note">(+${(level - 1) * 10}% lvl)</span>`;
+  if (mvpBonus > 0) dmgHTML += ` <span class="info-mvp-note">(+${mvpBonus}% MVP)</span>`;
+
+  const spdEff = gem.auraBonus > 0
+    ? (ls.attackSpeed * (1 + gem.auraBonus)).toFixed(2)
+    : ls.attackSpeed.toFixed(2).replace(/\.?0+$/, '');
+  const spdHTML = gem.auraBonus > 0
+    ? `${spdEff}/s<div class="info-aura-note">+${Math.round(gem.auraBonus * 100)}% Opal aura</div>`
+    : `${spdEff}/s`;
+
+  let html = `
+    <div class="info-section-title">Selected Gem</div>
+    <div class="info-gem-name">${gem.name}${levelLabel}</div>
+    <div class="info-row"><span class="info-label">Damage</span><span class="info-value">${dmgHTML}</span></div>
+    <div class="info-row"><span class="info-label">Speed</span><span class="info-value">${spdHTML}</span></div>
+    <div class="info-row"><span class="info-label">Range</span><span class="info-value">${(ls.range / 15).toFixed(1)} tiles</span></div>`;
+
+  if (ls.effect) html += _buildEffectHTML(ls.effect, null);
+
+  if (gem.kills > 0) {
+    html += `<div class="info-kills">Kills: ${gem.kills} &nbsp; Dmg: ${Math.round(gem.totalDamage)}</div>`;
+  }
+  if (mvpBonus > 0) {
+    html += `<div class="info-mvp">MVP wins: ${mvpBonus} &nbsp; (+${mvpBonus}% dmg)</div>`;
+  }
+
+  if (def?.upgradeTo) {
+    const nextDef    = SPECIAL_GEM_DEFS.find(d => d.id === def.upgradeTo);
+    const canAfford  = state && state.gold >= def.upgradeCost;
+    const costColor  = canAfford ? '#ffcc44' : '#ff6644';
+    html += `<div class="info-note" style="color:${costColor}">Upgrade → ${nextDef?.name ?? def.upgradeTo} (${def.upgradeCost}g)</div>`;
+  } else {
+    html += `<div class="info-note">Max tier</div>`;
+  }
+
+  return html;
+}
+
+function _buildGemHTML(gem, state) {
+  if (gem.type === 'special') return _buildSpecialGemHTML(gem, state);
+
   const level     = gem.level || 1;
   const ls        = getLeveledStats(gem.type, gem.quality, level);
   const baseStats = level > 1 ? getStats(gem.type, gem.quality) : null;
@@ -280,6 +361,15 @@ function _buildGemHTML(gem) {
   }
   if (mvpBonus > 0) {
     html += `<div class="info-mvp">MVP wins: ${mvpBonus} &nbsp; (+${mvpBonus}% dmg)</div>`;
+  }
+
+  // Show available special gem recipes for this gem
+  if (state) {
+    const phase = state.phase === 'build' ? 'build' : 'defend';
+    const recipes = findAvailableRecipes(gem.id, state.gems, state.placedThisRound, phase);
+    for (const { def } of recipes) {
+      html += `<div class="info-note">Can combine: <em>${def.name}</em></div>`;
+    }
   }
 
   return html;
@@ -390,7 +480,7 @@ export function updateInfoPanel(state, inputState) {
   // — Selection section (top) —
   const gemId = inputState?.selectedGemId;
   if (gemId && state.gems[gemId]) {
-    selEl.innerHTML = _buildGemHTML(state.gems[gemId]) + _buildLeaderboardHTML(state);
+    selEl.innerHTML = _buildGemHTML(state.gems[gemId], state) + _buildLeaderboardHTML(state);
   } else {
     const enemyId = inputState?.selectedEnemyId;
     const enemy = enemyId && state.phase === 'defend'
@@ -413,12 +503,17 @@ export function updateInfoPanel(state, inputState) {
 // ---------------------------------------------------------------------------
 
 function drawTooltip(ctx, gem, state, inputState) {
-  const { type, quality } = gem;
   const level = gem.level || 1;
-  const stats = getLeveledStats(type, quality, level);
+  const stats = gem.type === 'special'
+    ? getSpecialGemLeveledStats(gem.specialType, level)
+    : getLeveledStats(gem.type, gem.quality, level);
+
+  if (!stats) return;
 
   // Build text lines
-  const titleLine = level > 1 ? `${quality} ${type}  Lv ${level}` : `${quality} ${type}`;
+  const titleLine = gem.type === 'special'
+    ? (level > 1 ? `${gem.name}  Lv ${level}` : gem.name)
+    : (level > 1 ? `${gem.quality} ${gem.type}  Lv ${level}` : `${gem.quality} ${gem.type}`);
   const statsLine = `DMG: ${stats.damageMin}-${stats.damageMax}  SPD: ${stats.attackSpeed}  RNG: ${stats.range}`;
   let effectLine = null;
   if (stats.effect) {
@@ -505,8 +600,10 @@ function formatEffect(effect) {
   if (effect.type === 'slow')    return `Slow ${Math.round(effect.amount * 100)}% / ${effect.duration}s`;
   if (effect.type === 'splash')  return `Splash r=${(effect.radius / CELL_SIZE).toFixed(1)}t`;
   if (effect.type === 'crit')    return `Crit ${Math.round(effect.chance * 100)}% x${effect.multiplier}`;
-  if (effect.type === 'multi')   return `Hits ${effect.targets} targets`;
-  if (effect.type === 'aura')    return `Aura +${Math.round(effect.bonus * 100)}% atk spd`;
+  if (effect.type === 'multi')       return `Hits ${effect.targets} targets`;
+  if (effect.type === 'aura')        return `Aura +${Math.round(effect.bonus * 100)}% atk spd`;
+  if (effect.type === 'splash_slow') return `Splash+Slow r=${(effect.radius / CELL_SIZE).toFixed(1)}t -${Math.round(effect.slow * 100)}%`;
+  if (effect.type === 'burn_aura')   return `Burn aura ${effect.auraDps}dps r=${(effect.auraRange / 15).toFixed(1)}t`;
   return effect.type;
 }
 
@@ -516,7 +613,10 @@ export function drawUI(ctx, state, inputState) {
   if (inputState?.selectedGemId) {
     const gem = state.gems[inputState.selectedGemId];
     if (gem) {
-      const ls     = getLeveledStats(gem.type, gem.quality, gem.level || 1);
+      const ls     = gem.type === 'special'
+        ? getSpecialGemLeveledStats(gem.specialType, gem.level || 1)
+        : getLeveledStats(gem.type, gem.quality, gem.level || 1);
+      if (!ls) return;
       const cx     = gem.x * CELL_SIZE;
       const cy     = gem.y * CELL_SIZE;
       const radius = ls.range * (CELL_SIZE / 15);
@@ -623,6 +723,33 @@ export function drawUI(ctx, state, inputState) {
   const upgradeLabel  = upgradeCost !== null ? `Upgrade (${upgradeCost}g)` : 'Upgrade (max)';
   drawButton(ctx, BTN_UPGRADE, upgradeLabel, upgradeActive, '#3a4a6a');
   drawButton(ctx, BTN_RESTART, 'Restart', true, '#6a1a1a');
+
+  // Second-row buttons: Combine Special + Upgrade Gem
+  const selGemForSpecial = inputState?.selectedGemId ? state.gems[inputState.selectedGemId] : null;
+
+  // Combine Special — active when selected base gem has completable recipes
+  let combineSpecialActive = false;
+  if (selGemForSpecial && selGemForSpecial.type !== 'special') {
+    const phase = state.phase === 'build' ? 'build' : 'defend';
+    const recipes = findAvailableRecipes(
+      inputState.selectedGemId, state.gems, state.placedThisRound, phase
+    );
+    combineSpecialActive = recipes.length > 0;
+  }
+  drawButton(ctx, BTN_COMBINE_SPECIAL, 'Combine Special', combineSpecialActive, '#4a6a2a');
+
+  // Upgrade Gem — active when selected special gem has an affordable upgrade
+  let upgradeGemActive = false;
+  let upgradeGemLabel  = 'Upgrade Gem';
+  if (selGemForSpecial?.type === 'special') {
+    const def = SPECIAL_GEM_DEFS.find(d => d.id === selGemForSpecial.specialType);
+    if (def?.upgradeTo && def.upgradeCost != null) {
+      upgradeGemLabel = `Upgrade (${def.upgradeCost}g)`;
+      upgradeGemActive = state.gold >= def.upgradeCost;
+    }
+  }
+  drawButton(ctx, BTN_UPGRADE_GEM, upgradeGemLabel, upgradeGemActive, '#3a4a6a');
+
   ctx.restore();
 
   // Build-only elements (slots, combine, keep)

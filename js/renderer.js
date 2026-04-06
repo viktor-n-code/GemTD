@@ -5,6 +5,7 @@
 
 import { GRID_COLS, GRID_ROWS, CELL_SIZE, CHECKPOINTS, ENTRY, EXIT } from './grid.js';
 import { getVisual } from './gem.js';
+import { getSpecialVisual, getSpecialGemLeveledStats } from './specialgem.js';
 
 // ---------------------------------------------------------------------------
 // Color constants
@@ -210,19 +211,19 @@ function drawGems(ctx, state) {
       const gem = gems[cell.gemId];
       if (!gem) continue;
 
-      const visual = getVisual(gem.type, gem.quality);
+      const visual = gem.type === 'special'
+        ? getSpecialVisual(gem.specialType)
+        : getVisual(gem.type, gem.quality);
 
       // The gem occupies a 2×2 block with top-left at (gem.x, gem.y).
-      // Center of that 2×2 footprint in pixels:
-      // Center of 2×2 footprint: left edge = (gem.x-1)*CS, right edge = (gem.x+1)*CS
-      // center = ((gem.x-1)*CS + (gem.x+1)*CS) / 2 = gem.x * CS
+      // Center: ((gem.x-1)*CS + (gem.x+1)*CS) / 2 = gem.x * CS
       const cx = gem.x * CELL_SIZE;
       const cy = gem.y * CELL_SIZE;
       const R  = 12; // radius / half-size
 
-      ctx.fillStyle = visual.color;
+      ctx.fillStyle   = visual.color;
       ctx.strokeStyle = _contrastStroke(visual.color);
-      ctx.lineWidth = 1;
+      ctx.lineWidth   = 1;
 
       switch (visual.shape) {
         case 'circle':
@@ -260,12 +261,38 @@ function drawGems(ctx, state) {
           ctx.stroke();
           break;
 
+        case 'hexagon':
+          drawPolygon(ctx, cx, cy, R, 6);
+          ctx.fill();
+          ctx.stroke();
+          // Gold outer ring
+          ctx.strokeStyle = 'rgba(255,220,80,0.7)';
+          ctx.lineWidth   = 1;
+          drawPolygon(ctx, cx, cy, R + 2, 6);
+          ctx.stroke();
+          break;
+
         default:
           // Fallback: circle
           ctx.beginPath();
           ctx.arc(cx, cy, R, 0, Math.PI * 2);
           ctx.fill();
           break;
+      }
+
+      // Star Ruby aura ring — faint red circle showing burn aura radius
+      if (gem.type === 'special') {
+        const sStats = getSpecialGemLeveledStats(gem.specialType, gem.level || 1);
+        if (sStats?.effect?.type === 'burn_aura') {
+          const auraR = sStats.effect.auraRange * (CELL_SIZE / 15);
+          ctx.save();
+          ctx.strokeStyle = 'rgba(255,60,60,0.25)';
+          ctx.lineWidth   = 1;
+          ctx.beginPath();
+          ctx.arc(cx, cy, auraR, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
       }
     }
   }
