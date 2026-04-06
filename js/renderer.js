@@ -335,6 +335,8 @@ function drawBuildHighlights(ctx, state) {
 function drawEnemies(ctx, enemies) {
   if (!enemies || enemies.length === 0) return;
 
+  const now = performance.now();
+
   for (const enemy of enemies) {
     const { x, y, hp, maxHp, flying } = enemy;
     const color = flying ? COLOR_ENEMY_FLYING : COLOR_ENEMY_GROUND;
@@ -345,6 +347,15 @@ function drawEnemies(ctx, enemies) {
     ctx.beginPath();
     ctx.arc(x, y, radius, 0, Math.PI * 2);
     ctx.fill();
+
+    // Stun ring — light blue outline when frozen
+    if (now < (enemy.stunUntil ?? 0)) {
+      ctx.strokeStyle = 'rgba(180, 230, 255, 0.95)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x, y, radius + 2, 0, Math.PI * 2);
+      ctx.stroke();
+    }
 
     // HP bar: 8px wide, 2px tall, centered above the circle
     const barW  = 8;
@@ -395,7 +406,8 @@ function drawCritNumbers(ctx, critNumbers) {
     const t = Math.min(1, (now - n.createdAt) / 600);
     const alpha = 1 - t;
     const offsetY = t * 22;
-    ctx.fillStyle = `rgba(255, 60, 60, ${alpha})`;
+    const [r, g, b] = n.color ?? [255, 60, 60];
+    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
     ctx.fillText(n.value, n.x, n.y - offsetY);
   }
   ctx.restore();

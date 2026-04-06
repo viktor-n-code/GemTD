@@ -557,6 +557,10 @@ function updateDefend(dt, now) {
       if (result.crit) {
         gameState.critNumbers.push({ x: target.x, y: target.y - 12, value: result.damage, createdAt: now });
       }
+      if (result.goldAmount > 0) {
+        gameState.gold += result.goldAmount;
+        gameState.critNumbers.push({ x: target.x, y: target.y - 24, value: `+${result.goldAmount}g`, createdAt: now, color: [255, 215, 0] });
+      }
 
       // Multi-target: Topaz and Malachite family attack additional enemies
       const stats = getGemStats(gem);

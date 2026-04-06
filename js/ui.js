@@ -221,6 +221,15 @@ function _buildEffectHTML(effect, baseEffect) {
         _row('Effect', 'Multi-target') +
         _row('Targets', `${effect.targets} simultaneous${_lvlNote(effect.targets, b.targets, d => d)}`)
       );
+    case 'lucky_jade':
+      return wrap(
+        _row('Effect', 'Poison + Slow') +
+        _row('DoT', `${effect.dps} dps for ${effect.duration}s`) +
+        _row('Slow', `-${Math.round(effect.slow * 100)}% for ${effect.duration}s`) +
+        _row('5% Crit', `×${effect.critMult} damage`) +
+        _row('1% Stun', `${effect.stunDuration}s`) +
+        _row('5% Gold', `+floor(level/2) gold`)
+      );
     case 'splash_slow':
       return wrap(
         _row('Effect', 'Splash + Slow') +
@@ -408,6 +417,7 @@ function _buildEnemyHTML(enemy, state) {
     </div>`;
 
   const tags = [];
+  if (now < (enemy.stunUntil ?? 0)) tags.push(`<span class="info-status-tag tag-stunned">Stunned</span>`);
   if (now < enemy.slowUntil)   tags.push(`<span class="info-status-tag tag-slowed">Slowed</span>`);
   if (now < enemy.poisonUntil) tags.push(`<span class="info-status-tag tag-poison">Poison ${enemy.poisonDps}dps</span>`);
   if (tags.length > 0) html += `<div class="info-status-tags">${tags.join('')}</div>`;
@@ -602,6 +612,7 @@ function formatEffect(effect) {
   if (effect.type === 'crit')    return `Crit ${Math.round(effect.chance * 100)}% x${effect.multiplier}`;
   if (effect.type === 'multi')       return `Hits ${effect.targets} targets`;
   if (effect.type === 'aura')        return `Aura +${Math.round(effect.bonus * 100)}% atk spd`;
+  if (effect.type === 'lucky_jade')  return `Poison+Slow / 5% ×${effect.critMult} crit / 1% stun / 5% gold`;
   if (effect.type === 'splash_slow') return `Splash+Slow r=${(effect.radius / CELL_SIZE).toFixed(1)}t -${Math.round(effect.slow * 100)}%`;
   if (effect.type === 'burn_aura')   return `Burn aura ${effect.auraDps}dps r=${(effect.auraRange / 15).toFixed(1)}t`;
   return effect.type;

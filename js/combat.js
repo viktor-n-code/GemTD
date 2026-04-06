@@ -124,6 +124,22 @@ export function applyEffect(enemy, effect, now, gemId) {
     return;
   }
 
+  if (effect.type === 'lucky_jade') {
+    // Poison part (same no-stack rule as regular poison)
+    if (effect.dps > enemy.poisonDps) {
+      enemy.poisonDps   = effect.dps;
+      enemy.poisonUntil = now + effect.duration * 1000;
+      enemy.poisonGemId = gemId ?? null;
+    }
+    // Slow part
+    const newSlowUntil = now + effect.duration * 1000;
+    if (effect.slow > enemy.slowAmount || newSlowUntil > enemy.slowUntil) {
+      if (effect.slow > enemy.slowAmount) enemy.slowAmount = effect.slow;
+      if (newSlowUntil > enemy.slowUntil) enemy.slowUntil = newSlowUntil;
+    }
+    return;
+  }
+
   // 'splash' effects are handled by applySplash; 'air' has no secondary effect.
 }
 
@@ -196,10 +212,13 @@ export function attackEnemy(gem, enemy, enemies, now) {
   // 1b. MVP bonus — flat % multiplier earned from winning rounds
   if (gem.mvpBonus > 0) damage = Math.round(damage * (1 + gem.mvpBonus * 0.01));
 
-  // 1d. Diamond crit — chance to multiply damage (before armor)
+  // 1d. Crit chance — Diamond (effect.type === 'crit') or Lucky Asian Jade (effect.type === 'lucky_jade')
   let isCrit = false;
   if (stats.effect?.type === 'crit' && Math.random() < stats.effect.chance) {
     damage *= stats.effect.multiplier;
+    isCrit = true;
+  } else if (stats.effect?.type === 'lucky_jade' && Math.random() < stats.effect.critChance) {
+    damage *= stats.effect.critMult;
     isCrit = true;
   }
 
@@ -247,11 +266,23 @@ export function attackEnemy(gem, enemy, enemies, now) {
     }
   }
 
-  // 8. Update attack timing
+  // 8. Lucky Asian Jade procs — stun and gold (rolled after damage applied)
+  let goldAmount = 0;
+  if (stats.effect?.type === 'lucky_jade' && !enemy.dead) {
+    if (Math.random() < stats.effect.stunChance) {
+      const newStun = now + stats.effect.stunDuration * 1000;
+      if (newStun > (enemy.stunUntil ?? 0)) enemy.stunUntil = newStun;
+    }
+    if (Math.random() < stats.effect.goldChance) {
+      goldAmount = Math.floor(gem.level / 2);
+    }
+  }
+
+  // 9. Update attack timing
   gem.lastAttackTime = now;
 
-  // 9. Return damage dealt, crit flag, and splash stats
-  return { damage, crit: isCrit, splashKills, splashDamage };
+  // 10. Return damage dealt, crit flag, splash stats, and gold proc
+  return { damage, crit: isCrit, splashKills, splashDamage, goldAmount };
 }
 
 // ---------------------------------------------------------------------------

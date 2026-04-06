@@ -97,6 +97,7 @@ export function spawnEnemy(waveNumber, path) {
     poisonDps: 0,         // current poison damage per second; 0 = not poisoned
     poisonUntil: 0,       // timestamp (ms) when poison expires
     poisonGemId: null,    // id of the gem that applied the current poison instance
+    stunUntil: 0,         // timestamp (ms) when stun expires; 0 = not stunned
     dead: false,
     exited: false,
   };
@@ -112,6 +113,9 @@ export function spawnEnemy(waveNumber, path) {
  */
 export function moveEnemy(enemy, dt, now) {
   if (enemy.dead || enemy.exited) return;
+
+  // Stun: fully frozen
+  if (now < (enemy.stunUntil ?? 0)) return;
 
   // Update speed based on slow state
   if (now < enemy.slowUntil) {
