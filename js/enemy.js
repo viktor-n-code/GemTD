@@ -33,7 +33,17 @@ export const ENEMY_STATS = [
   { hp: 1650, armor: 14, speed: 0.75, minSpeed: 0.38, flying: false }, // wave 17
   { hp: 2000, armor: 14, speed: 0.75, minSpeed: 0.42, flying: false }, // wave 18
   { hp: 2500, armor: 14, speed: 0.75, minSpeed: 0.45, flying: false }, // wave 19
-  { hp: 1300, armor: 14, speed: 0.75, minSpeed: 0.38, flying: true  }, // wave 20
+  { hp:  1300, armor: 14, speed: 0.75, minSpeed: 0.38, flying: true  }, // wave 20
+  { hp:  3250, armor: 15, speed: 0.75, minSpeed: 0.38, flying: false }, // wave 21
+  { hp:  4100, armor: 15, speed: 0.75, minSpeed: 0.38, flying: false }, // wave 22
+  { hp:  5000, armor: 15, speed: 0.75, minSpeed: 0.38, flying: false }, // wave 23
+  { hp:  2850, armor: 15, speed: 0.75, minSpeed: 0.38, flying: true  }, // wave 24
+  { hp:  6250, armor: 16, speed: 0.75, minSpeed: 0.38, flying: false }, // wave 25
+  { hp:  7750, armor: 16, speed: 0.83, minSpeed: 0.42, flying: false }, // wave 26
+  { hp:  9500, armor: 16, speed: 0.91, minSpeed: 0.46, flying: false }, // wave 27
+  { hp:  5000, armor: 16, speed: 0.83, minSpeed: 0.42, flying: true  }, // wave 28
+  { hp: 10500, armor: 17, speed: 1.06, minSpeed: 0.53, flying: false }, // wave 29
+  { hp: 13000, armor: 17, speed: 1.13, minSpeed: 0.57, flying: false }, // wave 30
 ];
 // Armor formula: min(10 + floor((wave - 1) / 4), 25)
 
@@ -62,6 +72,16 @@ export const GOLD_PER_WAVE = [
   { killGold: 5.5,  bonusGold: 45 }, // wave 18  (extrapolated)
   { killGold: 5.75, bonusGold: 47 }, // wave 19  (extrapolated)
   { killGold: 6.0,  bonusGold: 49 }, // wave 20  (extrapolated)
+  { killGold: 6.25, bonusGold: 51 }, // wave 21  (extrapolated)
+  { killGold: 6.5,  bonusGold: 53 }, // wave 22  (extrapolated)
+  { killGold: 6.75, bonusGold: 55 }, // wave 23  (extrapolated)
+  { killGold: 7.0,  bonusGold: 57 }, // wave 24  (extrapolated)
+  { killGold: 7.25, bonusGold: 59 }, // wave 25  (extrapolated)
+  { killGold: 7.5,  bonusGold: 61 }, // wave 26  (extrapolated)
+  { killGold: 7.75, bonusGold: 63 }, // wave 27  (extrapolated)
+  { killGold: 8.0,  bonusGold: 65 }, // wave 28  (extrapolated)
+  { killGold: 8.25, bonusGold: 67 }, // wave 29  (extrapolated)
+  { killGold: 8.5,  bonusGold: 69 }, // wave 30  (extrapolated)
 ];
 
 /**
