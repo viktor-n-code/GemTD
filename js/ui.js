@@ -228,7 +228,7 @@ function _buildEffectHTML(effect, baseEffect) {
         _row('Slow', `-${Math.round(effect.slow * 100)}% for ${effect.duration}s`) +
         _row('5% Crit', `×${effect.critMult} damage`) +
         _row('1% Stun', `${effect.stunDuration}s`) +
-        _row('5% Gold', `+floor(level/2) gold`)
+        _row('5% Gold', `+floor(wave/2) gold`)
       );
     case 'splash_slow':
       return wrap(
@@ -354,6 +354,11 @@ function _buildSpecialGemHTML(gem, state) {
 
   if (gem.kills > 0) {
     html += `<div class="info-kills">Kills: ${gem.kills} &nbsp; Dmg: ${Math.round(gem.totalDamage)}</div>`;
+  } else if (gem.totalDamage > 0) {
+    html += `<div class="info-kills">Dmg: ${Math.round(gem.totalDamage)}</div>`;
+  }
+  if (gem.goldGenerated > 0) {
+    html += `<div class="info-kills">Gold generated: ${gem.goldGenerated}</div>`;
   }
   if (mvpBonus > 0) {
     html += `<div class="info-mvp">MVP wins: ${mvpBonus} &nbsp; (+${mvpBonus}% dmg)</div>`;
@@ -436,6 +441,8 @@ function _buildGemHTML(gem, state) {
 
   if (gem.kills > 0) {
     html += `<div class="info-kills">Kills: ${gem.kills} &nbsp; Dmg: ${Math.round(gem.totalDamage)}</div>`;
+  } else if (gem.totalDamage > 0) {
+    html += `<div class="info-kills">Dmg: ${Math.round(gem.totalDamage)}</div>`;
   }
   if (mvpBonus > 0) {
     html += `<div class="info-mvp">MVP wins: ${mvpBonus} &nbsp; (+${mvpBonus}% dmg)</div>`;
@@ -617,11 +624,14 @@ function drawTooltip(ctx, gem, state, inputState) {
 
   const killsLine = gem.kills > 0
     ? `Kills: ${gem.kills}   Dmg: ${Math.round(gem.totalDamage)}`
-    : null;
+    : gem.totalDamage > 0
+      ? `Dmg: ${Math.round(gem.totalDamage)}`
+      : null;
+  const goldLine = gem.goldGenerated > 0 ? `Gold generated: ${gem.goldGenerated}` : null;
 
   const padding = 6;
   const lineH   = 14;
-  const lines    = 2 + (effectLine ? 1 : 0) + (killsLine ? 1 : 0);
+  const lines    = 2 + (effectLine ? 1 : 0) + (killsLine ? 1 : 0) + (goldLine ? 1 : 0);
   const boxW     = 220;
   const boxH     = padding * 2 + lines * lineH;
   const boxY     = PANEL_Y - boxH - 4;
@@ -662,6 +672,13 @@ function drawTooltip(ctx, gem, state, inputState) {
   if (killsLine) {
     ctx.fillStyle = '#aaaaaa';
     ctx.fillText(killsLine, boxX + padding, boxY + padding + lineH * lineIdx);
+    lineIdx++;
+  }
+
+  // Gold generated
+  if (goldLine) {
+    ctx.fillStyle = '#ffd700';
+    ctx.fillText(goldLine, boxX + padding, boxY + padding + lineH * lineIdx);
   }
 }
 
@@ -688,7 +705,7 @@ function formatEffect(effect) {
   if (effect.type === 'crit')    return `Crit ${Math.round(effect.chance * 100)}% x${effect.multiplier}`;
   if (effect.type === 'multi')       return `Hits ${effect.targets} targets`;
   if (effect.type === 'aura')        return `Aura +${Math.round(effect.bonus * 100)}% atk spd`;
-  if (effect.type === 'lucky_jade')  return `Poison+Slow / 5% ×${effect.critMult} crit / 1% stun / 5% gold`;
+  if (effect.type === 'lucky_jade')  return `Poison+Slow / 5% ×${effect.critMult} crit / 1% stun / 5% gold (wave)`;
   if (effect.type === 'splash_slow') return `Splash+Slow r=${(effect.radius / CELL_SIZE).toFixed(1)}t -${Math.round(effect.slow * 100)}%`;
   if (effect.type === 'splash_slow_dmg_aura') return `Splash+Slow+DmgAura r=${(effect.radius / CELL_SIZE).toFixed(1)}t -${Math.round(effect.slow * 100)}%`;
   if (effect.type === 'burn_aura')   return `Burn aura ${effect.auraDps}dps r=${(effect.auraRange / 15).toFixed(1)}t`;

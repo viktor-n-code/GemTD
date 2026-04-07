@@ -206,7 +206,7 @@ export function applySplash(gem, primaryEnemy, enemies, primaryDamage, now) {
  * @param {number} now     - Current timestamp in ms
  * @returns {number} Damage dealt to the primary target (0 if attack was skipped)
  */
-export function attackEnemy(gem, enemy, enemies, now) {
+export function attackEnemy(gem, enemy, enemies, now, wave) {
   // Amethyst cannot attack ground enemies; Diamond cannot attack flying
   if (gem.type === 'Amethyst' && !enemy.flying) return { damage: 0, crit: false };
   if (gem.type === 'Diamond'   &&  enemy.flying) return { damage: 0, crit: false };
@@ -323,7 +323,7 @@ export function attackEnemy(gem, enemy, enemies, now) {
       if (newStun > (enemy.stunUntil ?? 0)) enemy.stunUntil = newStun;
     }
     if (Math.random() < stats.effect.goldChance) {
-      goldAmount = Math.floor(gem.level / 2);
+      goldAmount = Math.floor(wave / 2);
     }
   }
 
