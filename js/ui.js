@@ -233,8 +233,34 @@ function _buildEffectHTML(effect, baseEffect) {
     case 'splash_slow':
       return wrap(
         _row('Effect', 'Splash + Slow') +
-        _row('Radius', `${(effect.radius / CELL_SIZE).toFixed(1)} tiles`) +
+        _row('Radius', `${(effect.radius / CELL_SIZE).toFixed(1)} tiles · ${Math.round((effect.dmgMod ?? 1) * 100)}% dmg`) +
         _row('Slow', `-${Math.round(effect.slow * 100)}% for ${effect.duration}s`)
+      );
+    case 'splash_slow_dmg_aura':
+      return wrap(
+        _row('Effect', 'Splash + Slow') +
+        _row('Radius', `${(effect.radius / CELL_SIZE).toFixed(1)} tiles · ${Math.round((effect.dmgMod ?? 1) * 100)}% dmg`) +
+        _row('Slow', `-${Math.round(effect.slow * 100)}% for ${effect.duration}s`) +
+        _row('Dmg Aura', `+${effect.dmgBonus}% to gems in ${(effect.dmgAuraRange / 15).toFixed(1)} tiles`)
+      );
+    case 'blood_stone':
+      return wrap(
+        _row('Targets', `${effect.targets} simultaneous`) +
+        _row('Burn Aura', `${effect.auraDps} DPS in range`) +
+        _row('Radius', `${(effect.auraRange / 15).toFixed(1)} tiles`)
+      );
+    case 'ancient_blood_stone':
+      return wrap(
+        _row('Crit', `${Math.round(effect.critChance * 100)}% · ×${effect.critMult}`) +
+        _row('Splash', `100% dmg within ${effect.splashRadius} px`) +
+        _row('Burn Aura', `${effect.auraDps} DPS in range`) +
+        _row('Radius', `${(effect.auraRange / 15).toFixed(1)} tiles`)
+      );
+    case 'uranium':
+      return wrap(
+        _row('Slow Aura', `-${Math.round(effect.slowAmount * 100)}% speed to all in range`) +
+        _row('Burn Aura', `${effect.auraDps} DPS to all in range`) +
+        _row('Radius', `${(effect.auraRange / 15).toFixed(1)} tiles`)
       );
     case 'burn_aura':
       return wrap(
@@ -312,8 +338,9 @@ function _buildSpecialGemHTML(gem, state) {
   const spdHTML = gem.auraBonus > 0
     ? `${spdEff}/s<div class="info-aura-note">+${Math.round(gem.auraBonus * 100)}% Opal aura</div>`
     : `${spdEff}/s`;
-  const dmgAuraNote = gem.dmgBonus > 0
-    ? `<div class="info-aura-note">+${gem.dmgBonus}% dmg aura</div>`
+  const totalDmgAura = (gem.dmgBonus ?? 0) + (gem.dmgBonus2 ?? 0);
+  const dmgAuraNote = totalDmgAura > 0
+    ? `<div class="info-aura-note">+${totalDmgAura}% dmg aura</div>`
     : '';
 
   let html = `
@@ -378,7 +405,8 @@ function _buildGemHTML(gem, state) {
   let dmgHTML = `${minDmg}–${maxDmg}`;
   if (level > 1)    dmgHTML += ` <span class="info-level-note">(+${(level - 1) * 10}% lvl)</span>`;
   if (mvpBonus > 0) dmgHTML += ` <span class="info-mvp-note">(+${mvpBonus}% MVP)</span>`;
-  if (gem.dmgBonus > 0) dmgHTML += `<div class="info-aura-note">+${gem.dmgBonus}% dmg aura</div>`;
+  const totalDmgAuraS = (gem.dmgBonus ?? 0) + (gem.dmgBonus2 ?? 0);
+  if (totalDmgAuraS > 0) dmgHTML += `<div class="info-aura-note">+${totalDmgAuraS}% dmg aura</div>`;
 
   let html = `
     <div class="info-section-title">Selected Gem</div>
@@ -662,7 +690,11 @@ function formatEffect(effect) {
   if (effect.type === 'aura')        return `Aura +${Math.round(effect.bonus * 100)}% atk spd`;
   if (effect.type === 'lucky_jade')  return `Poison+Slow / 5% ×${effect.critMult} crit / 1% stun / 5% gold`;
   if (effect.type === 'splash_slow') return `Splash+Slow r=${(effect.radius / CELL_SIZE).toFixed(1)}t -${Math.round(effect.slow * 100)}%`;
+  if (effect.type === 'splash_slow_dmg_aura') return `Splash+Slow+DmgAura r=${(effect.radius / CELL_SIZE).toFixed(1)}t -${Math.round(effect.slow * 100)}%`;
   if (effect.type === 'burn_aura')   return `Burn aura ${effect.auraDps}dps r=${(effect.auraRange / 15).toFixed(1)}t`;
+  if (effect.type === 'blood_stone') return `${effect.targets} targets · Burn aura ${effect.auraDps}dps`;
+  if (effect.type === 'ancient_blood_stone') return `Crit+Splash · Burn aura ${effect.auraDps}dps`;
+  if (effect.type === 'uranium')     return `Slow aura ${Math.round(effect.slowAmount * 100)}% · Burn ${effect.auraDps}dps`;
   return effect.type;
 }
 

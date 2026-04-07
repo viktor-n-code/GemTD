@@ -10,7 +10,7 @@ import { rollGem, getStats, getLeveledStats, getVisual, GEM_CHANCE_LEVELS, QUALI
 import { SPECIAL_GEM_DEFS, getSpecialGemLeveledStats, getSpecialVisual, findAvailableRecipes } from './specialgem.js';
 import { moveEnemy, GOLD_PER_WAVE } from './enemy.js';
 import { WaveSpawner } from './wave.js';
-import { attackEnemy, canAttack, isInRange, tickPoison, getGemStats } from './combat.js';
+import { attackEnemy, canAttack, isInRange, tickPoison, getGemStats, applyEffect } from './combat.js';
 import { render, HUD_HEIGHT } from './renderer.js';
 import { InputHandler } from './input.js';
 import { drawUI, updateInfoPanel, PANEL_H } from './ui.js';
@@ -58,6 +58,7 @@ function init() {
       if (gem.level       === undefined) gem.level       = 1;
       if (gem.auraBonus   === undefined) gem.auraBonus   = 0;
       if (gem.dmgBonus    === undefined) gem.dmgBonus    = 0;
+      if (gem.dmgBonus2   === undefined) gem.dmgBonus2   = 0;
       if (gem.roundDamage === undefined) gem.roundDamage = 0;
       if (gem.mvpBonus    === undefined) gem.mvpBonus    = 0;
       if (!gem.name) {
@@ -152,6 +153,7 @@ function updateBuild(dt, now) {
         attackCooldown: Math.round(1000 / stats.attackSpeed),
         auraBonus: 0,
         dmgBonus: 0,
+        dmgBonus2: 0,
         lastTargetId: null,
       };
       placeGem(gameState.grid, x, y, id);
@@ -301,16 +303,18 @@ function applyAuraBuffs(state) {
 }
 
 /**
- * Recalculates gem.dmgBonus for all gems based on Black Opal / Mystic Black Opal
- * auras in range. Only the strongest dmg_aura source applies per gem (no stacking
- * between Black Opal and Mystic Black Opal). Stacks additively with the future
- * Star Yellow Sapphire dmgBonus2 slot (separate field, not implemented yet).
+ * Recalculates gem.dmgBonus (slot 1: Black Opal / Mystic Black Opal) and
+ * gem.dmgBonus2 (slot 2: Star Yellow Sapphire) for all gems. Each slot takes
+ * the strongest aura in range; the two slots stack additively in attackEnemy.
  */
 function applyDmgAuraBuffs(state) {
-  // 1. Reset damage bonus on all gems
-  for (const gem of Object.values(state.gems)) gem.dmgBonus = 0;
+  // 1. Reset both damage bonus slots on all gems
+  for (const gem of Object.values(state.gems)) {
+    gem.dmgBonus  = 0;
+    gem.dmgBonus2 = 0;
+  }
 
-  // 2. Apply strongest dmg_aura (Black Opal / Mystic Black Opal)
+  // 2. Slot 1: strongest dmg_aura (Black Opal / Mystic Black Opal)
   for (const auraGem of Object.values(state.gems)) {
     const auraStats = getGemStats(auraGem);
     if (auraStats.effect?.type !== 'dmg_aura') continue;
@@ -323,6 +327,23 @@ function applyDmgAuraBuffs(state) {
       const dy = gem.y * CELL_SIZE - apy;
       if (Math.sqrt(dx * dx + dy * dy) <= radiusPx && bonus > gem.dmgBonus) {
         gem.dmgBonus = bonus;
+      }
+    }
+  }
+
+  // 3. Slot 2: strongest splash_slow_dmg_aura (Star Yellow Sapphire)
+  for (const auraGem of Object.values(state.gems)) {
+    const auraStats = getGemStats(auraGem);
+    if (auraStats.effect?.type !== 'splash_slow_dmg_aura') continue;
+    const { dmgBonus: bonus, dmgAuraRange: auraRange } = auraStats.effect;
+    const radiusPx = auraRange * (CELL_SIZE / 15);
+    const apx = auraGem.x * CELL_SIZE;
+    const apy = auraGem.y * CELL_SIZE;
+    for (const gem of Object.values(state.gems)) {
+      const dx = gem.x * CELL_SIZE - apx;
+      const dy = gem.y * CELL_SIZE - apy;
+      if (Math.sqrt(dx * dx + dy * dy) <= radiusPx && bonus > gem.dmgBonus2) {
+        gem.dmgBonus2 = bonus;
       }
     }
   }
@@ -620,6 +641,24 @@ function updateDefend(dt, now) {
           }
         }
       }
+
+      // Blood Stone: same multi-target pattern as Topaz/Malachite
+      if (stats.effect?.type === 'blood_stone') {
+        const extras = gameState.enemies
+          .filter(e => !e.dead && !e.exited && e !== target && isInRange(gem, e))
+          .sort((a, b) => a.hp - b.hp)
+          .slice(0, stats.effect.targets - 1);
+        for (const extra of extras) {
+          const extraResult = attackEnemy(gem, extra, gameState.enemies, now);
+          gem.totalDamage  += extraResult.damage;
+          gem.roundDamage  += extraResult.damage;
+          if (extra.dead) { gem.kills++; _checkLevelUp(gem); }
+          gameState.projectiles.push({ x1: gem.x * CELL_SIZE, y1: gem.y * CELL_SIZE, x2: extra.x, y2: extra.y, color });
+          if (extraResult.crit) {
+            gameState.critNumbers.push({ x: extra.x, y: extra.y - 12, value: extraResult.damage, createdAt: now });
+          }
+        }
+      }
     }
   }
 
@@ -666,11 +705,12 @@ function updateDefend(dt, now) {
     }
   }
 
-  // 3c. Star Ruby: passive burn aura damages all enemies within aura range
+  // 3c. Star Ruby / Blood Stone / Ancient Blood Stone: passive burn aura damages all enemies within aura range
   for (const gem of Object.values(gameState.gems)) {
     if (gem.type !== 'special') continue;
     const sStats = getSpecialGemLeveledStats(gem.specialType, gem.level);
-    if (sStats?.effect?.type !== 'burn_aura') continue;
+    const effectType = sStats?.effect?.type;
+    if (effectType !== 'burn_aura' && effectType !== 'blood_stone' && effectType !== 'ancient_blood_stone') continue;
     const auraRadiusPx = sStats.effect.auraRange * (CELL_SIZE / 15);
     const gemCx = gem.x * CELL_SIZE;
     const gemCy = gem.y * CELL_SIZE;
@@ -688,6 +728,34 @@ function updateDefend(dt, now) {
         gem.kills++;
         _checkLevelUp(gem);
       }
+    }
+  }
+
+  // 3d. Uranium 235 / Uranium 238: passive slow aura + burn aura
+  for (const gem of Object.values(gameState.gems)) {
+    if (gem.type !== 'special') continue;
+    const sStats = getSpecialGemLeveledStats(gem.specialType, gem.level);
+    if (sStats?.effect?.type !== 'uranium') continue;
+    const auraRadiusPx = sStats.effect.auraRange * (CELL_SIZE / 15);
+    const gemCx = gem.x * CELL_SIZE;
+    const gemCy = gem.y * CELL_SIZE;
+    for (const enemy of gameState.enemies) {
+      if (enemy.dead || enemy.exited) continue;
+      const dx = enemy.x - gemCx;
+      const dy = enemy.y - gemCy;
+      if (Math.sqrt(dx * dx + dy * dy) > auraRadiusPx) continue;
+      // Burn DPS
+      const dmg = sStats.effect.auraDps * dt;
+      enemy.hp        -= dmg;
+      gem.totalDamage += dmg;
+      gem.roundDamage += dmg;
+      if (enemy.hp <= 0 && !enemy.dead) {
+        enemy.dead = true;
+        gem.kills++;
+        _checkLevelUp(gem);
+      }
+      // Slow aura (refreshed each frame; expires 200 ms after leaving range)
+      applyEffect(enemy, { type: 'slow', amount: sStats.effect.slowAmount, duration: 0.2 }, now, gem.id);
     }
   }
 

@@ -223,8 +223,9 @@ export function attackEnemy(gem, enemy, enemies, now) {
   // 1b. MVP bonus — flat % multiplier earned from winning rounds
   if (gem.mvpBonus > 0) damage = Math.round(damage * (1 + gem.mvpBonus * 0.01));
 
-  // 1c. Damage aura bonus from Black Opal / Mystic Black Opal in range
-  if (gem.dmgBonus > 0) damage = Math.round(damage * (1 + gem.dmgBonus * 0.01));
+  // 1c. Damage aura bonus — slot 1 (Black Opal) + slot 2 (Star Yellow Sapphire); additive
+  const totalDmgBonus = (gem.dmgBonus ?? 0) + (gem.dmgBonus2 ?? 0);
+  if (totalDmgBonus > 0) damage = Math.round(damage * (1 + totalDmgBonus * 0.01));
 
   // 1d. Crit chance — Diamond, Lucky Asian Jade, Pink Diamond, or Gold
   let isCrit = false;
@@ -235,6 +236,9 @@ export function attackEnemy(gem, enemy, enemies, now) {
     damage *= stats.effect.critMult;
     isCrit = true;
   } else if ((stats.effect?.type === 'crit_ground' || stats.effect?.type === 'armor_debuff') && Math.random() < stats.effect.critChance) {
+    damage *= stats.effect.critMult;
+    isCrit = true;
+  } else if (stats.effect?.type === 'ancient_blood_stone' && Math.random() < stats.effect.critChance) {
     damage *= stats.effect.critMult;
     isCrit = true;
   }
@@ -266,22 +270,35 @@ export function attackEnemy(gem, enemy, enemies, now) {
   let splashDamage = 0;
   if (gem.type === 'Ruby') {
     ({ kills: splashKills, damage: splashDamage } = applySplash(gem, enemy, enemies, damage, now));
-  } else if (stats.effect?.type === 'splash_slow') {
+  } else if (stats.effect?.type === 'splash_slow' || stats.effect?.type === 'splash_slow_dmg_aura') {
     // Apply slow to primary target
     applyEffect(enemy, { type: 'slow', amount: stats.effect.slow, duration: stats.effect.duration }, now, gem.id);
-    // Full-damage splash + slow to all enemies in radius
+    // Splash + slow to all enemies in radius; dmgMod scales splash damage (0.5 = 50%, 1.0 = 100%)
+    const splashAmt = damage * (stats.effect.dmgMod ?? 1.0);
     for (const e of enemies) {
       if (e === enemy || e.dead || e.exited) continue;
       const dx = e.x - enemy.x;
       const dy = e.y - enemy.y;
       if (Math.sqrt(dx * dx + dy * dy) <= stats.effect.radius) {
-        e.hp -= damage;
+        e.hp -= splashAmt;
         applyEffect(e, { type: 'slow', amount: stats.effect.slow, duration: stats.effect.duration }, now, gem.id);
-        splashDamage += damage;
+        splashDamage += splashAmt;
         if (e.hp <= 0 && !e.dead) {
           e.dead = true;
           splashKills++;
         }
+      }
+    }
+  } else if (stats.effect?.type === 'ancient_blood_stone') {
+    // 100% damage splash within splashRadius px
+    for (const e of enemies) {
+      if (e === enemy || e.dead || e.exited) continue;
+      const dx = e.x - enemy.x;
+      const dy = e.y - enemy.y;
+      if (Math.sqrt(dx * dx + dy * dy) <= stats.effect.splashRadius) {
+        e.hp -= damage;
+        splashDamage += damage;
+        if (e.hp <= 0 && !e.dead) { e.dead = true; splashKills++; }
       }
     }
   } else if (stats.effect?.type === 'paraiba_nova' && Math.random() < stats.effect.novaChance) {
