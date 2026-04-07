@@ -290,26 +290,26 @@ export function attackEnemy(gem, enemy, enemies, now, wave) {
       }
     }
   } else if (stats.effect?.type === 'ancient_blood_stone') {
-    // 100% damage splash within splashRadius px
+    const absSplash = damage * (stats.effect.splashDmgMod ?? 1.0);
     for (const e of enemies) {
       if (e === enemy || e.dead || e.exited) continue;
       const dx = e.x - enemy.x;
       const dy = e.y - enemy.y;
       if (Math.sqrt(dx * dx + dy * dy) <= stats.effect.splashRadius) {
-        e.hp -= damage;
-        splashDamage += damage;
+        e.hp -= absSplash;
+        splashDamage += absSplash;
         if (e.hp <= 0 && !e.dead) { e.dead = true; splashKills++; }
       }
     }
   } else if (stats.effect?.type === 'paraiba_nova' && Math.random() < stats.effect.novaChance) {
-    // 33% on-hit nova: splash full hit damage to all enemies within novaRadius px
+    const novaSplash = damage * (stats.effect.novaDmgMod ?? 1.0);
     for (const e of enemies) {
       if (e === enemy || e.dead || e.exited) continue;
       const dx = e.x - enemy.x;
       const dy = e.y - enemy.y;
       if (Math.sqrt(dx * dx + dy * dy) <= stats.effect.novaRadius) {
-        e.hp -= damage;
-        splashDamage += damage;
+        e.hp -= novaSplash;
+        splashDamage += novaSplash;
         if (e.hp <= 0 && !e.dead) { e.dead = true; splashKills++; }
       }
     }

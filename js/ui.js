@@ -246,33 +246,33 @@ function _buildEffectHTML(effect, baseEffect) {
     case 'blood_stone':
       return wrap(
         _row('Targets', `${effect.targets} simultaneous`) +
-        _row('Burn Aura', `${effect.auraDps} DPS in range${_lvlNote(effect.auraDps, b.auraDps, d => d)}`) +
-        _row('Radius', `${(effect.auraRange / 15).toFixed(1)} tiles${_lvlNote(effect.auraRange, b.auraRange, d => (d / 15).toFixed(1) + 't')}`)
+        _row('Burn Aura', `${effect.auraDps} DPS${_lvlNote(effect.auraDps, b.auraDps, d => d)}`) +
+        _row('Aura Range', `${(effect.auraRange / 15).toFixed(1)} tiles${_lvlNote(effect.auraRange, b.auraRange, d => (d / 15).toFixed(1) + 't')}`)
       );
     case 'ancient_blood_stone':
       return wrap(
         _row('Crit', `${Math.round(effect.critChance * 100)}%${_lvlNote(effect.critChance, b.critChance, d => Math.round(d * 100) + '%')} · ×${effect.critMult.toFixed(1)}${_lvlNote(effect.critMult, b.critMult, d => d.toFixed(1) + '×')}`) +
-        _row('Splash', `100% dmg ${(effect.splashRadius / CELL_SIZE).toFixed(1)}t${_lvlNote(effect.splashRadius, b.splashRadius, d => (d / CELL_SIZE).toFixed(1) + 't')}`) +
-        _row('Burn Aura', `${effect.auraDps} DPS in range${_lvlNote(effect.auraDps, b.auraDps, d => d)}`) +
-        _row('Radius', `${(effect.auraRange / 15).toFixed(1)} tiles${_lvlNote(effect.auraRange, b.auraRange, d => (d / 15).toFixed(1) + 't')}`)
+        _row('Splash', `${Math.round((effect.splashDmgMod ?? 1) * 100)}% dmg ${(effect.splashRadius / CELL_SIZE).toFixed(1)} tiles${_lvlNote(effect.splashRadius, b.splashRadius, d => (d / CELL_SIZE).toFixed(1) + 't')}`) +
+        _row('Burn Aura', `${effect.auraDps} DPS${_lvlNote(effect.auraDps, b.auraDps, d => d)}`) +
+        _row('Aura Range', `${(effect.auraRange / 15).toFixed(1)} tiles${_lvlNote(effect.auraRange, b.auraRange, d => (d / 15).toFixed(1) + 't')}`)
       );
     case 'uranium':
       return wrap(
         _row('Slow Aura', `-${Math.round(effect.slowAmount * 100)}% speed to all in range`) +
-        _row('Burn Aura', `${effect.auraDps} DPS to all in range${_lvlNote(effect.auraDps, b.auraDps, d => d)}`) +
-        _row('Radius', `${(effect.auraRange / 15).toFixed(1)} tiles${_lvlNote(effect.auraRange, b.auraRange, d => (d / 15).toFixed(1) + 't')}`)
+        _row('Burn Aura', `${effect.auraDps} DPS${_lvlNote(effect.auraDps, b.auraDps, d => d)}`) +
+        _row('Aura Range', `${(effect.auraRange / 15).toFixed(1)} tiles${_lvlNote(effect.auraRange, b.auraRange, d => (d / 15).toFixed(1) + 't')}`)
       );
     case 'burn_aura':
       return wrap(
         _row('Effect', 'Burn Aura') +
-        _row('DPS', `${effect.auraDps} to all in range${_lvlNote(effect.auraDps, b.auraDps, d => d)}`) +
-        _row('Radius', `${(effect.auraRange / 15).toFixed(1)} tiles${_lvlNote(effect.auraRange, b.auraRange, d => (d / 15).toFixed(1) + 't')}`)
+        _row('DPS', `${effect.auraDps} DPS${_lvlNote(effect.auraDps, b.auraDps, d => d)}`) +
+        _row('Aura Range', `${(effect.auraRange / 15).toFixed(1)} tiles${_lvlNote(effect.auraRange, b.auraRange, d => (d / 15).toFixed(1) + 't')}`)
       );
     case 'air_crystal':
       return wrap(
         _row('Targeting', 'Air only') +
-        _row('Armor Aura', `−${effect.armorAura.toFixed(1)} armor${_lvlNote(effect.armorAura, b.armorAura, d => d.toFixed(1))} to flying in range`) +
-        _row('Aura Radius', `${(effect.auraRange / 15).toFixed(1)} tiles${_lvlNote(effect.auraRange, b.auraRange, d => (d / 15).toFixed(1) + 't')}`)
+        _row('Armor Aura', `−${Math.round(effect.armorAura * 3)}% damage reduction${_lvlNote(effect.armorAura, b.armorAura, d => Math.round(d * 3) + '%')} to flying`) +
+        _row('Aura Range', `${(effect.auraRange / 15).toFixed(1)} tiles${_lvlNote(effect.auraRange, b.auraRange, d => (d / 15).toFixed(1) + 't')}`)
       );
     case 'crit_ground':
       return wrap(
@@ -284,13 +284,13 @@ function _buildEffectHTML(effect, baseEffect) {
       return wrap(
         _row('Crit Chance', `${Math.round(effect.critChance * 100)}%${_lvlNote(effect.critChance, b.critChance, d => Math.round(d * 100) + '%')}`) +
         _row('Crit Mult', `×${effect.critMult.toFixed(1)}${_lvlNote(effect.critMult, b.critMult, d => d.toFixed(1) + '×')}`) +
-        _row('Armor Debuff', `−${effect.armorDebuff.toFixed(1)} armor${_lvlNote(effect.armorDebuff, b.armorDebuff, d => d.toFixed(1))} for ${effect.debuffDuration}s`)
+        _row('Armor Debuff', `−${Math.round(effect.armorDebuff * 3)}% damage reduction${_lvlNote(effect.armorDebuff, b.armorDebuff, d => Math.round(d * 3) + '%')} for ${effect.debuffDuration}s`)
       );
     case 'paraiba_nova':
       return wrap(
-        _row('Armor Aura', `−${effect.groundArmorAura.toFixed(1)} armor${_lvlNote(effect.groundArmorAura, b.groundArmorAura, d => d.toFixed(1))} to ground in range`) +
-        _row('Aura Radius', `${(effect.auraRange / 15).toFixed(1)} tiles${_lvlNote(effect.auraRange, b.auraRange, d => (d / 15).toFixed(1) + 't')}`) +
-        _row('Nova', `${Math.round(effect.novaChance * 100)}% on hit: full dmg splash`) +
+        _row('Armor Aura', `−${Math.round(effect.groundArmorAura * 3)}% damage reduction${_lvlNote(effect.groundArmorAura, b.groundArmorAura, d => Math.round(d * 3) + '%')} to ground`) +
+        _row('Aura Range', `${(effect.auraRange / 15).toFixed(1)} tiles${_lvlNote(effect.auraRange, b.auraRange, d => (d / 15).toFixed(1) + 't')}`) +
+        _row('Nova', `${Math.round(effect.novaChance * 100)}% on hit: ${Math.round((effect.novaDmgMod ?? 1) * 100)}% dmg splash`) +
         _row('Nova Radius', `${(effect.novaRadius / CELL_SIZE).toFixed(1)} tiles${_lvlNote(effect.novaRadius, b.novaRadius, d => (d / CELL_SIZE).toFixed(1) + 't')}`)
       );
     case 'dmg_aura':

@@ -173,7 +173,6 @@ export function getLeveledStats(type, quality, level) {
     switch (type) {
       case 'Emerald':
         effect.dps      = effect.dps  + bonus;
-        effect.slow     = effect.slow + bonus * 0.01;
         break;
       case 'Ruby':
         effect.radius   = effect.radius + bonus * 1.5; // 0.1 tile per level
