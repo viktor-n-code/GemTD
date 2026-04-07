@@ -9,7 +9,7 @@ import { createGrid, validatePlacement, placeGem, placeRock, removeRock, findPat
 import { rollGem, getStats, getLeveledStats, getVisual, GEM_CHANCE_LEVELS, QUALITY_LEVELS } from './gem.js';
 import { SPECIAL_GEM_DEFS, getSpecialGemLeveledStats, getSpecialVisual, findAvailableRecipes } from './specialgem.js';
 import { moveEnemy, GOLD_PER_WAVE } from './enemy.js';
-import { WaveSpawner } from './wave.js';
+import { WaveSpawner, WAVE_DEFS } from './wave.js';
 import { attackEnemy, canAttack, isInRange, tickPoison, getGemStats, applyEffect } from './combat.js';
 import { render, HUD_HEIGHT } from './renderer.js';
 import { InputHandler } from './input.js';
@@ -84,6 +84,7 @@ function init() {
 
   // Compute initial path so the build-phase highlight is visible from the start
   gameState.groundPath = computeFullPath(gameState.grid);
+  gameState.totalWaves = WAVE_DEFS.length;
 
   inputHandler = new InputHandler(canvas);
 
@@ -107,7 +108,7 @@ function gameLoop(timestamp) {
   else if (gameState.phase === 'between') updateBetween();
 
   const HUD_Y = GRID_ROWS * CELL_SIZE; // 752 — grid ends here, HUD starts here
-  render(gameState, canvas, HUD_Y);
+  render(gameState, canvas, HUD_Y, inputHandler.getState().selectedGemId);
   drawUI(ctx, gameState, inputHandler.getState());
   updateInfoPanel(gameState, inputHandler.getState());
 
@@ -822,7 +823,7 @@ function updateBetween() {
 
   saveState(gameState);
 
-  if (gameState.wave >= 20) {
+  if (gameState.wave >= WAVE_DEFS.length) {
     gameState.gameWon = true;
     gameState.phase = 'gamewon'; // terminal state — prevents re-entry
     return;
