@@ -57,6 +57,7 @@ function init() {
     for (const gem of Object.values(gameState.gems || {})) {
       if (gem.level       === undefined) gem.level       = 1;
       if (gem.auraBonus   === undefined) gem.auraBonus   = 0;
+      if (gem.dmgBonus    === undefined) gem.dmgBonus    = 0;
       if (gem.roundDamage === undefined) gem.roundDamage = 0;
       if (gem.mvpBonus    === undefined) gem.mvpBonus    = 0;
       if (!gem.name) {
@@ -66,7 +67,11 @@ function init() {
       }
     }
     for (const enemy of (gameState.enemies || [])) {
-      if (enemy.poisonGemId === undefined) enemy.poisonGemId = null;
+      if (enemy.poisonGemId         === undefined) enemy.poisonGemId         = null;
+      if (enemy.armorDebuff         === undefined) enemy.armorDebuff         = 0;
+      if (enemy.armorDebuffUntil    === undefined) enemy.armorDebuffUntil    = 0;
+      if (enemy.armorAuraDebuff     === undefined) enemy.armorAuraDebuff     = 0;
+      if (enemy.armorAuraDebuffUntil === undefined) enemy.armorAuraDebuffUntil = 0;
     }
   } else {
     clearState();
@@ -146,11 +151,12 @@ function updateBuild(dt, now) {
         lastAttackTime: 0,
         attackCooldown: Math.round(1000 / stats.attackSpeed),
         auraBonus: 0,
+        dmgBonus: 0,
         lastTargetId: null,
       };
       placeGem(gameState.grid, x, y, id);
       gameState.placedThisRound.push(id);
-      applyAuraBuffs(gameState); // update aura bonuses after each placement
+      applyAllAuraBuffs(gameState); // update aura bonuses after each placement
     }
   }
 
@@ -237,7 +243,7 @@ function updateBuild(dt, now) {
 
       case 'removeRock': {
         removeRock(gameState.grid, action.x, action.y);
-        applyAuraBuffs(gameState);
+        applyAllAuraBuffs(gameState);
         break;
       }
 
@@ -292,6 +298,40 @@ function applyAuraBuffs(state) {
       }
     }
   }
+}
+
+/**
+ * Recalculates gem.dmgBonus for all gems based on Black Opal / Mystic Black Opal
+ * auras in range. Only the strongest dmg_aura source applies per gem (no stacking
+ * between Black Opal and Mystic Black Opal). Stacks additively with the future
+ * Star Yellow Sapphire dmgBonus2 slot (separate field, not implemented yet).
+ */
+function applyDmgAuraBuffs(state) {
+  // 1. Reset damage bonus on all gems
+  for (const gem of Object.values(state.gems)) gem.dmgBonus = 0;
+
+  // 2. Apply strongest dmg_aura (Black Opal / Mystic Black Opal)
+  for (const auraGem of Object.values(state.gems)) {
+    const auraStats = getGemStats(auraGem);
+    if (auraStats.effect?.type !== 'dmg_aura') continue;
+    const { bonus, auraRange } = auraStats.effect;
+    const radiusPx = auraRange * (CELL_SIZE / 15);
+    const apx = auraGem.x * CELL_SIZE;
+    const apy = auraGem.y * CELL_SIZE;
+    for (const gem of Object.values(state.gems)) {
+      const dx = gem.x * CELL_SIZE - apx;
+      const dy = gem.y * CELL_SIZE - apy;
+      if (Math.sqrt(dx * dx + dy * dy) <= radiusPx && bonus > gem.dmgBonus) {
+        gem.dmgBonus = bonus;
+      }
+    }
+  }
+}
+
+/** Applies all passive aura buffs (attack speed + damage). Call after any gem change. */
+function applyAllAuraBuffs(state) {
+  applyAuraBuffs(state);
+  applyDmgAuraBuffs(state);
 }
 
 // ---------------------------------------------------------------------------
@@ -373,7 +413,7 @@ function _handleCombineSpecial(selectedGemId, phase) {
     gameState.keptGemId = selectedGemId;
     startDefendPhase();
   } else {
-    applyAuraBuffs(gameState);
+    applyAllAuraBuffs(gameState);
     saveState(gameState);
   }
 }
@@ -406,7 +446,7 @@ function _handleUpgradeSpecial(gemId) {
   const sStats = getSpecialGemLeveledStats(gem.specialType, gem.level);
   gem.attackCooldown = Math.round(1000 / sStats.attackSpeed);
 
-  applyAuraBuffs(gameState);
+  applyAllAuraBuffs(gameState);
   saveState(gameState);
 }
 
@@ -421,8 +461,8 @@ function startDefendPhase() {
   // Compute ground path once (all ground enemies share it)
   groundPath = computeFullPath(gameState.grid);
 
-  // Apply Opal aura bonuses to attack cooldowns before wave begins
-  applyAuraBuffs(gameState);
+  // Apply all aura bonuses (attack speed + damage) before wave begins
+  applyAllAuraBuffs(gameState);
 
   // Create wave spawner
   waveSpawner = new WaveSpawner(gameState.wave, groundPath);
@@ -480,7 +520,7 @@ function _checkLevelUp(gem) {
     // Re-run full aura pass: if this gem is an Opal its increased bonus must
     // propagate to nearby gems; if it's any other gem its new base speed must
     // be combined with whatever aura is currently in range.
-    applyAuraBuffs(gameState);
+    applyAllAuraBuffs(gameState);
     return true;
   }
   return false;
@@ -597,10 +637,31 @@ function updateDefend(dt, now) {
       const dx = enemy.x - gemCx;
       const dy = enemy.y - gemCy;
       if (Math.sqrt(dx * dx + dy * dy) > auraRadiusPx) continue;
-      // Refresh debuff each frame; take strongest if multiple Red Crystals
-      if (armorAmt >= (enemy.armorDebuff ?? 0)) {
-        enemy.armorDebuff      = armorAmt;
-        enemy.armorDebuffUntil = now + 200; // 200 ms — expires shortly after leaving range
+      // Refresh aura debuff each frame; take strongest if multiple Red Crystals
+      if (armorAmt >= (enemy.armorAuraDebuff ?? 0)) {
+        enemy.armorAuraDebuff      = armorAmt;
+        enemy.armorAuraDebuffUntil = now + 200; // 200 ms — expires shortly after leaving range
+      }
+    }
+  }
+
+  // 3b-2. Paraiba Tourmaline: passive armor aura debuffs ground enemies within range
+  for (const gem of Object.values(gameState.gems)) {
+    if (gem.type !== 'special') continue;
+    const sStats = getSpecialGemLeveledStats(gem.specialType, gem.level);
+    if (sStats?.effect?.type !== 'paraiba_nova') continue;
+    const auraRadiusPx = sStats.effect.auraRange * (CELL_SIZE / 15);
+    const armorAmt     = sStats.effect.groundArmorAura;
+    const gemCx = gem.x * CELL_SIZE;
+    const gemCy = gem.y * CELL_SIZE;
+    for (const enemy of gameState.enemies) {
+      if (enemy.dead || enemy.exited || enemy.flying) continue; // ground only
+      const dx = enemy.x - gemCx;
+      const dy = enemy.y - gemCy;
+      if (Math.sqrt(dx * dx + dy * dy) > auraRadiusPx) continue;
+      if (armorAmt >= (enemy.armorAuraDebuff ?? 0)) {
+        enemy.armorAuraDebuff      = armorAmt;
+        enemy.armorAuraDebuffUntil = now + 200;
       }
     }
   }

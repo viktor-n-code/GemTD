@@ -260,6 +260,25 @@ function _buildEffectHTML(effect, baseEffect) {
         _row('Crit Mult', `×${effect.critMult}`) +
         _row('Armor Debuff', `−${effect.armorDebuff} armor for ${effect.debuffDuration}s`)
       );
+    case 'paraiba_nova':
+      return wrap(
+        _row('Armor Aura', `−${effect.groundArmorAura} armor to ground in range`) +
+        _row('Aura Radius', `${(effect.auraRange / 15).toFixed(1)} tiles`) +
+        _row('Nova', `${Math.round(effect.novaChance * 100)}% on hit: full dmg splash`) +
+        _row('Nova Radius', `${effect.novaRadius} px`)
+      );
+    case 'dmg_aura':
+      return wrap(
+        _row('Effect', 'Damage Aura') +
+        _row('Bonus', `+${effect.bonus}% damage to all in range`) +
+        _row('Radius', `${(effect.auraRange / 15).toFixed(1)} tiles`)
+      );
+    case 'stun_chance':
+      return wrap(
+        _row('Effect', 'Stun') +
+        _row('Chance', `${Math.round(effect.chance * 100)}%`) +
+        _row('Duration', `${effect.stunDuration}s`)
+      );
     case 'aura':
       return wrap(
         _row('Effect', 'Attack Speed Aura') +
@@ -293,11 +312,14 @@ function _buildSpecialGemHTML(gem, state) {
   const spdHTML = gem.auraBonus > 0
     ? `${spdEff}/s<div class="info-aura-note">+${Math.round(gem.auraBonus * 100)}% Opal aura</div>`
     : `${spdEff}/s`;
+  const dmgAuraNote = gem.dmgBonus > 0
+    ? `<div class="info-aura-note">+${gem.dmgBonus}% dmg aura</div>`
+    : '';
 
   let html = `
     <div class="info-section-title">Selected Gem</div>
     <div class="info-gem-name">${gem.name}${levelLabel}</div>
-    <div class="info-row"><span class="info-label">Damage</span><span class="info-value">${dmgHTML}</span></div>
+    <div class="info-row"><span class="info-label">Damage</span><span class="info-value">${dmgHTML}${dmgAuraNote}</span></div>
     <div class="info-row"><span class="info-label">Speed</span><span class="info-value">${spdHTML}</span></div>
     <div class="info-row"><span class="info-label">Range</span><span class="info-value">${(ls.range / 15).toFixed(1)} tiles</span></div>`;
 
@@ -356,6 +378,7 @@ function _buildGemHTML(gem, state) {
   let dmgHTML = `${minDmg}–${maxDmg}`;
   if (level > 1)    dmgHTML += ` <span class="info-level-note">(+${(level - 1) * 10}% lvl)</span>`;
   if (mvpBonus > 0) dmgHTML += ` <span class="info-mvp-note">(+${mvpBonus}% MVP)</span>`;
+  if (gem.dmgBonus > 0) dmgHTML += `<div class="info-aura-note">+${gem.dmgBonus}% dmg aura</div>`;
 
   let html = `
     <div class="info-section-title">Selected Gem</div>
@@ -414,6 +437,10 @@ function _buildEnemyHTML(enemy, state) {
   const now    = performance.now();
   const pct    = enemy.maxHp > 0 ? Math.max(0, Math.min(100, (enemy.hp / enemy.maxHp) * 100)) : 0;
   const hpColor = pct > 50 ? '#00ff44' : pct > 25 ? '#ffcc00' : '#ff4444';
+  const auraReduction = (now < (enemy.armorAuraDebuffUntil ?? 0)) ? (enemy.armorAuraDebuff ?? 0) : 0;
+  const hitReduction  = (now < (enemy.armorDebuffUntil    ?? 0)) ? (enemy.armorDebuff     ?? 0) : 0;
+  const effectiveArmor = Math.max(0, enemy.armor - auraReduction - hitReduction);
+  const isDebuffed = auraReduction > 0 || hitReduction > 0;
 
   let html = `
     <div class="info-section-title">Selected Enemy</div>
@@ -427,7 +454,9 @@ function _buildEnemyHTML(enemy, state) {
     </div>
     <div class="info-row">
       <span class="info-label">Armor</span>
-      <span class="info-value">${Math.round(enemy.armor * 3)}%</span>
+      <span class="info-value">${isDebuffed
+        ? `${Math.round(effectiveArmor * 3)}% <span class="info-debuff-note">(base ${Math.round(enemy.armor * 3)}% −${auraReduction + hitReduction})</span>`
+        : `${Math.round(enemy.armor * 3)}%`}</span>
     </div>
     <div class="info-row">
       <span class="info-label">Speed</span>
@@ -438,6 +467,7 @@ function _buildEnemyHTML(enemy, state) {
   if (now < (enemy.stunUntil ?? 0)) tags.push(`<span class="info-status-tag tag-stunned">Stunned</span>`);
   if (now < enemy.slowUntil)   tags.push(`<span class="info-status-tag tag-slowed">Slowed</span>`);
   if (now < enemy.poisonUntil) tags.push(`<span class="info-status-tag tag-poison">Poison ${enemy.poisonDps}dps</span>`);
+  if (isDebuffed) tags.push(`<span class="info-status-tag tag-armor-debuff">−${auraReduction + hitReduction} Armor</span>`);
   if (tags.length > 0) html += `<div class="info-status-tags">${tags.join('')}</div>`;
 
   return html;

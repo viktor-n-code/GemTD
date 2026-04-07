@@ -223,6 +223,9 @@ export function attackEnemy(gem, enemy, enemies, now) {
   // 1b. MVP bonus — flat % multiplier earned from winning rounds
   if (gem.mvpBonus > 0) damage = Math.round(damage * (1 + gem.mvpBonus * 0.01));
 
+  // 1c. Damage aura bonus from Black Opal / Mystic Black Opal in range
+  if (gem.dmgBonus > 0) damage = Math.round(damage * (1 + gem.dmgBonus * 0.01));
+
   // 1d. Crit chance — Diamond, Lucky Asian Jade, Pink Diamond, or Gold
   let isCrit = false;
   if (stats.effect?.type === 'crit' && Math.random() < stats.effect.chance) {
@@ -236,10 +239,10 @@ export function attackEnemy(gem, enemy, enemies, now) {
     isCrit = true;
   }
 
-  // 2. Apply armor reduction (3% per armor point); active armor debuff reduces effective armor
-  const effectiveArmor = (now < (enemy.armorDebuffUntil ?? 0))
-    ? Math.max(0, enemy.armor - enemy.armorDebuff)
-    : enemy.armor;
+  // 2. Apply armor reduction (3% per armor point); aura and on-hit debuffs stack
+  const auraReduction = (now < (enemy.armorAuraDebuffUntil ?? 0)) ? (enemy.armorAuraDebuff ?? 0) : 0;
+  const hitReduction  = (now < (enemy.armorDebuffUntil    ?? 0)) ? (enemy.armorDebuff     ?? 0) : 0;
+  const effectiveArmor = Math.max(0, enemy.armor - auraReduction - hitReduction);
   damage = Math.round(damage * Math.max(0, 1 - effectiveArmor * 0.03));
 
   // 3. Apply type advantage: Amethyst vs flying enemies
@@ -281,6 +284,18 @@ export function attackEnemy(gem, enemy, enemies, now) {
         }
       }
     }
+  } else if (stats.effect?.type === 'paraiba_nova' && Math.random() < stats.effect.novaChance) {
+    // 33% on-hit nova: splash full hit damage to all enemies within novaRadius px
+    for (const e of enemies) {
+      if (e === enemy || e.dead || e.exited) continue;
+      const dx = e.x - enemy.x;
+      const dy = e.y - enemy.y;
+      if (Math.sqrt(dx * dx + dy * dy) <= stats.effect.novaRadius) {
+        e.hp -= damage;
+        splashDamage += damage;
+        if (e.hp <= 0 && !e.dead) { e.dead = true; splashKills++; }
+      }
+    }
   }
 
   // 8. Lucky Asian Jade procs — stun and gold (rolled after damage applied)
@@ -299,6 +314,14 @@ export function attackEnemy(gem, enemy, enemies, now) {
   if (stats.effect?.type === 'armor_debuff' && !enemy.dead) {
     enemy.armorDebuff      = stats.effect.armorDebuff;
     enemy.armorDebuffUntil = now + stats.effect.debuffDuration * 1000;
+  }
+
+  // 8c. Dark Emerald: stun proc
+  if (stats.effect?.type === 'stun_chance' && !enemy.dead) {
+    if (Math.random() < stats.effect.chance) {
+      const newStun = now + stats.effect.stunDuration * 1000;
+      if (newStun > (enemy.stunUntil ?? 0)) enemy.stunUntil = newStun;
+    }
   }
 
   // 9. Update attack timing
