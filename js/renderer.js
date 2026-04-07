@@ -307,6 +307,32 @@ function drawGems(ctx, state) {
           ctx.stroke();
           ctx.restore();
         }
+        if (sStats?.effect?.type === 'paraiba_nova') {
+          // Ground armor aura ring — teal
+          const auraR = sStats.effect.auraRange * (CELL_SIZE / 15);
+          ctx.save();
+          ctx.strokeStyle = 'rgba(79,209,232,0.4)';
+          ctx.fillStyle   = 'rgba(79,209,232,0.06)';
+          ctx.lineWidth   = 1;
+          ctx.beginPath();
+          ctx.arc(cx, cy, auraR, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
+        }
+        if (sStats?.effect?.type === 'dmg_aura') {
+          // Damage aura ring — gold
+          const auraR = sStats.effect.auraRange * (CELL_SIZE / 15);
+          ctx.save();
+          ctx.strokeStyle = 'rgba(245,197,24,0.5)';
+          ctx.fillStyle   = 'rgba(245,197,24,0.07)';
+          ctx.lineWidth   = 1;
+          ctx.beginPath();
+          ctx.arc(cx, cy, auraR, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
+        }
       }
     }
   }

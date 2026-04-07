@@ -15,12 +15,19 @@
  *   'multi'       — identical to Topaz multi-target (targets)
  *   'splash_slow' — Silver: full-damage splash + slow to all hit enemies
  *   'burn_aura'   — Star Ruby: passive per-frame damage to all enemies in range
- *   'air_crystal' — Red Crystal: air-only attack; passive armor aura for flying enemies
- *                   (armorAura: reduction amount, auraRange: px)
+ *   'air_crystal'  — Red Crystal: air-only attack; passive armor aura for flying enemies
+ *                   (armorAura: reduction amount, auraRange: design units)
  *   'crit_ground' — Pink Diamond: ground-only attack with crit
  *                   (critChance, critMult)
  *   'armor_debuff'— Gold: any-target attack with crit + armor reduction on hit
  *                   (critChance, critMult, armorDebuff: amount, debuffDuration: seconds)
+ *   'paraiba_nova'— Paraiba Tourmaline: any-target; passive ground armor aura;
+ *                   33% on-hit nova splashes full hit damage within novaRadius px
+ *                   (groundArmorAura, auraRange: design units, novaChance, novaRadius: px)
+ *   'dmg_aura'    — Black Opal: passive +% damage to all gems in aura range
+ *                   (bonus: integer %, auraRange: design units)
+ *   'stun_chance' — Dark Emerald: on-hit stun proc
+ *                   (chance, stunDuration: seconds)
  */
 export const SPECIAL_GEM_DEFS = [
   // ── Jade chain ─────────────────────────────────────────────────────────────
@@ -284,6 +291,94 @@ export const SPECIAL_GEM_DEFS = [
     stats: {
       damageMin: 159, damageMax: 200, attackSpeed: 1.429, range: 114,
       effect: { type: 'armor_debuff', critChance: 0.30, critMult: 2, armorDebuff: 8, debuffDuration: 3 },
+    },
+    upgradeTo: null,
+    upgradeCost: null,
+  },
+
+  // ── Paraiba Tourmaline chain ───────────────────────────────────────────────
+  {
+    id: 'paraiba_tourmaline',
+    name: 'Paraiba Tourmaline',
+    color: '#4fd1e8',
+    ingredients: [
+      { type: 'Aquamarine', quality: 'perfect'  },
+      { type: 'Opal',       quality: 'flawless' },
+      { type: 'Emerald',    quality: 'flawed'   },
+      { type: 'Aquamarine', quality: 'flawed'   },
+    ],
+    stats: {
+      damageMin: 25, damageMax: 105, attackSpeed: 1.333, range: 122,
+      effect: { type: 'paraiba_nova', groundArmorAura: 4, auraRange: 86, novaChance: 0.33, novaRadius: 50 },
+    },
+    upgradeTo: 'paraiba_tourmaline_facet',
+    upgradeCost: 350,
+  },
+  {
+    id: 'paraiba_tourmaline_facet',
+    name: 'Paraiba Tourmaline Facet',
+    color: '#3ab8cf',
+    stats: {
+      damageMin: 125, damageMax: 204, attackSpeed: 1.667, range: 129,
+      effect: { type: 'paraiba_nova', groundArmorAura: 6, auraRange: 93, novaChance: 0.33, novaRadius: 75 },
+    },
+    upgradeTo: null,
+    upgradeCost: null,
+  },
+
+  // ── Black Opal chain ───────────────────────────────────────────────────────
+  {
+    id: 'black_opal',
+    name: 'Black Opal',
+    color: '#2a1a3e',
+    ingredients: [
+      { type: 'Opal',       quality: 'perfect'  },
+      { type: 'Diamond',    quality: 'flawless' },
+      { type: 'Aquamarine', quality: 'standard' },
+    ],
+    stats: {
+      damageMin: 24, damageMax: 25, attackSpeed: 1.0, range: 114,
+      effect: { type: 'dmg_aura', bonus: 30, auraRange: 143 },
+    },
+    upgradeTo: 'mystic_black_opal',
+    upgradeCost: 300,
+  },
+  {
+    id: 'mystic_black_opal',
+    name: 'Mystic Black Opal',
+    color: '#3d2a5e',
+    stats: {
+      damageMin: 49, damageMax: 50, attackSpeed: 1.0, range: 143,
+      effect: { type: 'dmg_aura', bonus: 40, auraRange: 171 },
+    },
+    upgradeTo: null,
+    upgradeCost: null,
+  },
+
+  // ── Dark Emerald chain ─────────────────────────────────────────────────────
+  {
+    id: 'dark_emerald',
+    name: 'Dark Emerald',
+    color: '#1a5c2a',
+    ingredients: [
+      { type: 'Emerald',  quality: 'perfect'  },
+      { type: 'Sapphire', quality: 'flawless' },
+      { type: 'Topaz',    quality: 'flawed'   },
+    ],
+    stats: {
+      damageMin: 89, damageMax: 150, attackSpeed: 1.25, range: 79,
+      effect: { type: 'stun_chance', chance: 0.125, stunDuration: 1 },
+    },
+    upgradeTo: 'enchanted_emerald',
+    upgradeCost: 250,
+  },
+  {
+    id: 'enchanted_emerald',
+    name: 'Enchanted Emerald',
+    color: '#2a7a3a',
+    stats: {
+      damageMin: 98, damageMax: 200, attackSpeed: 1.429, range: 100,
+      effect: { type: 'stun_chance', chance: 0.15, stunDuration: 2 },
     },
     upgradeTo: null,
     upgradeCost: null,
