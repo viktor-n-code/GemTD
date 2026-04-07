@@ -11,9 +11,10 @@ import { getSpecialVisual, getSpecialGemLeveledStats } from './specialgem.js';
 // Color constants
 // ---------------------------------------------------------------------------
 
-const COLOR_EMPTY    = '#1a2a3a';
-const COLOR_BLOCKED  = '#0f1f2f';
-const COLOR_ROCK     = '#555566';
+const COLOR_EMPTY     = '#1a2a3a';
+const COLOR_PATH      = '#1e3020'; // slightly greener empty — marks the enemy ground path
+const COLOR_BLOCKED   = '#0f1f2f';
+const COLOR_ROCK      = '#555566';
 const COLOR_GRID_LINE = '#2a3a4a';
 
 const COLOR_CHECKPOINT = '#ffff00';
@@ -76,6 +77,12 @@ function drawStar(ctx, cx, cy, outerR, innerR) {
 function drawGrid(ctx, state) {
   const { grid, gems } = state;
 
+  // Build a set of path cell keys for O(1) lookup during cell rendering
+  const pathCells = new Set();
+  if (state.groundPath) {
+    for (const { x, y } of state.groundPath) pathCells.add(`${x},${y}`);
+  }
+
   for (let y = 1; y <= GRID_ROWS; y++) {
     for (let x = 1; x <= GRID_COLS; x++) {
       const cell = grid[y][x];
@@ -98,6 +105,8 @@ function drawGrid(ctx, state) {
         } else {
           fillColor = COLOR_EMPTY;
         }
+      } else if (pathCells.has(`${x},${y}`)) {
+        fillColor = COLOR_PATH;
       } else {
         // 'empty'
         fillColor = COLOR_EMPTY;

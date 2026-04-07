@@ -481,6 +481,7 @@ function startDefendPhase() {
 
   // Compute ground path once (all ground enemies share it)
   groundPath = computeFullPath(gameState.grid);
+  gameState.groundPath = groundPath; // expose to renderer for path highlight
 
   // Apply all aura bonuses (attack speed + damage) before wave begins
   applyAllAuraBuffs(gameState);
