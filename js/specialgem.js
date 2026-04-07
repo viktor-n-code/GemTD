@@ -517,11 +517,88 @@ export function getSpecialGemLeveledStats(specialType, level) {
   const dmgMult = 1 + bonus * 0.10;
   const effect  = base.effect ? { ...base.effect } : null;
 
+  // Effect parameter scaling (mirrors getLeveledStats pattern in gem.js)
+  if (effect) {
+    switch (effect.type) {
+      case 'poison':
+        effect.dps = effect.dps + bonus;
+        break;
+      case 'lucky_jade':
+        effect.dps        = effect.dps        + bonus;
+        effect.critChance = effect.critChance + bonus * 0.005;
+        effect.critMult   = effect.critMult   + bonus * 0.1;
+        effect.stunChance = effect.stunChance + bonus * 0.001;
+        break;
+      case 'multi':
+        // No target scaling; gains attackSpeed and range instead (below)
+        break;
+      case 'splash_slow':
+        effect.radius = effect.radius + bonus * 1.5;
+        break;
+      case 'burn_aura':
+        effect.auraDps   = effect.auraDps   + bonus * 2;
+        effect.auraRange = effect.auraRange + bonus * 1.5;
+        break;
+      case 'air_crystal':
+        effect.armorAura = effect.armorAura + bonus * 0.2;
+        effect.auraRange = effect.auraRange + bonus * 1.5;
+        break;
+      case 'crit_ground':
+        effect.critChance = effect.critChance + bonus * 0.01;
+        effect.critMult   = effect.critMult   + bonus * 0.1;
+        break;
+      case 'armor_debuff':
+        effect.critChance  = effect.critChance  + bonus * 0.01;
+        effect.critMult    = effect.critMult    + bonus * 0.1;
+        effect.armorDebuff = effect.armorDebuff + bonus * 0.2;
+        break;
+      case 'paraiba_nova':
+        effect.groundArmorAura = effect.groundArmorAura + bonus * 0.2;
+        effect.auraRange       = effect.auraRange       + bonus * 1.5;
+        effect.novaRadius      = effect.novaRadius      + bonus * 1.5;
+        break;
+      case 'dmg_aura':
+        effect.bonus     = effect.bonus     + bonus;
+        effect.auraRange = effect.auraRange + bonus * 1.5;
+        break;
+      case 'stun_chance':
+        effect.chance = effect.chance + bonus * 0.002;
+        break;
+      case 'splash_slow_dmg_aura':
+        effect.radius       = effect.radius       + bonus * 1.5;
+        effect.dmgBonus     = effect.dmgBonus     + bonus;
+        effect.dmgAuraRange = effect.dmgAuraRange + bonus * 1.5;
+        break;
+      case 'blood_stone':
+        effect.auraDps   = effect.auraDps   + bonus * 2;
+        effect.auraRange = effect.auraRange + bonus * 1.5;
+        break;
+      case 'ancient_blood_stone':
+        effect.critChance   = effect.critChance   + bonus * 0.01;
+        effect.critMult     = effect.critMult     + bonus * 0.1;
+        effect.splashRadius = effect.splashRadius + bonus * 1.5;
+        effect.auraDps      = effect.auraDps      + bonus * 2;
+        effect.auraRange    = effect.auraRange    + bonus * 1.5;
+        break;
+      case 'uranium':
+        effect.auraDps   = effect.auraDps   + bonus * 2;
+        effect.auraRange = effect.auraRange + bonus * 1.5;
+        break;
+    }
+  }
+
+  // All special gems gain +0.1 tile range per level
+  const range = base.range + bonus * 1.5;
+  // Malachite chain gains attack speed per level
+  const attackSpeed = effect?.type === 'multi'
+    ? base.attackSpeed + bonus * 0.02
+    : base.attackSpeed;
+
   return {
     damageMin:   Math.round(base.damageMin * dmgMult),
     damageMax:   Math.round(base.damageMax * dmgMult),
-    attackSpeed: base.attackSpeed,
-    range:       base.range,
+    attackSpeed,
+    range,
     effect,
   };
 }

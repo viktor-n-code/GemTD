@@ -224,85 +224,85 @@ function _buildEffectHTML(effect, baseEffect) {
     case 'lucky_jade':
       return wrap(
         _row('Effect', 'Poison + Slow') +
-        _row('DoT', `${effect.dps} dps for ${effect.duration}s`) +
+        _row('DoT', `${effect.dps} dps${_lvlNote(effect.dps, b.dps, d => d)} for ${effect.duration}s`) +
         _row('Slow', `-${Math.round(effect.slow * 100)}% for ${effect.duration}s`) +
-        _row('5% Crit', `×${effect.critMult} damage`) +
-        _row('1% Stun', `${effect.stunDuration}s`) +
+        _row(`${(effect.critChance * 100).toFixed(1)}% Crit`, `×${effect.critMult.toFixed(1)} damage${_lvlNote(effect.critMult, b.critMult, d => d.toFixed(1) + '×')}`) +
+        _row(`${(effect.stunChance * 100).toFixed(1)}% Stun`, `${effect.stunDuration}s`) +
         _row('5% Gold', `+floor(wave/2) gold`)
       );
     case 'splash_slow':
       return wrap(
         _row('Effect', 'Splash + Slow') +
-        _row('Radius', `${(effect.radius / CELL_SIZE).toFixed(1)} tiles · ${Math.round((effect.dmgMod ?? 1) * 100)}% dmg`) +
+        _row('Radius', `${(effect.radius / CELL_SIZE).toFixed(1)} tiles${_lvlNote(effect.radius, b.radius, d => (d / CELL_SIZE).toFixed(1) + 't')} · ${Math.round((effect.dmgMod ?? 1) * 100)}% dmg`) +
         _row('Slow', `-${Math.round(effect.slow * 100)}% for ${effect.duration}s`)
       );
     case 'splash_slow_dmg_aura':
       return wrap(
         _row('Effect', 'Splash + Slow') +
-        _row('Radius', `${(effect.radius / CELL_SIZE).toFixed(1)} tiles · ${Math.round((effect.dmgMod ?? 1) * 100)}% dmg`) +
+        _row('Radius', `${(effect.radius / CELL_SIZE).toFixed(1)} tiles${_lvlNote(effect.radius, b.radius, d => (d / CELL_SIZE).toFixed(1) + 't')} · ${Math.round((effect.dmgMod ?? 1) * 100)}% dmg`) +
         _row('Slow', `-${Math.round(effect.slow * 100)}% for ${effect.duration}s`) +
-        _row('Dmg Aura', `+${effect.dmgBonus}% to gems in ${(effect.dmgAuraRange / 15).toFixed(1)} tiles`)
+        _row('Dmg Aura', `+${effect.dmgBonus}%${_lvlNote(effect.dmgBonus, b.dmgBonus, d => d + '%')} to gems in ${(effect.dmgAuraRange / 15).toFixed(1)} tiles`)
       );
     case 'blood_stone':
       return wrap(
         _row('Targets', `${effect.targets} simultaneous`) +
-        _row('Burn Aura', `${effect.auraDps} DPS in range`) +
-        _row('Radius', `${(effect.auraRange / 15).toFixed(1)} tiles`)
+        _row('Burn Aura', `${effect.auraDps} DPS in range${_lvlNote(effect.auraDps, b.auraDps, d => d)}`) +
+        _row('Radius', `${(effect.auraRange / 15).toFixed(1)} tiles${_lvlNote(effect.auraRange, b.auraRange, d => (d / 15).toFixed(1) + 't')}`)
       );
     case 'ancient_blood_stone':
       return wrap(
-        _row('Crit', `${Math.round(effect.critChance * 100)}% · ×${effect.critMult}`) +
-        _row('Splash', `100% dmg within ${effect.splashRadius} px`) +
-        _row('Burn Aura', `${effect.auraDps} DPS in range`) +
-        _row('Radius', `${(effect.auraRange / 15).toFixed(1)} tiles`)
+        _row('Crit', `${Math.round(effect.critChance * 100)}%${_lvlNote(effect.critChance, b.critChance, d => Math.round(d * 100) + '%')} · ×${effect.critMult.toFixed(1)}${_lvlNote(effect.critMult, b.critMult, d => d.toFixed(1) + '×')}`) +
+        _row('Splash', `100% dmg ${(effect.splashRadius / CELL_SIZE).toFixed(1)}t${_lvlNote(effect.splashRadius, b.splashRadius, d => (d / CELL_SIZE).toFixed(1) + 't')}`) +
+        _row('Burn Aura', `${effect.auraDps} DPS in range${_lvlNote(effect.auraDps, b.auraDps, d => d)}`) +
+        _row('Radius', `${(effect.auraRange / 15).toFixed(1)} tiles${_lvlNote(effect.auraRange, b.auraRange, d => (d / 15).toFixed(1) + 't')}`)
       );
     case 'uranium':
       return wrap(
         _row('Slow Aura', `-${Math.round(effect.slowAmount * 100)}% speed to all in range`) +
-        _row('Burn Aura', `${effect.auraDps} DPS to all in range`) +
-        _row('Radius', `${(effect.auraRange / 15).toFixed(1)} tiles`)
+        _row('Burn Aura', `${effect.auraDps} DPS to all in range${_lvlNote(effect.auraDps, b.auraDps, d => d)}`) +
+        _row('Radius', `${(effect.auraRange / 15).toFixed(1)} tiles${_lvlNote(effect.auraRange, b.auraRange, d => (d / 15).toFixed(1) + 't')}`)
       );
     case 'burn_aura':
       return wrap(
         _row('Effect', 'Burn Aura') +
         _row('DPS', `${effect.auraDps} to all in range${_lvlNote(effect.auraDps, b.auraDps, d => d)}`) +
-        _row('Radius', `${(effect.auraRange / 15).toFixed(1)} tiles`)
+        _row('Radius', `${(effect.auraRange / 15).toFixed(1)} tiles${_lvlNote(effect.auraRange, b.auraRange, d => (d / 15).toFixed(1) + 't')}`)
       );
     case 'air_crystal':
       return wrap(
         _row('Targeting', 'Air only') +
-        _row('Armor Aura', `−${effect.armorAura} armor to flying in range`) +
-        _row('Aura Radius', `${(effect.auraRange / 15).toFixed(1)} tiles`)
+        _row('Armor Aura', `−${effect.armorAura.toFixed(1)} armor${_lvlNote(effect.armorAura, b.armorAura, d => d.toFixed(1))} to flying in range`) +
+        _row('Aura Radius', `${(effect.auraRange / 15).toFixed(1)} tiles${_lvlNote(effect.auraRange, b.auraRange, d => (d / 15).toFixed(1) + 't')}`)
       );
     case 'crit_ground':
       return wrap(
         _row('Targeting', 'Ground only') +
-        _row('Crit Chance', `${Math.round(effect.critChance * 100)}%`) +
-        _row('Crit Mult', `×${effect.critMult}`)
+        _row('Crit Chance', `${Math.round(effect.critChance * 100)}%${_lvlNote(effect.critChance, b.critChance, d => Math.round(d * 100) + '%')}`) +
+        _row('Crit Mult', `×${effect.critMult.toFixed(1)}${_lvlNote(effect.critMult, b.critMult, d => d.toFixed(1) + '×')}`)
       );
     case 'armor_debuff':
       return wrap(
-        _row('Crit Chance', `${Math.round(effect.critChance * 100)}%`) +
-        _row('Crit Mult', `×${effect.critMult}`) +
-        _row('Armor Debuff', `−${effect.armorDebuff} armor for ${effect.debuffDuration}s`)
+        _row('Crit Chance', `${Math.round(effect.critChance * 100)}%${_lvlNote(effect.critChance, b.critChance, d => Math.round(d * 100) + '%')}`) +
+        _row('Crit Mult', `×${effect.critMult.toFixed(1)}${_lvlNote(effect.critMult, b.critMult, d => d.toFixed(1) + '×')}`) +
+        _row('Armor Debuff', `−${effect.armorDebuff.toFixed(1)} armor${_lvlNote(effect.armorDebuff, b.armorDebuff, d => d.toFixed(1))} for ${effect.debuffDuration}s`)
       );
     case 'paraiba_nova':
       return wrap(
-        _row('Armor Aura', `−${effect.groundArmorAura} armor to ground in range`) +
-        _row('Aura Radius', `${(effect.auraRange / 15).toFixed(1)} tiles`) +
+        _row('Armor Aura', `−${effect.groundArmorAura.toFixed(1)} armor${_lvlNote(effect.groundArmorAura, b.groundArmorAura, d => d.toFixed(1))} to ground in range`) +
+        _row('Aura Radius', `${(effect.auraRange / 15).toFixed(1)} tiles${_lvlNote(effect.auraRange, b.auraRange, d => (d / 15).toFixed(1) + 't')}`) +
         _row('Nova', `${Math.round(effect.novaChance * 100)}% on hit: full dmg splash`) +
-        _row('Nova Radius', `${effect.novaRadius} px`)
+        _row('Nova Radius', `${(effect.novaRadius / CELL_SIZE).toFixed(1)} tiles${_lvlNote(effect.novaRadius, b.novaRadius, d => (d / CELL_SIZE).toFixed(1) + 't')}`)
       );
     case 'dmg_aura':
       return wrap(
         _row('Effect', 'Damage Aura') +
-        _row('Bonus', `+${effect.bonus}% damage to all in range`) +
-        _row('Radius', `${(effect.auraRange / 15).toFixed(1)} tiles`)
+        _row('Bonus', `+${effect.bonus}%${_lvlNote(effect.bonus, b.bonus, d => d + '%')} damage to all in range`) +
+        _row('Radius', `${(effect.auraRange / 15).toFixed(1)} tiles${_lvlNote(effect.auraRange, b.auraRange, d => (d / 15).toFixed(1) + 't')}`)
       );
     case 'stun_chance':
       return wrap(
         _row('Effect', 'Stun') +
-        _row('Chance', `${Math.round(effect.chance * 100)}%`) +
+        _row('Chance', `${(effect.chance * 100).toFixed(1)}%${_lvlNote(effect.chance, b.chance, d => (d * 100).toFixed(1) + '%')}`) +
         _row('Duration', `${effect.stunDuration}s`)
       );
     case 'aura':
@@ -332,25 +332,33 @@ function _buildSpecialGemHTML(gem, state) {
   if (level > 1)    dmgHTML += ` <span class="info-level-note">(+${(level - 1) * 10}% lvl)</span>`;
   if (mvpBonus > 0) dmgHTML += ` <span class="info-mvp-note">(+${mvpBonus}% MVP)</span>`;
 
+  const baseStats = level > 1 ? getSpecialGemLeveledStats(gem.specialType, 1) : null;
+
   const spdEff = gem.auraBonus > 0
     ? (ls.attackSpeed * (1 + gem.auraBonus)).toFixed(2)
     : ls.attackSpeed.toFixed(2).replace(/\.?0+$/, '');
+  const spdLvlNote = _lvlNote(ls.attackSpeed, baseStats?.attackSpeed,
+    d => d.toFixed(3).replace(/\.?0+$/, '') + '/s');
   const spdHTML = gem.auraBonus > 0
-    ? `${spdEff}/s<div class="info-aura-note">+${Math.round(gem.auraBonus * 100)}% Opal aura</div>`
-    : `${spdEff}/s`;
+    ? `${spdEff}/s${spdLvlNote}<div class="info-aura-note">+${Math.round(gem.auraBonus * 100)}% Opal aura</div>`
+    : `${spdEff}/s${spdLvlNote}`;
   const totalDmgAura = (gem.dmgBonus ?? 0) + (gem.dmgBonus2 ?? 0);
   const dmgAuraNote = totalDmgAura > 0
     ? `<div class="info-aura-note">+${totalDmgAura}% dmg aura</div>`
     : '';
 
+  const rangeLvlNote = _lvlNote(ls.range, baseStats?.range, d => (d / 15).toFixed(1) + 't');
   let html = `
     <div class="info-section-title">Selected Gem</div>
     <div class="info-gem-name">${gem.name}${levelLabel}</div>
     <div class="info-row"><span class="info-label">Damage</span><span class="info-value">${dmgHTML}${dmgAuraNote}</span></div>
     <div class="info-row"><span class="info-label">Speed</span><span class="info-value">${spdHTML}</span></div>
-    <div class="info-row"><span class="info-label">Range</span><span class="info-value">${(ls.range / 15).toFixed(1)} tiles</span></div>`;
+    <div class="info-row"><span class="info-label">Range</span><span class="info-value">${(ls.range / 15).toFixed(1)} tiles${rangeLvlNote}</span></div>`;
 
-  if (ls.effect) html += _buildEffectHTML(ls.effect, null);
+  if (ls.effect) {
+    const baseEffect = level > 1 ? getSpecialGemLeveledStats(gem.specialType, 1)?.effect : null;
+    html += _buildEffectHTML(ls.effect, baseEffect);
+  }
 
   if (gem.kills > 0) {
     html += `<div class="info-kills">Kills: ${gem.kills} &nbsp; Dmg: ${Math.round(gem.totalDamage)}</div>`;
@@ -705,7 +713,7 @@ function formatEffect(effect) {
   if (effect.type === 'crit')    return `Crit ${Math.round(effect.chance * 100)}% x${effect.multiplier}`;
   if (effect.type === 'multi')       return `Hits ${effect.targets} targets`;
   if (effect.type === 'aura')        return `Aura +${Math.round(effect.bonus * 100)}% atk spd`;
-  if (effect.type === 'lucky_jade')  return `Poison+Slow / 5% ×${effect.critMult} crit / 1% stun / 5% gold (wave)`;
+  if (effect.type === 'lucky_jade')  return `Poison+Slow / ${(effect.critChance * 100).toFixed(1)}% ×${effect.critMult.toFixed(1)} crit / ${(effect.stunChance * 100).toFixed(1)}% stun / 5% gold`;
   if (effect.type === 'splash_slow') return `Splash+Slow r=${(effect.radius / CELL_SIZE).toFixed(1)}t -${Math.round(effect.slow * 100)}%`;
   if (effect.type === 'splash_slow_dmg_aura') return `Splash+Slow+DmgAura r=${(effect.radius / CELL_SIZE).toFixed(1)}t -${Math.round(effect.slow * 100)}%`;
   if (effect.type === 'burn_aura')   return `Burn aura ${effect.auraDps}dps r=${(effect.auraRange / 15).toFixed(1)}t`;

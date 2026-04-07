@@ -176,19 +176,15 @@ export function getLeveledStats(type, quality, level) {
         effect.slow     = effect.slow + bonus * 0.01;
         break;
       case 'Ruby':
-        effect.dmgMod   = effect.dmgMod + bonus * 0.01;
-        effect.radius   = effect.radius + bonus * 1.6; // 0.1 tile × 16px
+        effect.radius   = effect.radius + bonus * 1.5; // 0.1 tile per level
         break;
       case 'Sapphire':
-        effect.amount   = effect.amount   + bonus * 0.01;
-        effect.duration = effect.duration + bonus * 0.1;
         break;
       case 'Diamond':
         effect.chance     = effect.chance     + bonus * 0.01;
         effect.multiplier = effect.multiplier + bonus * 0.1;
         break;
       case 'Topaz':
-        effect.targets  = effect.targets + Math.floor(bonus / 5);
         break;
       case 'Opal':
         effect.bonus    = effect.bonus + bonus * 0.01;
@@ -205,6 +201,9 @@ export function getLeveledStats(type, quality, level) {
   }
   if (type === 'Amethyst') {
     range = base.range + bonus * 7.5; // 0.5 tiles × 15 units/tile
+  }
+  if (type === 'Sapphire' || type === 'Topaz') {
+    range = base.range + bonus * 1.5; // 0.1 tile per level
   }
 
   return {
