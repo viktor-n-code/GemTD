@@ -61,6 +61,7 @@ function init() {
       if (gem.dmgBonus2   === undefined) gem.dmgBonus2   = 0;
       if (gem.roundDamage === undefined) gem.roundDamage = 0;
       if (gem.mvpBonus    === undefined) gem.mvpBonus    = 0;
+      if (gem.goldGenerated === undefined) gem.goldGenerated = 0;
       if (!gem.name) {
         const k = `${gem.quality}_${gem.type}`;
         gameState.gemCounters[k] = (gameState.gemCounters[k] || 0) + 1;
@@ -151,7 +152,7 @@ function updateBuild(dt, now) {
         id, type, quality, x, y,
         name: null, // assigned in startDefendPhase once quality is final
         level: 1,
-        kills: 0, totalDamage: 0, roundDamage: 0,
+        kills: 0, totalDamage: 0, roundDamage: 0, goldGenerated: 0,
         mvpBonus: 0,
         lastAttackTime: 0,
         attackCooldown: Math.round(1000 / stats.attackSpeed),
@@ -393,6 +394,7 @@ function _handleCombineSpecial(selectedGemId, phase) {
   const totalKills = allParticipants.reduce((s, g) => s + (g.kills || 0), 0);
   const totalDmg   = allParticipants.reduce((s, g) => s + (g.totalDamage || 0), 0);
   const totalMvp   = allParticipants.reduce((s, g) => s + (g.mvpBonus || 0), 0);
+  const totalGold  = allParticipants.reduce((s, g) => s + (g.goldGenerated || 0), 0);
   const newLevel   = Math.max(1, Math.floor(totalKills / 10) + 1);
 
   // Transform master gem into the special gem
@@ -403,6 +405,7 @@ function _handleCombineSpecial(selectedGemId, phase) {
   master.kills       = totalKills;
   master.totalDamage = totalDmg;
   master.mvpBonus    = totalMvp;
+  master.goldGenerated = totalGold;
   master.level       = newLevel;
   master.attackCooldown = Math.round(1000 / sStats.attackSpeed);
 
@@ -604,7 +607,7 @@ function updateDefend(dt, now) {
     if (!canAttack(gem, now)) continue;
     const target = findTarget(gem);
     if (target) {
-      const result = attackEnemy(gem, target, gameState.enemies, now);
+      const result = attackEnemy(gem, target, gameState.enemies, now, gameState.wave);
       gem.lastTargetId = target.id;
       gem.totalDamage  += result.damage + result.splashDamage;
       gem.roundDamage  += result.damage + result.splashDamage;
@@ -627,6 +630,7 @@ function updateDefend(dt, now) {
       }
       if (result.goldAmount > 0) {
         gameState.gold += result.goldAmount;
+        gem.goldGenerated += result.goldAmount;
         gameState.critNumbers.push({ x: target.x, y: target.y - 24, value: `+${result.goldAmount}g`, createdAt: now, color: [255, 215, 0] });
       }
 
@@ -638,7 +642,7 @@ function updateDefend(dt, now) {
           .sort((a, b) => a.hp - b.hp)
           .slice(0, stats.effect.targets - 1);
         for (const extra of extras) {
-          const extraResult = attackEnemy(gem, extra, gameState.enemies, now);
+          const extraResult = attackEnemy(gem, extra, gameState.enemies, now, gameState.wave);
           gem.totalDamage  += extraResult.damage;
           gem.roundDamage  += extraResult.damage;
           if (extra.dead) { gem.kills++; _checkLevelUp(gem); }
@@ -656,7 +660,7 @@ function updateDefend(dt, now) {
           .sort((a, b) => a.hp - b.hp)
           .slice(0, stats.effect.targets - 1);
         for (const extra of extras) {
-          const extraResult = attackEnemy(gem, extra, gameState.enemies, now);
+          const extraResult = attackEnemy(gem, extra, gameState.enemies, now, gameState.wave);
           gem.totalDamage  += extraResult.damage;
           gem.roundDamage  += extraResult.damage;
           if (extra.dead) { gem.kills++; _checkLevelUp(gem); }
