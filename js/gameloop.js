@@ -51,6 +51,7 @@ function init() {
     gameState = saved;
     // Ensure new fields exist on loaded saves
     if (gameState.gameOver   === undefined) gameState.gameOver   = false;
+    if (gameState.extraLivesPurchased === undefined) gameState.extraLivesPurchased = 0;
     if (!gameState.critNumbers)            gameState.critNumbers = [];
     if (!gameState.gemCounters) gameState.gemCounters = {};
     for (const gem of Object.values(gameState.gems || {})) {
@@ -259,6 +260,10 @@ function updateBuild(dt, now) {
         handleUpgrade();
         break;
 
+      case 'buyLife':
+        _handleBuyLife();
+        break;
+
       case 'restart':
         clearState();
         location.reload();
@@ -268,6 +273,16 @@ function updateBuild(dt, now) {
       case 'selectGem':
         break;
     }
+  }
+}
+
+function _handleBuyLife() {
+  const cost = 10 + gameState.extraLivesPurchased ** 2;
+  if (gameState.gold >= cost && gameState.lives < 20) {
+    gameState.gold -= cost;
+    gameState.lives += 1;
+    gameState.extraLivesPurchased += 1;
+    saveState(gameState);
   }
 }
 
@@ -565,6 +580,7 @@ function updateDefend(dt, now) {
   const action = inputHandler.consumeAction();
   if (action?.type === 'restart') { clearState(); location.reload(); return; }
   if (action?.type === 'upgrade') { handleUpgrade(); }
+  if (action?.type === 'buyLife') { _handleBuyLife(); }
   if (action?.type === 'combineSpecial')  { _handleCombineSpecial(action.selectedGemId, 'defend'); }
   if (action?.type === 'upgradeSpecial')  { _handleUpgradeSpecial(action.gemId); }
 

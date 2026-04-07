@@ -3,7 +3,7 @@
 
 import { CELL_SIZE, GRID_COLS, GRID_ROWS } from './grid.js';
 import { GEM_SLOTS, BTN_COMBINE, BTN_KEEP, BTN_UPGRADE, BTN_RESTART, BTN_REMOVE,
-         BTN_COMBINE_SPECIAL, BTN_UPGRADE_GEM, PANEL_Y } from './ui.js';
+         BTN_COMBINE_SPECIAL, BTN_UPGRADE_GEM, BTN_BUY_LIFE, PANEL_Y } from './ui.js';
 import { findAvailableRecipes } from './specialgem.js';
 
 // ---------------------------------------------------------------------------
@@ -188,6 +188,10 @@ export class InputHandler {
       }
       if (hitTest(BTN_UPGRADE, x, y)) {
         this.pendingAction = { type: 'upgrade' };
+        return;
+      }
+      if (hitTest(BTN_BUY_LIFE, x, y)) {
+        this.pendingAction = { type: 'buyLife' };
         return;
       }
       if (hitTest(BTN_RESTART, x, y)) {
