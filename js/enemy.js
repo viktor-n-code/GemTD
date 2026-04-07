@@ -44,8 +44,14 @@ export const ENEMY_STATS = [
   { hp:  5000, armor: 16, speed: 0.83, minSpeed: 0.42, flying: true  }, // wave 28
   { hp: 10500, armor: 17, speed: 1.06, minSpeed: 0.53, flying: false }, // wave 29
   { hp: 13000, armor: 17, speed: 1.13, minSpeed: 0.57, flying: false }, // wave 30
+  { hp: 16000, armor: 17, speed: 1.17, minSpeed: 0.59, flying: false }, // wave 31
+  { hp:  7500, armor: 18, speed: 0.75, minSpeed: 0.38, flying: true  }, // wave 32
+  { hp: 19500, armor: 18, speed: 1.21, minSpeed: 0.61, flying: false }, // wave 33
+  { hp: 23500, armor: 18, speed: 1.25, minSpeed: 0.63, flying: false }, // wave 34
+  { hp: 28500, armor: 18, speed: 1.29, minSpeed: 0.65, flying: false }, // wave 35
+  { hp: 10000, armor: 18, speed: 0.75, minSpeed: 0.38, flying: true  }, // wave 36
 ];
-// Armor formula: min(10 + floor((wave - 1) / 4), 25)
+// Armor formula: min(10 + floor((wave - 1) / 4), 20)
 
 /**
  * Per-wave gold rewards (index 0 = wave 1).
@@ -82,7 +88,45 @@ export const GOLD_PER_WAVE = [
   { killGold: 8.0,  bonusGold: 65 }, // wave 28  (extrapolated)
   { killGold: 8.25, bonusGold: 67 }, // wave 29  (extrapolated)
   { killGold: 8.5,  bonusGold: 69 }, // wave 30  (extrapolated)
+  { killGold: 8.75, bonusGold: 71 }, // wave 31
+  { killGold: 9.0,  bonusGold: 73 }, // wave 32
+  { killGold: 9.25, bonusGold: 75 }, // wave 33
+  { killGold: 9.5,  bonusGold: 77 }, // wave 34
+  { killGold: 9.75, bonusGold: 79 }, // wave 35
+  { killGold: 10.0, bonusGold: 81 }, // wave 36
 ];
+
+/**
+ * Returns enemy stats for any wave number.
+ * Waves 1–36 use the hand-designed ENEMY_STATS table.
+ * Waves 37+ use a scaling formula based on the design doc.
+ */
+export function getWaveStats(wave) {
+  if (wave <= ENEMY_STATS.length) return ENEMY_STATS[wave - 1];
+
+  const flying      = wave % 4 === 0;
+  const armor       = Math.min(10 + Math.floor((wave - 1) / 4), 20);
+  const speed       = Math.min(0.75 + (wave - 25) * 0.04, 1.5);
+  const minSpeed    = speed * 0.5;
+  const baseHp      = 45000 * (1 + (wave - 30) * 0.10);
+  const hp          = Math.round(flying ? baseHp / 3 : baseHp);
+  const stunImmune  = wave % 50 === 0;
+
+  return { hp, armor, speed, minSpeed, flying, stunImmune };
+}
+
+/**
+ * Returns gold rewards for any wave number.
+ * Waves 1–36 use the hand-designed GOLD_PER_WAVE table.
+ * Waves 37+ extrapolate the linear progression.
+ */
+export function getWaveGold(wave) {
+  if (wave <= GOLD_PER_WAVE.length) return GOLD_PER_WAVE[wave - 1];
+  return {
+    killGold: 1.25 + (wave - 1) * 0.25,
+    bonusGold: 9 + (wave - 1) * 2,
+  };
+}
 
 /**
  * Spawns a new enemy for the given wave.
@@ -92,7 +136,7 @@ export const GOLD_PER_WAVE = [
  * @returns {Object} Enemy instance
  */
 export function spawnEnemy(waveNumber, path) {
-  const stats = ENEMY_STATS[waveNumber - 1];
+  const stats = getWaveStats(waveNumber);
 
   // Entry cell centre in pixels
   const entryPixelX = (ENTRY.x - 0.5) * CELL_SIZE;
@@ -117,6 +161,7 @@ export function spawnEnemy(waveNumber, path) {
     poisonDps: 0,         // current poison damage per second; 0 = not poisoned
     poisonUntil: 0,       // timestamp (ms) when poison expires
     poisonGemId: null,    // id of the gem that applied the current poison instance
+    stunImmune: stats.stunImmune || false, // every 50th wave
     stunUntil: 0,         // timestamp (ms) when stun expires; 0 = not stunned
     armorDebuff: 0,        // on-hit armor reduction (Gold/Egyptian Gold); stacks with aura
     armorDebuffUntil: 0,   // timestamp (ms) when on-hit debuff expires

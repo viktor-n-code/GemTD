@@ -3,7 +3,7 @@
  * Handles wave definitions, spawning schedules, and progression.
  */
 
-import { spawnEnemy, ENEMY_STATS } from './enemy.js';
+import { spawnEnemy, getWaveStats } from './enemy.js';
 
 /**
  * Wave definitions (index 0 = wave 1).
@@ -41,7 +41,22 @@ export const WAVE_DEFS = [
   { wave: 28, count: 10, intervalSec: 1.0 },
   { wave: 29, count: 10, intervalSec: 1.0 },
   { wave: 30, count: 10, intervalSec: 1.0 },
+  { wave: 31, count: 10, intervalSec: 1.0 },
+  { wave: 32, count: 10, intervalSec: 1.0 },
+  { wave: 33, count: 10, intervalSec: 1.0 },
+  { wave: 34, count: 10, intervalSec: 1.0 },
+  { wave: 35, count: 10, intervalSec: 1.0 },
+  { wave: 36, count: 10, intervalSec: 1.0 },
 ];
+
+/**
+ * Returns wave definition for any wave number.
+ * Waves 1–36 use the hand-designed table. Waves 37+ use defaults.
+ */
+export function getWaveDef(wave) {
+  if (wave <= WAVE_DEFS.length) return WAVE_DEFS[wave - 1];
+  return { wave, count: 10, intervalSec: 1.0 };
+}
 
 /**
  * Manages enemy spawning for a single wave.
@@ -54,7 +69,7 @@ export class WaveSpawner {
   constructor(waveNumber, path) {
     this.wave = waveNumber;
     this.path = path;
-    this.def = WAVE_DEFS[waveNumber - 1];
+    this.def = getWaveDef(waveNumber);
     this.spawned = 0;
     this.elapsed = 0;
   }
@@ -71,7 +86,7 @@ export class WaveSpawner {
 
     if (!this.isComplete() && this.elapsed >= this.spawned * this.def.intervalSec) {
       // Flying waves pass null path — the enemy uses CHECKPOINTS internally
-      const isFlying = ENEMY_STATS[this.wave - 1].flying;
+      const isFlying = getWaveStats(this.wave).flying;
       const spawnPath = isFlying ? null : this.path;
       const enemy = spawnEnemy(this.wave, spawnPath);
       this.spawned++;

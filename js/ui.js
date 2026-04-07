@@ -538,7 +538,7 @@ function _buildWaveHTML(state) {
   return `
     <div class="info-section-title">Wave In Progress</div>
     <div class="info-wave-stat">${state.wave}</div>
-    <div class="info-wave-sub">Wave ${state.wave} of ${state.totalWaves ?? 30}</div>
+    <div class="info-wave-sub">Wave ${state.wave}</div>
     <div class="info-row" style="margin-top:14px">
       <span class="info-label">Enemies left</span>
       <span class="info-value">${remaining}</span>
