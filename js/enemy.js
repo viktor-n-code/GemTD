@@ -98,8 +98,10 @@ export function spawnEnemy(waveNumber, path) {
     poisonUntil: 0,       // timestamp (ms) when poison expires
     poisonGemId: null,    // id of the gem that applied the current poison instance
     stunUntil: 0,         // timestamp (ms) when stun expires; 0 = not stunned
-    armorDebuff: 0,       // active armor reduction amount (e.g. 5 means −5 effective armor)
-    armorDebuffUntil: 0,  // timestamp (ms) when armor debuff expires; 0 = no debuff
+    armorDebuff: 0,        // on-hit armor reduction (Gold/Egyptian Gold); stacks with aura
+    armorDebuffUntil: 0,   // timestamp (ms) when on-hit debuff expires
+    armorAuraDebuff: 0,    // aura-based armor reduction (Red Crystal, Paraiba Tourmaline)
+    armorAuraDebuffUntil: 0, // timestamp (ms) when aura debuff expires (refreshed each frame)
     dead: false,
     exited: false,
   };

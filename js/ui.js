@@ -437,6 +437,10 @@ function _buildEnemyHTML(enemy, state) {
   const now    = performance.now();
   const pct    = enemy.maxHp > 0 ? Math.max(0, Math.min(100, (enemy.hp / enemy.maxHp) * 100)) : 0;
   const hpColor = pct > 50 ? '#00ff44' : pct > 25 ? '#ffcc00' : '#ff4444';
+  const auraReduction = (now < (enemy.armorAuraDebuffUntil ?? 0)) ? (enemy.armorAuraDebuff ?? 0) : 0;
+  const hitReduction  = (now < (enemy.armorDebuffUntil    ?? 0)) ? (enemy.armorDebuff     ?? 0) : 0;
+  const effectiveArmor = Math.max(0, enemy.armor - auraReduction - hitReduction);
+  const isDebuffed = auraReduction > 0 || hitReduction > 0;
 
   let html = `
     <div class="info-section-title">Selected Enemy</div>
@@ -450,7 +454,9 @@ function _buildEnemyHTML(enemy, state) {
     </div>
     <div class="info-row">
       <span class="info-label">Armor</span>
-      <span class="info-value">${Math.round(enemy.armor * 3)}%</span>
+      <span class="info-value">${isDebuffed
+        ? `${Math.round(effectiveArmor * 3)}% <span class="info-debuff-note">(base ${Math.round(enemy.armor * 3)}% −${auraReduction + hitReduction})</span>`
+        : `${Math.round(enemy.armor * 3)}%`}</span>
     </div>
     <div class="info-row">
       <span class="info-label">Speed</span>
@@ -461,6 +467,7 @@ function _buildEnemyHTML(enemy, state) {
   if (now < (enemy.stunUntil ?? 0)) tags.push(`<span class="info-status-tag tag-stunned">Stunned</span>`);
   if (now < enemy.slowUntil)   tags.push(`<span class="info-status-tag tag-slowed">Slowed</span>`);
   if (now < enemy.poisonUntil) tags.push(`<span class="info-status-tag tag-poison">Poison ${enemy.poisonDps}dps</span>`);
+  if (isDebuffed) tags.push(`<span class="info-status-tag tag-armor-debuff">−${auraReduction + hitReduction} Armor</span>`);
   if (tags.length > 0) html += `<div class="info-status-tags">${tags.join('')}</div>`;
 
   return html;

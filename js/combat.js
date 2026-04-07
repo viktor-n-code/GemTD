@@ -239,10 +239,10 @@ export function attackEnemy(gem, enemy, enemies, now) {
     isCrit = true;
   }
 
-  // 2. Apply armor reduction (3% per armor point); active armor debuff reduces effective armor
-  const effectiveArmor = (now < (enemy.armorDebuffUntil ?? 0))
-    ? Math.max(0, enemy.armor - enemy.armorDebuff)
-    : enemy.armor;
+  // 2. Apply armor reduction (3% per armor point); aura and on-hit debuffs stack
+  const auraReduction = (now < (enemy.armorAuraDebuffUntil ?? 0)) ? (enemy.armorAuraDebuff ?? 0) : 0;
+  const hitReduction  = (now < (enemy.armorDebuffUntil    ?? 0)) ? (enemy.armorDebuff     ?? 0) : 0;
+  const effectiveArmor = Math.max(0, enemy.armor - auraReduction - hitReduction);
   damage = Math.round(damage * Math.max(0, 1 - effectiveArmor * 0.03));
 
   // 3. Apply type advantage: Amethyst vs flying enemies

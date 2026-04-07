@@ -67,7 +67,11 @@ function init() {
       }
     }
     for (const enemy of (gameState.enemies || [])) {
-      if (enemy.poisonGemId === undefined) enemy.poisonGemId = null;
+      if (enemy.poisonGemId         === undefined) enemy.poisonGemId         = null;
+      if (enemy.armorDebuff         === undefined) enemy.armorDebuff         = 0;
+      if (enemy.armorDebuffUntil    === undefined) enemy.armorDebuffUntil    = 0;
+      if (enemy.armorAuraDebuff     === undefined) enemy.armorAuraDebuff     = 0;
+      if (enemy.armorAuraDebuffUntil === undefined) enemy.armorAuraDebuffUntil = 0;
     }
   } else {
     clearState();
@@ -633,10 +637,10 @@ function updateDefend(dt, now) {
       const dx = enemy.x - gemCx;
       const dy = enemy.y - gemCy;
       if (Math.sqrt(dx * dx + dy * dy) > auraRadiusPx) continue;
-      // Refresh debuff each frame; take strongest if multiple Red Crystals
-      if (armorAmt >= (enemy.armorDebuff ?? 0)) {
-        enemy.armorDebuff      = armorAmt;
-        enemy.armorDebuffUntil = now + 200; // 200 ms — expires shortly after leaving range
+      // Refresh aura debuff each frame; take strongest if multiple Red Crystals
+      if (armorAmt >= (enemy.armorAuraDebuff ?? 0)) {
+        enemy.armorAuraDebuff      = armorAmt;
+        enemy.armorAuraDebuffUntil = now + 200; // 200 ms — expires shortly after leaving range
       }
     }
   }
@@ -655,9 +659,9 @@ function updateDefend(dt, now) {
       const dx = enemy.x - gemCx;
       const dy = enemy.y - gemCy;
       if (Math.sqrt(dx * dx + dy * dy) > auraRadiusPx) continue;
-      if (armorAmt >= (enemy.armorDebuff ?? 0)) {
-        enemy.armorDebuff      = armorAmt;
-        enemy.armorDebuffUntil = now + 200;
+      if (armorAmt >= (enemy.armorAuraDebuff ?? 0)) {
+        enemy.armorAuraDebuff      = armorAmt;
+        enemy.armorAuraDebuffUntil = now + 200;
       }
     }
   }
