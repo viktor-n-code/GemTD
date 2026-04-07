@@ -285,7 +285,9 @@ function drawGems(ctx, state) {
       // Aura rings for special gems with passive area effects
       if (gem.type === 'special') {
         const sStats = getSpecialGemLeveledStats(gem.specialType, gem.level || 1);
-        if (sStats?.effect?.type === 'burn_aura') {
+        if (sStats?.effect?.type === 'burn_aura' ||
+            sStats?.effect?.type === 'blood_stone' ||
+            sStats?.effect?.type === 'ancient_blood_stone') {
           const auraR = sStats.effect.auraRange * (CELL_SIZE / 15);
           ctx.save();
           ctx.strokeStyle = 'rgba(255,60,60,0.25)';
@@ -321,11 +323,37 @@ function drawGems(ctx, state) {
           ctx.restore();
         }
         if (sStats?.effect?.type === 'dmg_aura') {
-          // Damage aura ring — gold
+          // Damage aura ring — gold (Black Opal)
           const auraR = sStats.effect.auraRange * (CELL_SIZE / 15);
           ctx.save();
           ctx.strokeStyle = 'rgba(245,197,24,0.5)';
           ctx.fillStyle   = 'rgba(245,197,24,0.07)';
+          ctx.lineWidth   = 1;
+          ctx.beginPath();
+          ctx.arc(cx, cy, auraR, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
+        }
+        if (sStats?.effect?.type === 'splash_slow_dmg_aura') {
+          // Damage aura ring — gold (Star Yellow Sapphire)
+          const auraR = sStats.effect.dmgAuraRange * (CELL_SIZE / 15);
+          ctx.save();
+          ctx.strokeStyle = 'rgba(245,197,24,0.5)';
+          ctx.fillStyle   = 'rgba(245,197,24,0.07)';
+          ctx.lineWidth   = 1;
+          ctx.beginPath();
+          ctx.arc(cx, cy, auraR, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
+        }
+        if (sStats?.effect?.type === 'uranium') {
+          // Slow + burn aura ring — green (Uranium)
+          const auraR = sStats.effect.auraRange * (CELL_SIZE / 15);
+          ctx.save();
+          ctx.strokeStyle = 'rgba(170,255,68,0.5)';
+          ctx.fillStyle   = 'rgba(170,255,68,0.07)';
           ctx.lineWidth   = 1;
           ctx.beginPath();
           ctx.arc(cx, cy, auraR, 0, Math.PI * 2);

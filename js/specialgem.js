@@ -26,8 +26,17 @@
  *                   (groundArmorAura, auraRange: design units, novaChance, novaRadius: px)
  *   'dmg_aura'    — Black Opal: passive +% damage to all gems in aura range
  *                   (bonus: integer %, auraRange: design units)
- *   'stun_chance' — Dark Emerald: on-hit stun proc
- *                   (chance, stunDuration: seconds)
+ *   'stun_chance'       — Dark Emerald: on-hit stun proc
+ *                         (chance, stunDuration: seconds)
+ *   'splash_slow'       — (MODIFIED) now supports dmgMod field; splash = damage * (dmgMod ?? 1.0)
+ *   'splash_slow_dmg_aura'— Star Yellow Sapphire: splash_slow attack + passive +% dmg aura
+ *                         (radius: px, dmgMod, slow, duration, dmgBonus: %, dmgAuraRange: design units)
+ *   'blood_stone'       — Blood Stone: multi-target (targets) + passive burn aura; no splash
+ *                         (targets, auraDps, auraRange: design units)
+ *   'ancient_blood_stone'— Ancient Blood Stone: single target + crit + full splash + burn aura
+ *                         (critChance, critMult, splashRadius: px, auraDps, auraRange: design units)
+ *   'uranium'           — Uranium: passive slow aura + burn aura simultaneously
+ *                         (slowAmount, auraDps, auraRange: design units)
  */
 export const SPECIAL_GEM_DEFS = [
   // ── Jade chain ─────────────────────────────────────────────────────────────
@@ -383,6 +392,95 @@ export const SPECIAL_GEM_DEFS = [
     upgradeTo: null,
     upgradeCost: null,
   },
+
+  // ── Yellow Sapphire chain ──────────────────────────────────────────────────
+  {
+    id: 'yellow_sapphire',
+    name: 'Yellow Sapphire',
+    color: '#ffe066',
+    ingredients: [
+      { type: 'Sapphire', quality: 'perfect'  },
+      { type: 'Topaz',    quality: 'flawless' },
+      { type: 'Ruby',     quality: 'flawless' },
+    ],
+    stats: {
+      damageMin: 99, damageMax: 100, attackSpeed: 1.0, range: 114,
+      effect: { type: 'splash_slow', radius: 75, dmgMod: 0.50, slow: 0.40, duration: 4 },
+    },
+    upgradeTo: 'star_yellow_sapphire',
+    upgradeCost: 210,
+  },
+  {
+    id: 'star_yellow_sapphire',
+    name: 'Star Yellow Sapphire',
+    color: '#ffd700',
+    stats: {
+      damageMin: 99, damageMax: 100, attackSpeed: 1.0, range: 114,
+      effect: { type: 'splash_slow_dmg_aura', radius: 100, dmgMod: 1.0, slow: 0.50, duration: 5,
+                dmgBonus: 5, dmgAuraRange: 171 },
+    },
+    upgradeTo: null,
+    upgradeCost: null,
+  },
+
+  // ── Blood Stone chain ──────────────────────────────────────────────────────
+  {
+    id: 'blood_stone',
+    name: 'Blood Stone',
+    color: '#cc2222',
+    ingredients: [
+      { type: 'Ruby',       quality: 'perfect'  },
+      { type: 'Aquamarine', quality: 'flawless' },
+      { type: 'Amethyst',   quality: 'standard' },
+    ],
+    stats: {
+      damageMin: 67, damageMax: 68, attackSpeed: 2.0, range: 100,
+      effect: { type: 'blood_stone', targets: 10, auraDps: 135, auraRange: 100 },
+    },
+    upgradeTo: 'ancient_blood_stone',
+    upgradeCost: 310,
+  },
+  {
+    id: 'ancient_blood_stone',
+    name: 'Ancient Blood Stone',
+    color: '#880000',
+    stats: {
+      damageMin: 159, damageMax: 240, attackSpeed: 1.333, range: 100,
+      effect: { type: 'ancient_blood_stone', critChance: 0.15, critMult: 3,
+                splashRadius: 75, auraDps: 150, auraRange: 100 },
+    },
+    upgradeTo: null,
+    upgradeCost: null,
+  },
+
+  // ── Uranium chain ──────────────────────────────────────────────────────────
+  {
+    id: 'uranium_235',
+    name: 'Uranium 235',
+    color: '#aaff44',
+    ingredients: [
+      { type: 'Topaz',    quality: 'perfect'  },
+      { type: 'Sapphire', quality: 'standard' },
+      { type: 'Opal',     quality: 'flawed'   },
+    ],
+    stats: {
+      damageMin: 47, damageMax: 48, attackSpeed: 4.0, range: 64,
+      effect: { type: 'uranium', slowAmount: 0.50, auraDps: 190, auraRange: 64 },
+    },
+    upgradeTo: 'uranium_238',
+    upgradeCost: 190,
+  },
+  {
+    id: 'uranium_238',
+    name: 'Uranium 238',
+    color: '#66cc00',
+    stats: {
+      damageMin: 64, damageMax: 65, attackSpeed: 4.0, range: 86,
+      effect: { type: 'uranium', slowAmount: 0.50, auraDps: 260, auraRange: 86 },
+    },
+    upgradeTo: null,
+    upgradeCost: null,
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -391,7 +489,8 @@ export const SPECIAL_GEM_DEFS = [
 
 /**
  * Returns leveled stats for a special gem.
- * Damage scales +10% per level above 1. Burn aura DPS scales by the same factor.
+ * Damage (damageMin/damageMax) scales +10% per level above 1. All other stats
+ * (aura DPS, ranges, slow amounts, etc.) are fixed at their base values.
  *
  * @param {string} specialType — SPECIAL_GEM_DEFS id
  * @param {number} level       — 1-indexed gem level
