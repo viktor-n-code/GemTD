@@ -152,20 +152,39 @@ const CP_ZONES = [
   // CP1: body horizontal, tip south
   { body: [7, 9, 12, 10], tip: [9, 11, 10, 12] },
   // CP2: body vertical, tip east
-  { body: [9, 21, 10, 26], tip: [11, 23, 12, 24] },
+  { body: [9, 24, 10, 29], tip: [11, 26, 12, 27] },
   // CP3: body horizontal, tip north
-  { body: [31, 23, 36, 24], tip: [33, 21, 34, 22] },
+  { body: [31, 26, 36, 27], tip: [33, 24, 34, 25] },
   // CP4: body vertical, tip west
   { body: [33, 7, 34, 12], tip: [31, 9, 32, 10] },
   // CP5: body horizontal, tip south
   { body: [19, 9, 24, 10], tip: [21, 11, 22, 12] },
   // CP6: body vertical, tip east
-  { body: [21, 33, 22, 38], tip: [23, 35, 24, 36] },
+  { body: [21, 36, 22, 41], tip: [23, 38, 24, 39] },
 ];
 
 const COLOR_CP_BODY = 'rgba(200, 80, 40, 0.55)';  // muted red
 const COLOR_CP_TIP  = 'rgba(220, 130, 30, 0.75)'; // amber tip (arrow head)
 const COLOR_CP_AIM  = 'rgba(255, 220, 60, 0.40)'; // faint yellow aim block
+
+/**
+ * Draws a dashed blue polyline connecting ENTRY → all CHECKPOINTS → EXIT.
+ * Represents the straight-line route flying enemies travel between waypoints.
+ */
+function drawFlyingPath(ctx) {
+  const waypoints = [ENTRY, ...CHECKPOINTS, EXIT];
+  ctx.save();
+  ctx.strokeStyle = 'rgba(100,180,255,0.35)';
+  ctx.lineWidth   = 2;
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(waypoints[0].x * CELL_SIZE, waypoints[0].y * CELL_SIZE);
+  for (let i = 1; i < waypoints.length; i++) {
+    ctx.lineTo(waypoints[i].x * CELL_SIZE, waypoints[i].y * CELL_SIZE);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
 
 function drawZones(ctx) {
   // Entry — 2 green tiles on left border
@@ -207,7 +226,7 @@ function _contrastStroke(hex) {
   return lum > 0.55 ? 'rgba(0,0,0,0.65)' : 'rgba(255,255,255,0.65)';
 }
 
-function drawGems(ctx, state) {
+function drawGems(ctx, state, selectedGemId = null) {
   ctx.save();
   const { grid, gems } = state;
   const drawn = new Set(); // avoid drawing the same gem 4× for its 2×2 block
@@ -291,8 +310,8 @@ function drawGems(ctx, state) {
           break;
       }
 
-      // Aura rings for special gems with passive area effects
-      if (gem.type === 'special') {
+      // Aura rings — only shown when this gem is selected
+      if (gem.type === 'special' && gem.id === selectedGemId) {
         const sStats = getSpecialGemLeveledStats(gem.specialType, gem.level || 1);
         if (sStats?.effect?.type === 'burn_aura' ||
             sStats?.effect?.type === 'blood_stone' ||
@@ -519,7 +538,7 @@ function drawHUD(ctx, state, canvasWidth, hudY) {
  * @param {Object}            state  - Current game state
  * @param {HTMLCanvasElement} canvas - Target canvas element
  */
-export function render(state, canvas, hudY) {
+export function render(state, canvas, hudY, selectedGemId = null) {
   const ctx = canvas.getContext('2d'); // browser caches this; same object every call
 
   // No clearRect needed: drawGrid fills every canvas pixel with a cell color.
@@ -529,8 +548,11 @@ export function render(state, canvas, hudY) {
   // 2. Special zones — entry, exit, checkpoint arrows
   drawZones(ctx);
 
+  // 2b. Flying path — dashed blue polyline connecting all waypoints
+  drawFlyingPath(ctx);
+
   // 3. Gem tower shapes (drawn over the colored cells)
-  drawGems(ctx, state);
+  drawGems(ctx, state, selectedGemId);
 
   // 3b. Build-phase highlights — bright outline on newly placed gems
   drawBuildHighlights(ctx, state);
