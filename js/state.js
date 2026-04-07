@@ -17,6 +17,7 @@ export function createInitialState() {
     enemies: [],
     projectiles: [],
     critNumbers: [],
+    extraLivesPurchased: 0,
     gameOver: false,
     gameWon: false,
   };

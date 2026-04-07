@@ -32,6 +32,7 @@ export const BTN_REMOVE   = { x: 558, y: PANEL_Y + 9, w: 80,  h: 28 };
 export const BTN_COMBINE_SPECIAL = { x: 232, y: PANEL_Y + 50, w: 108, h: 24 };
 export const BTN_UPGRADE_GEM     = { x: 344, y: PANEL_Y + 50, w: 120, h: 24 };
 export const BTN_RESTART         = { x: 476, y: PANEL_Y + 50, w: 84,  h: 24 };
+export const BTN_BUY_LIFE       = { x: 564, y: PANEL_Y + 50, w: 100, h: 24 };
 
 // ---------------------------------------------------------------------------
 // Private shape helpers (draw gem shapes centred at cx, cy with radius r)
@@ -538,7 +539,7 @@ function _buildWaveHTML(state) {
   return `
     <div class="info-section-title">Wave In Progress</div>
     <div class="info-wave-stat">${state.wave}</div>
-    <div class="info-wave-sub">Wave ${state.wave} of ${state.totalWaves ?? 30}</div>
+    <div class="info-wave-sub">Wave ${state.wave}</div>
     <div class="info-row" style="margin-top:14px">
       <span class="info-label">Enemies left</span>
       <span class="info-value">${remaining}</span>
@@ -870,6 +871,11 @@ export function drawUI(ctx, state, inputState) {
   const restartLabel  = confirmPending ? 'Restart?' : 'Restart';
   const restartColor  = confirmPending ? '#8a4a00' : '#5a1a1a';
   drawButton(ctx, BTN_RESTART, restartLabel, true, restartColor);
+
+  // Buy Life button — available in both build and defend phases
+  const lifeCost = 10 + (state.extraLivesPurchased ?? 0) ** 2;
+  const canBuyLife = state.gold >= lifeCost && state.lives < 20;
+  drawButton(ctx, BTN_BUY_LIFE, `+Life (${lifeCost}g)`, canBuyLife, '#2a5a6a');
 
   ctx.restore();
 

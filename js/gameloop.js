@@ -8,8 +8,8 @@ import { createGrid, validatePlacement, placeGem, placeRock, removeRock, findPat
          GRID_COLS, GRID_ROWS, CELL_SIZE, ENTRY, CHECKPOINTS, EXIT } from './grid.js';
 import { rollGem, getStats, getLeveledStats, getVisual, GEM_CHANCE_LEVELS, QUALITY_LEVELS } from './gem.js';
 import { SPECIAL_GEM_DEFS, getSpecialGemLeveledStats, getSpecialVisual, findAvailableRecipes } from './specialgem.js';
-import { moveEnemy, GOLD_PER_WAVE } from './enemy.js';
-import { WaveSpawner, WAVE_DEFS } from './wave.js';
+import { moveEnemy, getWaveGold } from './enemy.js';
+import { WaveSpawner } from './wave.js';
 import { attackEnemy, canAttack, isInRange, tickPoison, getGemStats, applyEffect } from './combat.js';
 import { render, HUD_HEIGHT } from './renderer.js';
 import { InputHandler } from './input.js';
@@ -51,7 +51,7 @@ function init() {
     gameState = saved;
     // Ensure new fields exist on loaded saves
     if (gameState.gameOver   === undefined) gameState.gameOver   = false;
-    if (gameState.gameWon    === undefined) gameState.gameWon    = false;
+    if (gameState.extraLivesPurchased === undefined) gameState.extraLivesPurchased = 0;
     if (!gameState.critNumbers)            gameState.critNumbers = [];
     if (!gameState.gemCounters) gameState.gemCounters = {};
     for (const gem of Object.values(gameState.gems || {})) {
@@ -85,7 +85,7 @@ function init() {
 
   // Compute initial path so the build-phase highlight is visible from the start
   gameState.groundPath = computeFullPath(gameState.grid);
-  gameState.totalWaves = WAVE_DEFS.length;
+  // Waves are endless — no totalWaves cap
 
   inputHandler = new InputHandler(canvas);
 
@@ -113,7 +113,7 @@ function gameLoop(timestamp) {
   drawUI(ctx, gameState, inputHandler.getState());
   updateInfoPanel(gameState, inputHandler.getState());
 
-  if (!gameState.gameOver && !gameState.gameWon) {
+  if (!gameState.gameOver) {
     requestAnimationFrame(gameLoop);
   } else {
     drawEndScreen(ctx);
@@ -260,6 +260,10 @@ function updateBuild(dt, now) {
         handleUpgrade();
         break;
 
+      case 'buyLife':
+        _handleBuyLife();
+        break;
+
       case 'restart':
         clearState();
         location.reload();
@@ -269,6 +273,16 @@ function updateBuild(dt, now) {
       case 'selectGem':
         break;
     }
+  }
+}
+
+function _handleBuyLife() {
+  const cost = 10 + gameState.extraLivesPurchased ** 2;
+  if (gameState.gold >= cost && gameState.lives < 20) {
+    gameState.gold -= cost;
+    gameState.lives += 1;
+    gameState.extraLivesPurchased += 1;
+    saveState(gameState);
   }
 }
 
@@ -566,6 +580,7 @@ function updateDefend(dt, now) {
   const action = inputHandler.consumeAction();
   if (action?.type === 'restart') { clearState(); location.reload(); return; }
   if (action?.type === 'upgrade') { handleUpgrade(); }
+  if (action?.type === 'buyLife') { _handleBuyLife(); }
   if (action?.type === 'combineSpecial')  { _handleCombineSpecial(action.selectedGemId, 'defend'); }
   if (action?.type === 'upgradeSpecial')  { _handleUpgradeSpecial(action.gemId); }
 
@@ -771,7 +786,7 @@ function updateDefend(dt, now) {
   }
 
   // 4. Award gold for kills, then remove dead/exited enemies
-  const killGold = GOLD_PER_WAVE[gameState.wave - 1].killGold;
+  const killGold = getWaveGold(gameState.wave).killGold;
   for (const e of gameState.enemies) {
     if (e.dead) {
       gameState.gold += killGold;
@@ -815,7 +830,7 @@ function findTarget(gem) {
 // ---------------------------------------------------------------------------
 
 function updateBetween() {
-  const bonus = GOLD_PER_WAVE[gameState.wave - 1].bonusGold;
+  const bonus = getWaveGold(gameState.wave).bonusGold;
   gameState.gold += bonus;
 
   // Award MVP: gem with the highest roundDamage this wave gets +1% permanent damage
@@ -826,13 +841,6 @@ function updateBetween() {
   }
 
   saveState(gameState);
-
-  if (gameState.wave >= WAVE_DEFS.length) {
-    gameState.gameWon = true;
-    gameState.phase = 'gamewon'; // terminal state — prevents re-entry
-    return;
-  }
-
   gameState.phase = 'build';
 }
 
@@ -847,10 +855,10 @@ function drawEndScreen(ctx) {
   ctx.font = 'bold 36px Arial';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  const msg = gameState.gameWon ? 'You Win!' : 'Game Over';
-  ctx.fillText(msg, canvas.width / 2, canvas.height / 2 - 20);
+  ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2 - 20);
   ctx.font = '18px Arial';
-  ctx.fillText('Refresh to play again', canvas.width / 2, canvas.height / 2 + 24);
+  ctx.fillText(`Wave ${gameState.wave} reached`, canvas.width / 2, canvas.height / 2 + 14);
+  ctx.fillText('Refresh to play again', canvas.width / 2, canvas.height / 2 + 40);
 }
 
 // ---------------------------------------------------------------------------

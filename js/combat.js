@@ -318,7 +318,7 @@ export function attackEnemy(gem, enemy, enemies, now, wave) {
   // 8. Lucky Asian Jade procs — stun and gold (rolled after damage applied)
   let goldAmount = 0;
   if (stats.effect?.type === 'lucky_jade' && !enemy.dead) {
-    if (Math.random() < stats.effect.stunChance) {
+    if (!enemy.stunImmune && Math.random() < stats.effect.stunChance) {
       const newStun = now + stats.effect.stunDuration * 1000;
       if (newStun > (enemy.stunUntil ?? 0)) enemy.stunUntil = newStun;
     }
@@ -334,7 +334,7 @@ export function attackEnemy(gem, enemy, enemies, now, wave) {
   }
 
   // 8c. Dark Emerald: stun proc
-  if (stats.effect?.type === 'stun_chance' && !enemy.dead) {
+  if (stats.effect?.type === 'stun_chance' && !enemy.dead && !enemy.stunImmune) {
     if (Math.random() < stats.effect.chance) {
       const newStun = now + stats.effect.stunDuration * 1000;
       if (newStun > (enemy.stunUntil ?? 0)) enemy.stunUntil = newStun;
