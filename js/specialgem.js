@@ -51,7 +51,7 @@ export const SPECIAL_GEM_DEFS = [
     ],
     stats: {
       damageMin: 29, damageMax: 35, attackSpeed: 2.0, range: 114,
-      effect: { type: 'poison', dps: 5, slow: 0.50, duration: 2 },
+      effect: { type: 'poison', dps: 5, slow: 0.20, duration: 2 },
     },
     upgradeTo: 'asian_jade',
     upgradeCost: 45,
@@ -62,7 +62,7 @@ export const SPECIAL_GEM_DEFS = [
     color: '#2a9a4a',
     stats: {
       damageMin: 49, damageMax: 50, attackSpeed: 2.0, range: 114,
-      effect: { type: 'poison', dps: 10, slow: 0.50, duration: 3 },
+      effect: { type: 'poison', dps: 10, slow: 0.30, duration: 3 },
     },
     upgradeTo: 'lucky_asian_jade',
     upgradeCost: 250,
@@ -76,7 +76,7 @@ export const SPECIAL_GEM_DEFS = [
       effect: {
         type: 'lucky_jade',
         // Poison + slow (same as Asian Jade but 4 s)
-        dps: 10, slow: 0.50, duration: 4,
+        dps: 10, slow: 0.40, duration: 4,
         // Special procs
         critChance: 0.05, critMult: 4,       // 5% × 4
         stunChance: 0.01, stunDuration: 2,   // 1% stun 2 s
@@ -139,7 +139,7 @@ export const SPECIAL_GEM_DEFS = [
     ],
     stats: {
       damageMin: 19, damageMax: 25, attackSpeed: 1.0, range: 86,
-      effect: { type: 'splash_slow', radius: 20, slow: 0.20, duration: 2 },
+      effect: { type: 'splash_slow', radius: 20, dmgMod: 0.30, slow: 0.15, duration: 2 },
     },
     upgradeTo: 'sterling_silver',
     upgradeCost: 100,
@@ -150,7 +150,7 @@ export const SPECIAL_GEM_DEFS = [
     color: '#bbbbdd',
     stats: {
       damageMin: 39, damageMax: 40, attackSpeed: 1.0, range: 93,
-      effect: { type: 'splash_slow', radius: 30, slow: 0.30, duration: 3 },
+      effect: { type: 'splash_slow', radius: 30, dmgMod: 0.40, slow: 0.25, duration: 3 },
     },
     upgradeTo: 'silver_knight',
     upgradeCost: 300,
@@ -161,7 +161,7 @@ export const SPECIAL_GEM_DEFS = [
     color: '#ccccee',
     stats: {
       damageMin: 149, damageMax: 150, attackSpeed: 1.0, range: 107,
-      effect: { type: 'splash_slow', radius: 30, slow: 0.30, duration: 3 },
+      effect: { type: 'splash_slow', radius: 30, dmgMod: 0.50, slow: 0.35, duration: 3 },
     },
     upgradeTo: null,
     upgradeCost: null,
@@ -259,7 +259,7 @@ export const SPECIAL_GEM_DEFS = [
     ],
     stats: {
       damageMin: 149, damageMax: 175, attackSpeed: 1.0, range: 114,
-      effect: { type: 'crit_ground', critChance: 0.10, critMult: 5 },
+      effect: { type: 'crit_ground', critChance: 0.15, critMult: 6 },
     },
     upgradeTo: 'great_pink_diamond',
     upgradeCost: 175,
@@ -270,7 +270,7 @@ export const SPECIAL_GEM_DEFS = [
     color: '#ff55aa',
     stats: {
       damageMin: 174, damageMax: 195, attackSpeed: 1.538, range: 122,
-      effect: { type: 'crit_ground', critChance: 0.10, critMult: 8 },
+      effect: { type: 'crit_ground', critChance: 0.15, critMult: 10 },
     },
     upgradeTo: null,
     upgradeCost: null,
@@ -288,7 +288,7 @@ export const SPECIAL_GEM_DEFS = [
     ],
     stats: {
       damageMin: 159, damageMax: 190, attackSpeed: 1.0, range: 114,
-      effect: { type: 'armor_debuff', critChance: 0.25, critMult: 2, armorDebuff: 5, debuffDuration: 3 },
+      effect: { type: 'armor_debuff', critChance: 0.25, critMult: 3, armorDebuff: 5, debuffDuration: 3 },
     },
     upgradeTo: 'egyptian_gold',
     upgradeCost: 210,
@@ -299,7 +299,7 @@ export const SPECIAL_GEM_DEFS = [
     color: '#e6a800',
     stats: {
       damageMin: 159, damageMax: 200, attackSpeed: 1.429, range: 114,
-      effect: { type: 'armor_debuff', critChance: 0.30, critMult: 2, armorDebuff: 8, debuffDuration: 3 },
+      effect: { type: 'armor_debuff', critChance: 0.30, critMult: 3, armorDebuff: 8, debuffDuration: 3 },
     },
     upgradeTo: null,
     upgradeCost: null,
@@ -318,7 +318,7 @@ export const SPECIAL_GEM_DEFS = [
     ],
     stats: {
       damageMin: 25, damageMax: 105, attackSpeed: 1.333, range: 122,
-      effect: { type: 'paraiba_nova', groundArmorAura: 4, auraRange: 86, novaChance: 0.33, novaRadius: 50 },
+      effect: { type: 'paraiba_nova', groundArmorAura: 4, auraRange: 86, novaChance: 0.33, novaRadius: 40, novaDmgMod: 0.50 },
     },
     upgradeTo: 'paraiba_tourmaline_facet',
     upgradeCost: 350,
@@ -329,7 +329,7 @@ export const SPECIAL_GEM_DEFS = [
     color: '#3ab8cf',
     stats: {
       damageMin: 125, damageMax: 204, attackSpeed: 1.667, range: 129,
-      effect: { type: 'paraiba_nova', groundArmorAura: 6, auraRange: 93, novaChance: 0.33, novaRadius: 75 },
+      effect: { type: 'paraiba_nova', groundArmorAura: 6, auraRange: 93, novaChance: 0.33, novaRadius: 60, novaDmgMod: 0.75 },
     },
     upgradeTo: null,
     upgradeCost: null,
@@ -405,7 +405,7 @@ export const SPECIAL_GEM_DEFS = [
     ],
     stats: {
       damageMin: 99, damageMax: 100, attackSpeed: 1.0, range: 114,
-      effect: { type: 'splash_slow', radius: 75, dmgMod: 0.50, slow: 0.40, duration: 4 },
+      effect: { type: 'splash_slow', radius: 50, dmgMod: 0.50, slow: 0.30, duration: 4 },
     },
     upgradeTo: 'star_yellow_sapphire',
     upgradeCost: 210,
@@ -416,7 +416,7 @@ export const SPECIAL_GEM_DEFS = [
     color: '#ffd700',
     stats: {
       damageMin: 99, damageMax: 100, attackSpeed: 1.0, range: 114,
-      effect: { type: 'splash_slow_dmg_aura', radius: 100, dmgMod: 1.0, slow: 0.50, duration: 5,
+      effect: { type: 'splash_slow_dmg_aura', radius: 75, dmgMod: 1.0, slow: 0.40, duration: 5,
                 dmgBonus: 5, dmgAuraRange: 171 },
     },
     upgradeTo: null,
@@ -435,7 +435,7 @@ export const SPECIAL_GEM_DEFS = [
     ],
     stats: {
       damageMin: 67, damageMax: 68, attackSpeed: 2.0, range: 100,
-      effect: { type: 'blood_stone', targets: 10, auraDps: 135, auraRange: 100 },
+      effect: { type: 'blood_stone', targets: 5, auraDps: 135, auraRange: 100 },
     },
     upgradeTo: 'ancient_blood_stone',
     upgradeCost: 310,
@@ -446,8 +446,8 @@ export const SPECIAL_GEM_DEFS = [
     color: '#880000',
     stats: {
       damageMin: 159, damageMax: 240, attackSpeed: 1.333, range: 100,
-      effect: { type: 'ancient_blood_stone', critChance: 0.15, critMult: 3,
-                splashRadius: 75, auraDps: 150, auraRange: 100 },
+      effect: { type: 'ancient_blood_stone', critChance: 0.15, critMult: 4,
+                splashRadius: 60, splashDmgMod: 0.75, auraDps: 150, auraRange: 100 },
     },
     upgradeTo: null,
     upgradeCost: null,
@@ -465,7 +465,7 @@ export const SPECIAL_GEM_DEFS = [
     ],
     stats: {
       damageMin: 47, damageMax: 48, attackSpeed: 4.0, range: 64,
-      effect: { type: 'uranium', slowAmount: 0.50, auraDps: 190, auraRange: 64 },
+      effect: { type: 'uranium', slowAmount: 0.40, auraDps: 190, auraRange: 64 },
     },
     upgradeTo: 'uranium_238',
     upgradeCost: 190,
@@ -517,11 +517,88 @@ export function getSpecialGemLeveledStats(specialType, level) {
   const dmgMult = 1 + bonus * 0.10;
   const effect  = base.effect ? { ...base.effect } : null;
 
+  // Effect parameter scaling (mirrors getLeveledStats pattern in gem.js)
+  if (effect) {
+    switch (effect.type) {
+      case 'poison':
+        effect.dps = effect.dps + bonus;
+        break;
+      case 'lucky_jade':
+        effect.dps        = effect.dps        + bonus;
+        effect.critChance = effect.critChance + bonus * 0.005;
+        effect.critMult   = effect.critMult   + bonus * 0.1;
+        effect.stunChance = effect.stunChance + bonus * 0.001;
+        break;
+      case 'multi':
+        // No target scaling; gains attackSpeed and range instead (below)
+        break;
+      case 'splash_slow':
+        effect.radius = effect.radius + bonus * 1.5;
+        break;
+      case 'burn_aura':
+        effect.auraDps   = effect.auraDps   + bonus * 2;
+        effect.auraRange = effect.auraRange + bonus * 1.5;
+        break;
+      case 'air_crystal':
+        effect.armorAura = effect.armorAura + bonus * 0.2;
+        effect.auraRange = effect.auraRange + bonus * 1.5;
+        break;
+      case 'crit_ground':
+        effect.critChance = effect.critChance + bonus * 0.01;
+        effect.critMult   = effect.critMult   + bonus * 0.1;
+        break;
+      case 'armor_debuff':
+        effect.critChance  = effect.critChance  + bonus * 0.01;
+        effect.critMult    = effect.critMult    + bonus * 0.1;
+        effect.armorDebuff = effect.armorDebuff + bonus * 0.2;
+        break;
+      case 'paraiba_nova':
+        effect.groundArmorAura = effect.groundArmorAura + bonus * 0.2;
+        effect.auraRange       = effect.auraRange       + bonus * 1.5;
+        effect.novaRadius      = effect.novaRadius      + bonus * 1.5;
+        break;
+      case 'dmg_aura':
+        effect.bonus     = effect.bonus     + bonus;
+        effect.auraRange = effect.auraRange + bonus * 1.5;
+        break;
+      case 'stun_chance':
+        effect.chance = effect.chance + bonus * 0.002;
+        break;
+      case 'splash_slow_dmg_aura':
+        effect.radius       = effect.radius       + bonus * 1.5;
+        effect.dmgBonus     = effect.dmgBonus     + bonus;
+        effect.dmgAuraRange = effect.dmgAuraRange + bonus * 1.5;
+        break;
+      case 'blood_stone':
+        effect.auraDps   = effect.auraDps   + bonus * 2;
+        effect.auraRange = effect.auraRange + bonus * 1.5;
+        break;
+      case 'ancient_blood_stone':
+        effect.critChance   = effect.critChance   + bonus * 0.01;
+        effect.critMult     = effect.critMult     + bonus * 0.1;
+        effect.splashRadius = effect.splashRadius + bonus * 1.5;
+        effect.auraDps      = effect.auraDps      + bonus * 2;
+        effect.auraRange    = effect.auraRange    + bonus * 1.5;
+        break;
+      case 'uranium':
+        effect.auraDps   = effect.auraDps   + bonus * 2;
+        effect.auraRange = effect.auraRange + bonus * 1.5;
+        break;
+    }
+  }
+
+  // All special gems gain +0.1 tile range per level
+  const range = base.range + bonus * 1.5;
+  // Malachite chain gains attack speed per level
+  const attackSpeed = effect?.type === 'multi'
+    ? base.attackSpeed + bonus * 0.02
+    : base.attackSpeed;
+
   return {
     damageMin:   Math.round(base.damageMin * dmgMult),
     damageMax:   Math.round(base.damageMax * dmgMult),
-    attackSpeed: base.attackSpeed,
-    range:       base.range,
+    attackSpeed,
+    range,
     effect,
   };
 }
