@@ -82,6 +82,9 @@ function init() {
   // Grid is not serialisable (circular-ish structure), rebuild it each time
   gameState.grid = createGrid();
 
+  // Compute initial path so the build-phase highlight is visible from the start
+  gameState.groundPath = computeFullPath(gameState.grid);
+
   inputHandler = new InputHandler(canvas);
 
   requestAnimationFrame(gameLoop);
@@ -159,6 +162,7 @@ function updateBuild(dt, now) {
       placeGem(gameState.grid, x, y, id);
       gameState.placedThisRound.push(id);
       applyAllAuraBuffs(gameState); // update aura bonuses after each placement
+      gameState.groundPath = computeFullPath(gameState.grid); // refresh path highlight
     }
   }
 
@@ -246,6 +250,7 @@ function updateBuild(dt, now) {
       case 'removeRock': {
         removeRock(gameState.grid, action.x, action.y);
         applyAllAuraBuffs(gameState);
+        gameState.groundPath = computeFullPath(gameState.grid); // refresh path highlight
         break;
       }
 
