@@ -165,6 +165,11 @@ export class InputHandler {
       // -----------------------------------------------------------------------
       // Click inside the build panel
       // -----------------------------------------------------------------------
+      // Downgrade shares row 1 space — check first since it's only visible during defend
+      if (this._phase === 'defend' && hitTest(BTN_DOWNGRADE, x, y)) {
+        this.pendingAction = { type: 'downgrade' };
+        return;
+      }
       if (hitTest(BTN_COMBINE, x, y)) {
         this.pendingAction = { type: 'combine', selectedGemId: this.selectedGemId };
         return;
@@ -175,10 +180,6 @@ export class InputHandler {
       }
       if (hitTest(BTN_REPICK, x, y)) {
         this.pendingAction = { type: 'repick' };
-        return;
-      }
-      if (hitTest(BTN_DOWNGRADE, x, y)) {
-        this.pendingAction = { type: 'downgrade' };
         return;
       }
       if (hitTest(BTN_KEEP, x, y)) {
