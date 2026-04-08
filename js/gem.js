@@ -175,12 +175,10 @@ export function getLeveledStats(type, quality, level) {
         effect.dps      = effect.dps  + bonus;
         break;
       case 'Ruby':
-        effect.radius   = effect.radius + bonus * 1.5; // 0.1 tile per level
         break;
       case 'Sapphire':
         break;
       case 'Diamond':
-        effect.chance     = effect.chance     + bonus * 0.01;
         effect.multiplier = effect.multiplier + bonus * 0.1;
         break;
       case 'Topaz':

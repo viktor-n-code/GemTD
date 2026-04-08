@@ -4,7 +4,7 @@
  */
 
 import { CELL_SIZE } from './grid.js';
-import { getLeveledStats } from './gem.js';
+import { getLeveledStats, getStats } from './gem.js';
 import { getSpecialGemLeveledStats } from './specialgem.js';
 
 // ---------------------------------------------------------------------------
@@ -217,11 +217,16 @@ export function attackEnemy(gem, enemy, enemies, now, wave) {
   if (stats.effect?.type === 'air_crystal' && !enemy.flying) return { damage: 0, crit: false, splashKills: 0, splashDamage: 0, goldAmount: 0 };
   if (stats.effect?.type === 'crit_ground' &&  enemy.flying) return { damage: 0, crit: false, splashKills: 0, splashDamage: 0, goldAmount: 0 };
 
-  // 1. Roll damage
-  let damage = Math.floor(Math.random() * (stats.damageMax - stats.damageMin + 1)) + stats.damageMin;
+  // 1. Roll base damage (before level/MVP scaling)
+  const base = gem.type === 'special'
+    ? getSpecialGemLeveledStats(gem.specialType, 1)
+    : getStats(gem.type, gem.quality);
+  let damage = Math.floor(Math.random() * (base.damageMax - base.damageMin + 1)) + base.damageMin;
 
-  // 1b. MVP bonus — flat % multiplier earned from winning rounds
-  if (gem.mvpBonus > 0) damage = Math.round(damage * (1 + gem.mvpBonus * 0.01));
+  // 1b. Level + MVP bonus — additive (e.g. 200% level + 50% MVP = 250% total)
+  const lvlPct = ((gem.level || 1) - 1) * 0.10;
+  const mvpPct = (gem.mvpBonus || 0) * 0.01;
+  damage = Math.round(damage * (1 + lvlPct + mvpPct));
 
   // 1c. Damage aura bonus — slot 1 (Black Opal) + slot 2 (Star Yellow Sapphire); additive
   const totalDmgBonus = (gem.dmgBonus ?? 0) + (gem.dmgBonus2 ?? 0);
