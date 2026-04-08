@@ -318,7 +318,7 @@ export const SPECIAL_GEM_DEFS = [
     ],
     stats: {
       damageMin: 25, damageMax: 105, attackSpeed: 1.333, range: 122,
-      effect: { type: 'paraiba_nova', groundArmorAura: 4, auraRange: 86, novaChance: 0.33, novaRadius: 40, novaDmgMod: 0.50 },
+      effect: { type: 'paraiba_nova', groundArmorAura: 4, auraRange: 86, novaChance: 0.33, novaRadius: 30, novaDmgMod: 0.50 },
     },
     upgradeTo: 'paraiba_tourmaline_facet',
     upgradeCost: 350,
@@ -329,7 +329,7 @@ export const SPECIAL_GEM_DEFS = [
     color: '#3ab8cf',
     stats: {
       damageMin: 125, damageMax: 204, attackSpeed: 1.667, range: 129,
-      effect: { type: 'paraiba_nova', groundArmorAura: 6, auraRange: 93, novaChance: 0.33, novaRadius: 60, novaDmgMod: 0.75 },
+      effect: { type: 'paraiba_nova', groundArmorAura: 6, auraRange: 93, novaChance: 0.33, novaRadius: 40, novaDmgMod: 0.75 },
     },
     upgradeTo: null,
     upgradeCost: null,
@@ -405,7 +405,7 @@ export const SPECIAL_GEM_DEFS = [
     ],
     stats: {
       damageMin: 99, damageMax: 100, attackSpeed: 1.0, range: 114,
-      effect: { type: 'splash_slow', radius: 50, dmgMod: 0.50, slow: 0.30, duration: 4 },
+      effect: { type: 'splash_slow', radius: 40, dmgMod: 0.50, slow: 0.30, duration: 4 },
     },
     upgradeTo: 'star_yellow_sapphire',
     upgradeCost: 210,
@@ -416,7 +416,7 @@ export const SPECIAL_GEM_DEFS = [
     color: '#ffd700',
     stats: {
       damageMin: 99, damageMax: 100, attackSpeed: 1.0, range: 114,
-      effect: { type: 'splash_slow_dmg_aura', radius: 75, dmgMod: 1.0, slow: 0.40, duration: 5,
+      effect: { type: 'splash_slow_dmg_aura', radius: 60, dmgMod: 1.0, slow: 0.40, duration: 5,
                 dmgBonus: 5, dmgAuraRange: 171 },
     },
     upgradeTo: null,
@@ -447,7 +447,7 @@ export const SPECIAL_GEM_DEFS = [
     stats: {
       damageMin: 159, damageMax: 240, attackSpeed: 1.333, range: 100,
       effect: { type: 'ancient_blood_stone', critChance: 0.15, critMult: 4,
-                splashRadius: 60, splashDmgMod: 0.75, auraDps: 150, auraRange: 100 },
+                splashRadius: 40, splashDmgMod: 0.75, auraDps: 150, auraRange: 100 },
     },
     upgradeTo: null,
     upgradeCost: null,
@@ -533,7 +533,6 @@ export function getSpecialGemLeveledStats(specialType, level) {
         // No target scaling; gains attackSpeed and range instead (below)
         break;
       case 'splash_slow':
-        effect.radius = effect.radius + bonus * 1.5;
         break;
       case 'burn_aura':
         effect.auraDps   = effect.auraDps   + bonus * 2;
@@ -555,7 +554,6 @@ export function getSpecialGemLeveledStats(specialType, level) {
       case 'paraiba_nova':
         effect.groundArmorAura = effect.groundArmorAura + bonus * 0.2;
         effect.auraRange       = effect.auraRange       + bonus * 1.5;
-        effect.novaRadius      = effect.novaRadius      + bonus * 1.5;
         break;
       case 'dmg_aura':
         effect.bonus     = effect.bonus     + bonus;
@@ -565,7 +563,6 @@ export function getSpecialGemLeveledStats(specialType, level) {
         effect.chance = effect.chance + bonus * 0.002;
         break;
       case 'splash_slow_dmg_aura':
-        effect.radius       = effect.radius       + bonus * 1.5;
         effect.dmgBonus     = effect.dmgBonus     + bonus;
         effect.dmgAuraRange = effect.dmgAuraRange + bonus * 1.5;
         break;
@@ -576,7 +573,6 @@ export function getSpecialGemLeveledStats(specialType, level) {
       case 'ancient_blood_stone':
         effect.critChance   = effect.critChance   + bonus * 0.01;
         effect.critMult     = effect.critMult     + bonus * 0.1;
-        effect.splashRadius = effect.splashRadius + bonus * 1.5;
         effect.auraDps      = effect.auraDps      + bonus * 2;
         effect.auraRange    = effect.auraRange    + bonus * 1.5;
         break;
