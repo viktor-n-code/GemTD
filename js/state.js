@@ -18,6 +18,8 @@ export function createInitialState() {
     projectiles: [],
     critNumbers: [],
     extraLivesPurchased: 0,
+    repickCount: 0,
+    downgradeAvailableId: null,
     gameOver: false,
     gameWon: false,
   };

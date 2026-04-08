@@ -57,10 +57,11 @@ function drawPolygon(ctx, cx, cy, radius, sides) {
  * Draws a 5-pointed star centered at (cx, cy).
  * outerR = tip radius, innerR = inner notch radius.
  */
-function drawStar(ctx, cx, cy, outerR, innerR) {
+function drawStar(ctx, cx, cy, outerR, innerR, points = 5) {
+  const totalVerts = points * 2;
   ctx.beginPath();
-  for (let i = 0; i < 10; i++) {
-    const angle = (i * Math.PI / 5) - Math.PI / 2;
+  for (let i = 0; i < totalVerts; i++) {
+    const angle = (i * Math.PI / points) - Math.PI / 2;
     const r = (i % 2 === 0) ? outerR : innerR;
     const px = cx + r * Math.cos(angle);
     const py = cy + r * Math.sin(angle);
@@ -288,6 +289,17 @@ function drawGems(ctx, state, selectedGemId = null) {
         case 'star':
           drawStar(ctx, cx, cy, R, R * 0.45);
           ctx.fill();
+          ctx.stroke();
+          break;
+
+        case 'hexagram':
+          drawStar(ctx, cx, cy, R, R * 0.45, 6);
+          ctx.fill();
+          ctx.stroke();
+          // White outer glow for Great tier
+          ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+          ctx.lineWidth   = 1;
+          drawStar(ctx, cx, cy, R + 2, (R + 2) * 0.45, 6);
           ctx.stroke();
           break;
 

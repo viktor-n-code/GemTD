@@ -2,8 +2,9 @@
 // Tracks mouse position, derives hover state, and queues pending actions.
 
 import { CELL_SIZE, GRID_COLS, GRID_ROWS } from './grid.js';
-import { GEM_SLOTS, BTN_COMBINE, BTN_KEEP, BTN_UPGRADE, BTN_RESTART, BTN_REMOVE,
-         BTN_COMBINE_SPECIAL, BTN_UPGRADE_GEM, BTN_BUY_LIFE, PANEL_Y } from './ui.js';
+import { GEM_SLOTS, BTN_COMBINE, BTN_COMBINE4, BTN_KEEP, BTN_UPGRADE, BTN_RESTART, BTN_REMOVE,
+         BTN_COMBINE_SPECIAL, BTN_UPGRADE_GEM, BTN_BUY_LIFE, BTN_REPICK, BTN_DOWNGRADE,
+         PANEL_Y } from './ui.js';
 import { findAvailableRecipes } from './specialgem.js';
 
 // ---------------------------------------------------------------------------
@@ -178,6 +179,18 @@ export class InputHandler {
       // -----------------------------------------------------------------------
       if (hitTest(BTN_COMBINE, x, y)) {
         this.pendingAction = { type: 'combine', selectedGemId: this.selectedGemId };
+        return;
+      }
+      if (hitTest(BTN_COMBINE4, x, y)) {
+        this.pendingAction = { type: 'combine4', selectedGemId: this.selectedGemId };
+        return;
+      }
+      if (hitTest(BTN_REPICK, x, y)) {
+        this.pendingAction = { type: 'repick' };
+        return;
+      }
+      if (hitTest(BTN_DOWNGRADE, x, y)) {
+        this.pendingAction = { type: 'downgrade' };
         return;
       }
       if (hitTest(BTN_KEEP, x, y)) {

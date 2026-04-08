@@ -1,7 +1,7 @@
 // ui.js — Build panel HUD rendering
 // Draws the semi-transparent panel at the bottom of the canvas during 'build' phase.
 
-import { getVisual, getStats, getLeveledStats, GEM_CHANCE_LEVELS, GEM_TYPES } from './gem.js';
+import { getVisual, getStats, getLeveledStats, GEM_CHANCE_LEVELS, GEM_TYPES, QUALITY_LEVELS } from './gem.js';
 import { GRID_ROWS, CELL_SIZE } from './grid.js';
 import { HUD_HEIGHT } from './renderer.js';
 import { SPECIAL_GEM_DEFS, getSpecialGemLeveledStats, getSpecialVisual, findAvailableRecipes } from './specialgem.js';
@@ -23,10 +23,12 @@ export const GEM_SLOTS = [
 ];
 
 // Action buttons — row 1
-export const BTN_COMBINE  = { x: 232, y: PANEL_Y + 9, w: 70,  h: 28 };
-export const BTN_KEEP     = { x: 308, y: PANEL_Y + 9, w: 60,  h: 28 };
-export const BTN_UPGRADE  = { x: 374, y: PANEL_Y + 9, w: 90,  h: 28 };
+export const BTN_COMBINE  = { x: 232, y: PANEL_Y + 9, w: 64,  h: 28 };
+export const BTN_COMBINE4 = { x: 300, y: PANEL_Y + 9, w: 64,  h: 28 };
+export const BTN_KEEP     = { x: 368, y: PANEL_Y + 9, w: 52,  h: 28 };
+export const BTN_REPICK   = { x: 424, y: PANEL_Y + 9, w: 80,  h: 28 };
 export const BTN_REMOVE   = { x: 558, y: PANEL_Y + 9, w: 80,  h: 28 };
+export const BTN_DOWNGRADE = { x: 232, y: PANEL_Y + 50, w: 80, h: 24 };
 
 // Action buttons — row 2 (special gem actions + restart, separated from Remove)
 export const BTN_COMBINE_SPECIAL = { x: 232, y: PANEL_Y + 50, w: 108, h: 24 };
@@ -881,6 +883,17 @@ export function drawUI(ctx, state, inputState) {
   const canBuyLife = state.gold >= lifeCost && state.lives < 20;
   drawButton(ctx, BTN_BUY_LIFE, `+Life (${lifeCost}g)`, canBuyLife, '#2a5a6a');
 
+  // Downgrade — available during defend phase for the just-kept gem
+  if (state.phase === 'defend' && state.downgradeAvailableId) {
+    const dgGem = state.gems[state.downgradeAvailableId];
+    if (dgGem && dgGem.type !== 'special') {
+      const qi = QUALITY_LEVELS.indexOf(dgGem.quality);
+      const canDowngrade = qi > 0;
+      const targetQ = canDowngrade ? QUALITY_LEVELS[qi - 1] : dgGem.quality;
+      drawButton(ctx, BTN_DOWNGRADE, `Downgrade → ${targetQ}`, canDowngrade, '#6a4a2a');
+    }
+  }
+
   ctx.restore();
 
   // Build-only elements (slots, combine, keep)
@@ -968,6 +981,19 @@ export function drawUI(ctx, state, inputState) {
   }
   drawButton(ctx, BTN_COMBINE, 'Combine', combineActive, '#3a6a3a');
 
+  // 4-Combine — active when selected gem has 3+ matching partners and target quality+2 exists
+  let combine4Active = false;
+  if (selectedGem && state.placedThisRound.includes(inputState.selectedGemId)) {
+    const matchCount4 = state.placedThisRound.filter(id => {
+      if (id == null || id === inputState.selectedGemId) return false;
+      const g = state.gems[id];
+      return g && g.type === selectedGem.type && g.quality === selectedGem.quality;
+    }).length;
+    const qi4 = QUALITY_LEVELS.indexOf(selectedGem.quality);
+    combine4Active = matchCount4 >= 3 && qi4 + 2 < QUALITY_LEVELS.length;
+  }
+  drawButton(ctx, BTN_COMBINE4, '4-Combine', combine4Active, '#2a5a2a');
+
   // Keep — active if a gem is selected and no gem has been kept yet
   const keepActive = (
     inputState !== null &&
@@ -975,6 +1001,11 @@ export function drawUI(ctx, state, inputState) {
     state.keptGemId === null
   );
   drawButton(ctx, BTN_KEEP, 'Keep', keepActive, '#3a6a3a');
+
+  // Repick — active during build phase when gems are placed and player can afford it
+  const repickCost = 25 * ((state.repickCount ?? 0) + 1);
+  const repickActive = state.placedThisRound.length > 0 && state.gold >= repickCost && state.keptGemId === null;
+  drawButton(ctx, BTN_REPICK, `Repick (${repickCost}g)`, repickActive, '#5a4a2a');
 
   // Remove — active when a rock is selected
   const removeActive = inputState?.selectedRockPos !== null && inputState?.selectedRockPos !== undefined;

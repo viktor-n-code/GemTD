@@ -10,6 +10,7 @@ export const GEM_TYPES = {
       standard: { damageMin: 14,  damageMax: 25,  attackSpeed: 1.0,  range: 86,  effect: { type: 'poison', dps: 5,  slow: 0.20, duration: 5 } },
       flawless: { damageMin: 29,  damageMax: 38,  attackSpeed: 1.0,  range: 100, effect: { type: 'poison', dps: 8,  slow: 0.25, duration: 6 } },
       perfect:  { damageMin: 79,  damageMax: 90,  attackSpeed: 1.0,  range: 114, effect: { type: 'poison', dps: 16, slow: 0.30, duration: 8 } },
+      great:    { damageMin: 199, damageMax: 240, attackSpeed: 1.0,  range: 129, effect: { type: 'poison', dps: 32, slow: 0.35, duration: 10 } },
     },
   },
   Ruby: {
@@ -20,7 +21,8 @@ export const GEM_TYPES = {
       flawed:   { damageMin: 12,  damageMax: 16,  attackSpeed: 1.0, range: 114, effect: { type: 'splash', radius: 25, dmgMod: 0.25 } },
       standard: { damageMin: 17,  damageMax: 22,  attackSpeed: 1.0, range: 114, effect: { type: 'splash', radius: 28, dmgMod: 0.30 } },
       flawless: { damageMin: 37,  damageMax: 45,  attackSpeed: 1.0, range: 114, effect: { type: 'splash', radius: 30, dmgMod: 0.35 } },
-      perfect:  { damageMin: 96,  damageMax: 126, attackSpeed: 1.0, range: 129, effect: { type: 'splash', radius: 35, dmgMod: 0.50 } },
+      perfect:  { damageMin: 96,  damageMax: 126, attackSpeed: 1.0,   range: 129, effect: { type: 'splash', radius: 35, dmgMod: 0.50 } },
+      great:    { damageMin: 139, damageMax: 140, attackSpeed: 1.333, range: 129, effect: { type: 'splash', radius: 40, dmgMod: 0.65 } },
     },
   },
   Sapphire: {
@@ -32,6 +34,7 @@ export const GEM_TYPES = {
       standard: { damageMin: 15,  damageMax: 21,  attackSpeed: 1.0, range: 114, effect: { type: 'slow', amount: 0.30, duration: 5 } },
       flawless: { damageMin: 29,  damageMax: 40,  attackSpeed: 1.0, range: 122, effect: { type: 'slow', amount: 0.35, duration: 5 } },
       perfect:  { damageMin: 59,  damageMax: 75,  attackSpeed: 1.0, range: 180, effect: { type: 'slow', amount: 0.40, duration: 5 } },
+      great:    { damageMin: 199, damageMax: 200, attackSpeed: 1.0, range: 286, effect: { type: 'slow', amount: 0.50, duration: 5 } },
     },
   },
   Amethyst: {
@@ -44,6 +47,7 @@ export const GEM_TYPES = {
       standard: { damageMin: 29,  damageMax: 40,  attackSpeed: 1.0,  range: 179, effect: null },
       flawless: { damageMin: 59,  damageMax: 75,  attackSpeed: 1.0,  range: 186, effect: null },
       perfect:  { damageMin: 139, damageMax: 150, attackSpeed: 1.0,  range: 215, effect: null },
+      great:    { damageMin: 349, damageMax: 400, attackSpeed: 1.0,  range: 236, effect: null },
     },
   },
   Diamond: {
@@ -56,6 +60,7 @@ export const GEM_TYPES = {
       standard: { damageMin: 29,  damageMax: 37,  attackSpeed: 1.0,  range: 86,  effect: { type: 'crit', chance: 0.25, multiplier: 3.0 } },
       flawless: { damageMin: 57,  damageMax: 65,  attackSpeed: 1.0,  range: 93,  effect: { type: 'crit', chance: 0.30, multiplier: 3.0 } },
       perfect:  { damageMin: 115, damageMax: 138, attackSpeed: 1.0,  range: 107, effect: { type: 'crit', chance: 0.33, multiplier: 3.5 } },
+      great:    { damageMin: 299, damageMax: 350, attackSpeed: 1.0,  range: 122, effect: { type: 'crit', chance: 0.40, multiplier: 5.0 } },
     },
   },
   Topaz: {
@@ -66,7 +71,8 @@ export const GEM_TYPES = {
       flawed:   { damageMin: 7,  damageMax: 8,  attackSpeed: 1.0,  range: 72, effect: { type: 'multi', targets: 3 } },
       standard: { damageMin: 13, damageMax: 14, attackSpeed: 1.0,  range: 72, effect: { type: 'multi', targets: 3 } },
       flawless: { damageMin: 24, damageMax: 25, attackSpeed: 1.0,  range: 72, effect: { type: 'multi', targets: 4 } },
-      perfect:  { damageMin: 67, damageMax: 68, attackSpeed: 1.0,  range: 80, effect: { type: 'multi', targets: 5 } },
+      perfect:  { damageMin: 67, damageMax: 68, attackSpeed: 1.0,  range: 80,  effect: { type: 'multi', targets: 5 } },
+      great:    { damageMin: 249, damageMax: 250, attackSpeed: 1.0, range: 100, effect: { type: 'multi', targets: 8 } },
     },
   },
   Aquamarine: {
@@ -78,7 +84,8 @@ export const GEM_TYPES = {
       flawed:   { damageMin: 11, damageMax: 15,  attackSpeed: 2.75, range: 52, effect: null },
       standard: { damageMin: 23, damageMax: 30,  attackSpeed: 2.80, range: 54, effect: null },
       flawless: { damageMin: 47, damageMax: 55,  attackSpeed: 2.85, range: 61, effect: null },
-      perfect:  { damageMin: 94, damageMax: 114, attackSpeed: 2.90, range: 79, effect: null },
+      perfect:  { damageMin: 94,  damageMax: 114, attackSpeed: 2.90, range: 79, effect: null },
+      great:    { damageMin: 279, damageMax: 280, attackSpeed: 2.95, range: 86, effect: null },
     },
   },
   Opal: {
@@ -89,12 +96,13 @@ export const GEM_TYPES = {
       flawed:   { damageMin: 9,  damageMax: 10, attackSpeed: 1.0,  range: 100, effect: { type: 'aura', bonus: 0.15, auraRange: 100 } },
       standard: { damageMin: 19, damageMax: 20, attackSpeed: 1.0,  range: 114, effect: { type: 'aura', bonus: 0.20, auraRange: 115 } },
       flawless: { damageMin: 39, damageMax: 40, attackSpeed: 1.0,  range: 129, effect: { type: 'aura', bonus: 0.25, auraRange: 129 } },
-      perfect:  { damageMin: 84, damageMax: 85, attackSpeed: 1.0,  range: 143, effect: { type: 'aura', bonus: 0.35, auraRange: 143 } },
+      perfect:  { damageMin: 84,  damageMax: 85,  attackSpeed: 1.0, range: 143, effect: { type: 'aura', bonus: 0.35, auraRange: 143 } },
+      great:    { damageMin: 179, damageMax: 180, attackSpeed: 1.0, range: 215, effect: { type: 'aura', bonus: 0.50, auraRange: 215 } },
     },
   },
 };
 
-export const QUALITY_LEVELS = ['chipped', 'flawed', 'standard', 'flawless', 'perfect'];
+export const QUALITY_LEVELS = ['chipped', 'flawed', 'standard', 'flawless', 'perfect', 'great'];
 
 export const GEM_CHANCE_LEVELS = [
   { cost: 0,   chances: { chipped: 99, flawed: 1,  standard: 0,  flawless: 0,  perfect: 0  } },
@@ -114,6 +122,7 @@ const SHAPES = {
   standard: 'diamond',
   flawless: 'pentagon',
   perfect:  'star',
+  great:    'hexagram',
 };
 
 const TYPE_NAMES = Object.keys(GEM_TYPES);
