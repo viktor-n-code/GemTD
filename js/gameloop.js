@@ -52,6 +52,8 @@ function init() {
     // Ensure new fields exist on loaded saves
     if (gameState.gameOver   === undefined) gameState.gameOver   = false;
     if (gameState.extraLivesPurchased === undefined) gameState.extraLivesPurchased = 0;
+    if (gameState.repickCount === undefined) gameState.repickCount = 0;
+    if (gameState.downgradeAvailableId === undefined) gameState.downgradeAvailableId = null;
     if (!gameState.critNumbers)            gameState.critNumbers = [];
     if (!gameState.gemCounters) gameState.gemCounters = {};
     for (const gem of Object.values(gameState.gems || {})) {
@@ -239,6 +241,54 @@ function updateBuild(dt, now) {
         break;
       }
 
+      case 'combine4': {
+        // 4-combine: selected gem + 3 matching partners → upgrade by 2 tiers
+        const sid4 = action.selectedGemId;
+        const s4 = sid4 ? gameState.gems[sid4] : null;
+        if (!s4) break;
+        const qi4 = QUALITY_LEVELS.indexOf(s4.quality);
+        if (qi4 + 2 >= QUALITY_LEVELS.length) break;
+        const partners4 = gameState.placedThisRound.filter(id => {
+          if (!id || id === sid4) return false;
+          const g = gameState.gems[id];
+          return g && g.type === s4.type && g.quality === s4.quality;
+        }).slice(0, 3);
+        if (partners4.length < 3) break;
+        // Upgrade survivor by 2 tiers
+        s4.quality = QUALITY_LEVELS[qi4 + 2];
+        s4.attackCooldown = Math.round(1000 / getLeveledStats(s4.type, s4.quality, s4.level || 1).attackSpeed);
+        // Convert partners to rocks
+        for (const id of partners4) {
+          const g = gameState.gems[id];
+          if (!g) continue;
+          placeRock(gameState.grid, g.x, g.y);
+          for (let dy = 0; dy <= 1; dy++)
+            for (let dx = 0; dx <= 1; dx++)
+              gameState.grid[g.y + dy][g.x + dx].gemId = null;
+          delete gameState.gems[id];
+        }
+        // Convert remaining non-survivor gems to rocks, start wave
+        gameState.keptGemId = sid4;
+        for (const id of gameState.placedThisRound) {
+          if (id === sid4 || partners4.includes(id)) continue;
+          const g = gameState.gems[id];
+          if (!g) continue;
+          placeRock(gameState.grid, g.x, g.y);
+          for (let dy = 0; dy <= 1; dy++)
+            for (let dx = 0; dx <= 1; dx++)
+              gameState.grid[g.y + dy][g.x + dx].gemId = null;
+          delete gameState.gems[id];
+        }
+        gameState.placedThisRound = [sid4];
+        startDefendPhase();
+        break;
+      }
+
+      case 'repick': {
+        _handleRepick();
+        break;
+      }
+
       case 'combineSpecial': {
         _handleCombineSpecial(action.selectedGemId, 'build');
         break;
@@ -284,6 +334,45 @@ function _handleBuyLife() {
     gameState.extraLivesPurchased += 1;
     saveState(gameState);
   }
+}
+
+function _handleRepick() {
+  const cost = 25 * (gameState.repickCount + 1);
+  if (gameState.gold < cost || gameState.placedThisRound.length === 0) return;
+  // Remove all placed gems from grid (back to empty, not rocks)
+  for (const id of [...gameState.placedThisRound]) {
+    const g = gameState.gems[id];
+    if (!g) continue;
+    for (let dy = 0; dy <= 1; dy++)
+      for (let dx = 0; dx <= 1; dx++) {
+        const cell = gameState.grid[g.y + dy][g.x + dx];
+        cell.type = 'empty';
+        cell.gemId = null;
+      }
+    delete gameState.gems[id];
+  }
+  gameState.placedThisRound = [];
+  gameState.keptGemId = null;
+  gameState.gold -= cost;
+  gameState.repickCount += 1;
+  applyAllAuraBuffs(gameState);
+  gameState.groundPath = computeFullPath(gameState.grid);
+  saveState(gameState);
+}
+
+function _handleDowngrade() {
+  const gemId = gameState.downgradeAvailableId;
+  if (!gemId) return;
+  const gem = gameState.gems[gemId];
+  if (!gem || gem.type === 'special') return;
+  const qi = QUALITY_LEVELS.indexOf(gem.quality);
+  if (qi <= 0) return;
+  gem.quality = QUALITY_LEVELS[qi - 1];
+  const ls = getLeveledStats(gem.type, gem.quality, gem.level || 1);
+  gem.attackCooldown = Math.round(1000 / ls.attackSpeed);
+  gameState.downgradeAvailableId = null;
+  applyAllAuraBuffs(gameState);
+  saveState(gameState);
 }
 
 // ---------------------------------------------------------------------------
@@ -521,6 +610,9 @@ function startDefendPhase() {
     keptGem.name = `${keptGem.quality} ${keptGem.type} ${gameState.gemCounters[k]}`;
   }
 
+  // The just-kept gem can be downgraded during this defend phase
+  gameState.downgradeAvailableId = gameState.keptGemId;
+
   // Reset per-round damage counters for all active gems
   for (const gem of Object.values(gameState.gems)) {
     gem.roundDamage = 0;
@@ -581,6 +673,7 @@ function updateDefend(dt, now) {
   if (action?.type === 'restart') { clearState(); location.reload(); return; }
   if (action?.type === 'upgrade') { handleUpgrade(); }
   if (action?.type === 'buyLife') { _handleBuyLife(); }
+  if (action?.type === 'downgrade') { _handleDowngrade(); }
   if (action?.type === 'combineSpecial')  { _handleCombineSpecial(action.selectedGemId, 'defend'); }
   if (action?.type === 'upgradeSpecial')  { _handleUpgradeSpecial(action.gemId); }
 
@@ -840,6 +933,7 @@ function updateBetween() {
     if (mvp.roundDamage > 0) mvp.mvpBonus += 1;
   }
 
+  gameState.downgradeAvailableId = null; // lock gem — no more downgrading
   saveState(gameState);
   gameState.phase = 'build';
 }
