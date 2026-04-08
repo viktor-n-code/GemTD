@@ -27,8 +27,9 @@ export const BTN_COMBINE  = { x: 232, y: PANEL_Y + 9, w: 64,  h: 28 };
 export const BTN_COMBINE4 = { x: 300, y: PANEL_Y + 9, w: 64,  h: 28 };
 export const BTN_KEEP     = { x: 368, y: PANEL_Y + 9, w: 52,  h: 28 };
 export const BTN_REPICK   = { x: 424, y: PANEL_Y + 9, w: 80,  h: 28 };
+export const BTN_UPGRADE  = { x: 508, y: PANEL_Y + 9, w: 48,  h: 28 };
 export const BTN_REMOVE   = { x: 558, y: PANEL_Y + 9, w: 80,  h: 28 };
-export const BTN_DOWNGRADE = { x: 232, y: PANEL_Y + 50, w: 80, h: 24 };
+export const BTN_DOWNGRADE = { x: 232, y: PANEL_Y + 9, w: 80, h: 28 }; // shares row 1 space; only visible during defend
 
 // Action buttons — row 2 (special gem actions + restart, separated from Remove)
 export const BTN_COMBINE_SPECIAL = { x: 232, y: PANEL_Y + 50, w: 108, h: 24 };
