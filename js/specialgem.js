@@ -525,7 +525,6 @@ export function getSpecialGemLeveledStats(specialType, level) {
         break;
       case 'lucky_jade':
         effect.dps        = effect.dps        + bonus;
-        effect.critChance = effect.critChance + bonus * 0.005;
         effect.critMult   = effect.critMult   + bonus * 0.1;
         effect.stunChance = effect.stunChance + bonus * 0.001;
         break;
@@ -543,11 +542,9 @@ export function getSpecialGemLeveledStats(specialType, level) {
         effect.auraRange = effect.auraRange + bonus * 1.5;
         break;
       case 'crit_ground':
-        effect.critChance = effect.critChance + bonus * 0.01;
         effect.critMult   = effect.critMult   + bonus * 0.1;
         break;
       case 'armor_debuff':
-        effect.critChance  = effect.critChance  + bonus * 0.01;
         effect.critMult    = effect.critMult    + bonus * 0.1;
         effect.armorDebuff = effect.armorDebuff + bonus * 0.2;
         break;
@@ -571,7 +568,6 @@ export function getSpecialGemLeveledStats(specialType, level) {
         effect.auraRange = effect.auraRange + bonus * 1.5;
         break;
       case 'ancient_blood_stone':
-        effect.critChance   = effect.critChance   + bonus * 0.01;
         effect.critMult     = effect.critMult     + bonus * 0.1;
         effect.auraDps      = effect.auraDps      + bonus * 2;
         effect.auraRange    = effect.auraRange    + bonus * 1.5;

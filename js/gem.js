@@ -179,7 +179,6 @@ export function getLeveledStats(type, quality, level) {
       case 'Sapphire':
         break;
       case 'Diamond':
-        effect.chance     = effect.chance     + bonus * 0.01;
         effect.multiplier = effect.multiplier + bonus * 0.1;
         break;
       case 'Topaz':
