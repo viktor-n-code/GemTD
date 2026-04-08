@@ -4,7 +4,7 @@
 import { CELL_SIZE, GRID_COLS, GRID_ROWS } from './grid.js';
 import { BTN_COMBINE, BTN_COMBINE4, BTN_KEEP, BTN_UPGRADE, BTN_RESTART, BTN_REMOVE,
          BTN_COMBINE_SPECIAL, BTN_UPGRADE_GEM, BTN_BUY_LIFE, BTN_REPICK, BTN_DOWNGRADE,
-         PANEL_Y } from './ui.js';
+         BTN_FORFEIT, PANEL_Y } from './ui.js';
 import { findAvailableRecipes } from './specialgem.js';
 
 // ---------------------------------------------------------------------------
@@ -51,6 +51,7 @@ export class InputHandler {
     this.selectedRockPos = null;  // { x, y } of a selected rock cell, or null
     this.combineStep     = 0;     // 0 = idle, 1 = first gem, 2 = second gem
     this.restartConfirmUntil = 0; // timestamp until which the restart confirm is active
+    this.forfeitConfirmUntil = 0;
 
     // Cached from update() for use in click handler
     this._phase          = 'build';
@@ -75,6 +76,7 @@ export class InputHandler {
       selectedRockPos:      this.selectedRockPos,
       combineStep:          this.combineStep,
       restartConfirmUntil:  this.restartConfirmUntil,
+      forfeitConfirmUntil:  this.forfeitConfirmUntil,
     };
   }
 
@@ -194,6 +196,15 @@ export class InputHandler {
       }
       if (hitTest(BTN_BUY_LIFE, x, y)) {
         this.pendingAction = { type: 'buyLife' };
+        return;
+      }
+      if (hitTest(BTN_FORFEIT, x, y)) {
+        if (Date.now() < this.forfeitConfirmUntil) {
+          this.forfeitConfirmUntil = 0;
+          this.pendingAction = { type: 'forfeit' };
+        } else {
+          this.forfeitConfirmUntil = Date.now() + 3000;
+        }
         return;
       }
       if (hitTest(BTN_RESTART, x, y)) {

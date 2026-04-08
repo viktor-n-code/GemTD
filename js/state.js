@@ -20,6 +20,8 @@ export function createInitialState() {
     extraLivesPurchased: 0,
     repickCount: 0,
     downgradeAvailableId: null,
+    defendTime: 0,
+    finalWaveKills: 0,
     gameOver: false,
     gameWon: false,
   };

@@ -27,6 +27,7 @@ export const BTN_COMBINE_SPECIAL = { x: 232, y: PANEL_Y + 50, w: 108, h: 24 };
 export const BTN_UPGRADE_GEM     = { x: 344, y: PANEL_Y + 50, w: 120, h: 24 };
 export const BTN_RESTART         = { x: 476, y: PANEL_Y + 50, w: 84,  h: 24 };
 export const BTN_BUY_LIFE       = { x: 564, y: PANEL_Y + 50, w: 100, h: 24 };
+export const BTN_FORFEIT        = { x: 496, y: PANEL_Y + 9,  w: 64,  h: 28 };
 
 // ---------------------------------------------------------------------------
 // Private shape helpers (draw gem shapes centred at cx, cy with radius r)
@@ -856,6 +857,12 @@ export function drawUI(ctx, state, inputState) {
   const lifeCost = 10 + (state.extraLivesPurchased ?? 0) ** 2;
   const canBuyLife = state.gold >= lifeCost && state.lives < 20;
   drawButton(ctx, BTN_BUY_LIFE, `+Life (${lifeCost}g)`, canBuyLife, '#2a5a6a');
+
+  // Forfeit — double-click to confirm (same pattern as Restart)
+  const forfeitPending = inputState?.forfeitConfirmUntil > performance.now();
+  const forfeitLabel = forfeitPending ? 'Forfeit?' : 'Forfeit';
+  const forfeitColor = forfeitPending ? '#8a2a00' : '#6a1a1a';
+  drawButton(ctx, BTN_FORFEIT, forfeitLabel, true, forfeitColor);
 
   // Downgrade — available during defend phase for the just-kept gem
   if (state.phase === 'defend' && state.downgradeAvailableId) {

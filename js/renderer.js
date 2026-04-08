@@ -535,7 +535,12 @@ function drawHUD(ctx, state, canvasWidth, hudY) {
   ctx.textAlign    = 'left';
   ctx.textBaseline = 'middle';
 
-  const text = `Wave: ${state.wave}  Lives: ${state.lives}  Gold: ${state.gold}g  Chance Lvl: ${state.gemChanceLevel}`;
+  const mins = Math.floor((state.defendTime || 0) / 60);
+  const secs = Math.floor((state.defendTime || 0) % 60);
+  const timeStr = `${mins}:${secs.toString().padStart(2, '0')}`;
+  const mazeLen = state.groundPath?.length ?? 0;
+
+  const text = `Wave: ${state.wave}  Lives: ${state.lives}  Gold: ${state.gold}g  Lvl: ${state.gemChanceLevel}  Time: ${timeStr}  Maze: ${mazeLen}`;
   ctx.fillText(text, 8, hudY + HUD_HEIGHT / 2);
   ctx.restore();
 }
