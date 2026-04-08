@@ -326,16 +326,12 @@ function _buildSpecialGemHTML(gem, state) {
 
   const levelLabel = level > 1 ? ` <span class="info-gem-level">Lv ${level}</span>` : '';
   const mvpBonus   = gem.mvpBonus || 0;
-  const totalDmgAura = (gem.dmgBonus ?? 0) + (gem.dmgBonus2 ?? 0);
-  const fullMult   = (1 + mvpBonus * 0.01) * (1 + totalDmgAura * 0.01);
-  const minDmg     = Math.round(ls.damageMin * fullMult);
-  const maxDmg     = Math.round(ls.damageMax * fullMult);
+  const mvpMult    = 1 + mvpBonus * 0.01;
+  const minDmg     = mvpBonus > 0 ? Math.round(ls.damageMin * mvpMult) : ls.damageMin;
+  const maxDmg     = mvpBonus > 0 ? Math.round(ls.damageMax * mvpMult) : ls.damageMax;
   let dmgHTML = `${minDmg}–${maxDmg}`;
-  if (level > 1)       dmgHTML += ` <span class="info-level-note">(+${(level - 1) * 10}% lvl)</span>`;
-  if (mvpBonus > 0)    dmgHTML += ` <span class="info-mvp-note">(+${mvpBonus}% MVP)</span>`;
-  const dmgAuraNote = totalDmgAura > 0
-    ? `<div class="info-aura-note">+${totalDmgAura}% dmg aura</div>`
-    : '';
+  if (level > 1)    dmgHTML += ` <span class="info-level-note">(+${(level - 1) * 10}% lvl)</span>`;
+  if (mvpBonus > 0) dmgHTML += ` <span class="info-mvp-note">(+${mvpBonus}% MVP)</span>`;
 
   const baseStats = level > 1 ? getSpecialGemLeveledStats(gem.specialType, 1) : null;
 
@@ -347,6 +343,10 @@ function _buildSpecialGemHTML(gem, state) {
   const spdHTML = gem.auraBonus > 0
     ? `${spdEff}/s${spdLvlNote}<div class="info-aura-note">+${Math.round(gem.auraBonus * 100)}% Opal aura</div>`
     : `${spdEff}/s${spdLvlNote}`;
+  const totalDmgAura = (gem.dmgBonus ?? 0) + (gem.dmgBonus2 ?? 0);
+  const dmgAuraNote = totalDmgAura > 0
+    ? `<div class="info-aura-note">+${totalDmgAura}% dmg aura</div>`
+    : '';
 
   const rangeLvlNote = _lvlNote(ls.range, baseStats?.range, d => (d / 15).toFixed(1) + 't');
   let html = `
@@ -411,15 +411,15 @@ function _buildGemHTML(gem, state) {
     ? ` <span class="info-gem-level">Lv ${level}</span>`
     : '';
 
-  // Damage: show fully-adjusted range (MVP + damage aura) so bonuses are visible
+  // Damage: show MVP-adjusted range so the bonus is visible in the tooltip
   const mvpBonus = gem.mvpBonus || 0;
-  const totalDmgAuraS = (gem.dmgBonus ?? 0) + (gem.dmgBonus2 ?? 0);
-  const fullMultS = (1 + mvpBonus * 0.01) * (1 + totalDmgAuraS * 0.01);
-  const minDmg   = Math.round(ls.damageMin * fullMultS);
-  const maxDmg   = Math.round(ls.damageMax * fullMultS);
+  const mvpMult  = 1 + mvpBonus * 0.01;
+  const minDmg   = mvpBonus > 0 ? Math.round(ls.damageMin * mvpMult) : ls.damageMin;
+  const maxDmg   = mvpBonus > 0 ? Math.round(ls.damageMax * mvpMult) : ls.damageMax;
   let dmgHTML = `${minDmg}–${maxDmg}`;
-  if (level > 1)         dmgHTML += ` <span class="info-level-note">(+${(level - 1) * 10}% lvl)</span>`;
-  if (mvpBonus > 0)      dmgHTML += ` <span class="info-mvp-note">(+${mvpBonus}% MVP)</span>`;
+  if (level > 1)    dmgHTML += ` <span class="info-level-note">(+${(level - 1) * 10}% lvl)</span>`;
+  if (mvpBonus > 0) dmgHTML += ` <span class="info-mvp-note">(+${mvpBonus}% MVP)</span>`;
+  const totalDmgAuraS = (gem.dmgBonus ?? 0) + (gem.dmgBonus2 ?? 0);
   if (totalDmgAuraS > 0) dmgHTML += `<div class="info-aura-note">+${totalDmgAuraS}% dmg aura</div>`;
 
   let html = `
