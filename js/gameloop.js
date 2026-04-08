@@ -5,7 +5,9 @@
 
 import { createInitialState, saveState, loadState, clearState } from './state.js';
 import { createGrid, validatePlacement, placeGem, placeRock, removeRock, findPath,
-         GRID_COLS, GRID_ROWS, CELL_SIZE, ENTRY, CHECKPOINTS, EXIT } from './grid.js';
+         GRID_COLS, GRID_ROWS, CELL_SIZE, ENTRY, CHECKPOINTS, EXIT, computeBoardFillPct } from './grid.js';
+import { initFirebase } from './firebase.js';
+import { initTabs, initCommentForm, showScoreModal } from './social.js';
 import { rollGem, getStats, getLeveledStats, getVisual, GEM_CHANCE_LEVELS, QUALITY_LEVELS } from './gem.js';
 import { SPECIAL_GEM_DEFS, getSpecialGemLeveledStats, getSpecialVisual, findAvailableRecipes } from './specialgem.js';
 import { moveEnemy, getWaveGold } from './enemy.js';
@@ -54,6 +56,8 @@ function init() {
     if (gameState.extraLivesPurchased === undefined) gameState.extraLivesPurchased = 0;
     if (gameState.repickCount === undefined) gameState.repickCount = 0;
     if (gameState.downgradeAvailableId === undefined) gameState.downgradeAvailableId = null;
+    if (gameState.defendTime === undefined) gameState.defendTime = 0;
+    if (gameState.finalWaveKills === undefined) gameState.finalWaveKills = 0;
     if (!gameState.critNumbers)            gameState.critNumbers = [];
     if (!gameState.gemCounters) gameState.gemCounters = {};
     for (const gem of Object.values(gameState.gems || {})) {
@@ -91,6 +95,10 @@ function init() {
 
   inputHandler = new InputHandler(canvas);
 
+  initFirebase();
+  initTabs();
+  initCommentForm();
+
   requestAnimationFrame(gameLoop);
 }
 
@@ -106,9 +114,12 @@ function gameLoop(timestamp) {
 
   inputHandler.update(gameState);
 
-  if      (gameState.phase === 'build')   updateBuild(dt, now);
-  else if (gameState.phase === 'defend')  updateDefend(dt, now);
-  else if (gameState.phase === 'between') updateBetween();
+  // Pause game logic when viewing Leaderboard/Comments tabs (still render)
+  if (window.gameTabActive !== false) {
+    if      (gameState.phase === 'build')   updateBuild(dt, now);
+    else if (gameState.phase === 'defend')  updateDefend(dt, now);
+    else if (gameState.phase === 'between') updateBetween();
+  }
 
   const HUD_Y = GRID_ROWS * CELL_SIZE; // 752 — grid ends here, HUD starts here
   render(gameState, canvas, HUD_Y, inputHandler.getState().selectedGemId);
@@ -119,6 +130,9 @@ function gameLoop(timestamp) {
     requestAnimationFrame(gameLoop);
   } else {
     drawEndScreen(ctx);
+    const mazeLen = gameState.groundPath?.length ?? 0;
+    const fillPct = computeBoardFillPct(gameState.grid, gameState.groundPath);
+    showScoreModal(gameState, mazeLen, fillPct);
   }
 }
 
@@ -313,6 +327,10 @@ function updateBuild(dt, now) {
       case 'buyLife':
         _handleBuyLife();
         break;
+
+      case 'forfeit':
+        gameState.gameOver = true;
+        return;
 
       case 'restart':
         clearState();
@@ -595,6 +613,9 @@ function startDefendPhase() {
   groundPath = computeFullPath(gameState.grid);
   gameState.groundPath = groundPath; // expose to renderer for path highlight
 
+  // Reset per-wave kill counter for leaderboard tracking
+  gameState.finalWaveKills = 0;
+
   // Apply all aura bonuses (attack speed + damage) before wave begins
   applyAllAuraBuffs(gameState);
 
@@ -668,9 +689,12 @@ function _checkLevelUp(gem) {
 // ---------------------------------------------------------------------------
 
 function updateDefend(dt, now) {
-  // Check for actions (restart, upgrade, special gem combine/upgrade)
+  gameState.defendTime += dt;
+
+  // Check for actions (restart, upgrade, forfeit, special gem combine/upgrade)
   const action = inputHandler.consumeAction();
   if (action?.type === 'restart') { clearState(); location.reload(); return; }
+  if (action?.type === 'forfeit') { gameState.gameOver = true; return; }
   if (action?.type === 'upgrade') { handleUpgrade(); }
   if (action?.type === 'buyLife') { _handleBuyLife(); }
   if (action?.type === 'downgrade') { _handleDowngrade(); }
@@ -883,6 +907,7 @@ function updateDefend(dt, now) {
   for (const e of gameState.enemies) {
     if (e.dead) {
       gameState.gold += killGold;
+      gameState.finalWaveKills += 1;
     }
   }
   gameState.enemies = gameState.enemies.filter(e => !e.dead && !e.exited);

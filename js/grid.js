@@ -381,3 +381,32 @@ export function removeRock(grid, x, y) {
     }
   }
 }
+
+/**
+ * Computes the percentage of the board that is "used" — cells occupied by
+ * gems, rocks, or on the ground enemy path.
+ */
+export function computeBoardFillPct(grid, groundPath) {
+  const totalCells = GRID_COLS * GRID_ROWS;
+  let filled = 0;
+
+  // Count gem and rock cells
+  for (let y = 1; y <= GRID_ROWS; y++) {
+    for (let x = 1; x <= GRID_COLS; x++) {
+      const t = grid[y]?.[x]?.type;
+      if (t === 'gem' || t === 'rock') filled++;
+    }
+  }
+
+  // Count path cells (avoid double-counting cells that are already gem/rock)
+  if (groundPath) {
+    const pathSet = new Set(groundPath.map(p => `${p.x},${p.y}`));
+    for (const key of pathSet) {
+      const [px, py] = key.split(',').map(Number);
+      const t = grid[py]?.[px]?.type;
+      if (t !== 'gem' && t !== 'rock') filled++;
+    }
+  }
+
+  return (filled / totalCells) * 100;
+}
