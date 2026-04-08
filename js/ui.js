@@ -13,23 +13,14 @@ import { SPECIAL_GEM_DEFS, getSpecialGemLeveledStats, getSpecialVisual, findAvai
 export const PANEL_H = 78;
 export const PANEL_Y = GRID_ROWS * CELL_SIZE + HUD_HEIGHT; // 752 + 24 = 776 — below grid and HUD
 
-// 5 gem slots for gems placed this round
-export const GEM_SLOTS = [
-  { x: 8,   y: PANEL_Y + 3, w: 40, h: 40 },
-  { x: 52,  y: PANEL_Y + 3, w: 40, h: 40 },
-  { x: 96,  y: PANEL_Y + 3, w: 40, h: 40 },
-  { x: 140, y: PANEL_Y + 3, w: 40, h: 40 },
-  { x: 184, y: PANEL_Y + 3, w: 40, h: 40 },
-];
-
-// Action buttons — row 1
-export const BTN_COMBINE  = { x: 232, y: PANEL_Y + 9, w: 64,  h: 28 };
-export const BTN_COMBINE4 = { x: 300, y: PANEL_Y + 9, w: 64,  h: 28 };
-export const BTN_KEEP     = { x: 368, y: PANEL_Y + 9, w: 52,  h: 28 };
-export const BTN_REPICK   = { x: 424, y: PANEL_Y + 9, w: 80,  h: 28 };
-export const BTN_UPGRADE  = { x: 508, y: PANEL_Y + 9, w: 48,  h: 28 };
-export const BTN_REMOVE   = { x: 558, y: PANEL_Y + 9, w: 80,  h: 28 };
-export const BTN_DOWNGRADE = { x: 232, y: PANEL_Y + 9, w: 80, h: 28 }; // shares row 1 space; only visible during defend
+// Action buttons — row 1 (full width, no gem slots)
+export const BTN_COMBINE  = { x: 8,   y: PANEL_Y + 9, w: 72,  h: 28 };
+export const BTN_COMBINE4 = { x: 84,  y: PANEL_Y + 9, w: 84,  h: 28 };
+export const BTN_KEEP     = { x: 172, y: PANEL_Y + 9, w: 56,  h: 28 };
+export const BTN_REPICK   = { x: 232, y: PANEL_Y + 9, w: 90,  h: 28 };
+export const BTN_UPGRADE  = { x: 326, y: PANEL_Y + 9, w: 90,  h: 28 };
+export const BTN_REMOVE   = { x: 420, y: PANEL_Y + 9, w: 72,  h: 28 };
+export const BTN_DOWNGRADE = { x: 8,  y: PANEL_Y + 9, w: 100, h: 28 }; // defend phase only, row 1
 
 // Action buttons — row 2 (special gem actions + restart, separated from Remove)
 export const BTN_COMBINE_SPECIAL = { x: 232, y: PANEL_Y + 50, w: 108, h: 24 };
@@ -652,10 +643,8 @@ function drawTooltip(ctx, gem, state, inputState) {
   const boxH     = padding * 2 + lines * lineH;
   const boxY     = PANEL_Y - boxH - 4;
 
-  // Anchor tooltip above the hovered slot, clamped to canvas
-  const slotIdx = state.placedThisRound.indexOf(inputState.hoveredGemId);
-  const slotX = slotIdx >= 0 ? GEM_SLOTS[slotIdx].x : 8;
-  let boxX = slotX;
+  // Anchor tooltip at left edge, clamped to canvas
+  let boxX = 8;
   if (boxX + boxW > 672) boxX = 672 - boxW - 4;
 
   // Background
@@ -814,23 +803,7 @@ export function drawUI(ctx, state, inputState) {
     ctx.restore();
   }
 
-  // Build instruction overlay (bottom of grid, above HUD)
-  if (state.phase === 'build') {
-    const msg   = state.placedThisRound.length < 5
-      ? `Place gems (${state.placedThisRound.length}/5)`
-      : 'Keep or combine a gem';
-    const iy    = GRID_ROWS * CELL_SIZE - 14;
-    const icanW = GRID_ROWS * CELL_SIZE; // use grid width (672px)
-    ctx.save();
-    ctx.fillStyle = 'rgba(0,0,0,0.55)';
-    ctx.fillRect(0, iy - 4, 672, 18);
-    ctx.fillStyle = '#ccddee';
-    ctx.font = '11px Arial';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-    ctx.fillText(msg, 336, iy);
-    ctx.restore();
-  }
+  // Build instruction — no longer overlays the grid
 
   // -------------------------------------------------------------------------
   // Panel background + always-visible buttons (upgrade + restart)
@@ -897,73 +870,20 @@ export function drawUI(ctx, state, inputState) {
 
   ctx.restore();
 
-  // Build-only elements (slots, combine, keep)
+  // Build-only elements (buttons, instruction text)
   if (state.phase !== 'build') return;
 
   ctx.save();
 
-  // -------------------------------------------------------------------------
-  // Gem slots
-  // -------------------------------------------------------------------------
-  for (let i = 0; i < GEM_SLOTS.length; i++) {
-    const slot  = GEM_SLOTS[i];
-    const gemId = state.placedThisRound[i];
-    const cx    = slot.x + slot.w / 2;
-    const cy    = slot.y + slot.h / 2;
-
-    if (gemId !== undefined && gemId !== null) {
-      const gem    = state.gems[gemId];
-      if (gem) {
-        const visual = gem.type === 'special'
-          ? { color: getSpecialVisual(gem.specialType).color, shape: 'hexagon' }
-          : getVisual(gem.type, gem.quality);
-
-        // Slot background (slightly darkened gem colour via the fill)
-        ctx.fillStyle = visual.color;
-        ctx.globalAlpha = 0.25;
-        ctx.fillRect(slot.x, slot.y, slot.w, slot.h);
-        ctx.globalAlpha = 1;
-
-        // Gem shape
-        drawShapeInSlot(ctx, visual.shape, visual.color, cx, cy - 6, 14);
-
-        // Gem name label below the shape
-        const slotLabel = gem.type === 'special' ? gem.name : `${gem.quality} ${gem.type}`;
-        ctx.fillStyle = '#ffffff';
-        ctx.font      = '8px Arial';
-        ctx.textAlign    = 'center';
-        ctx.textBaseline = 'alphabetic';
-        ctx.fillText(slotLabel, cx, slot.y + slot.h - 2);
-
-        // Kept gem: gold border
-        if (gemId === state.keptGemId) {
-          ctx.strokeStyle = '#ffcc00';
-          ctx.lineWidth   = 2;
-          ctx.strokeRect(slot.x + 1, slot.y + 1, slot.w - 2, slot.h - 2);
-        }
-
-        // Selected gem: white border (drawn on top of kept border if both apply)
-        if (inputState && gemId === inputState.selectedGemId) {
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth   = 2;
-          ctx.strokeRect(slot.x + 1, slot.y + 1, slot.w - 2, slot.h - 2);
-        }
-      } else {
-        // gemId present but gem data missing — treat as empty
-        ctx.fillStyle = '#1a1a2a';
-        ctx.fillRect(slot.x, slot.y, slot.w, slot.h);
-      }
-    } else {
-      // Empty slot
-      ctx.fillStyle = '#1a1a2a';
-      ctx.fillRect(slot.x, slot.y, slot.w, slot.h);
-    }
-
-    // Slot border (always drawn)
-    ctx.strokeStyle = '#445566';
-    ctx.lineWidth   = 1;
-    ctx.strokeRect(slot.x + 0.5, slot.y + 0.5, slot.w - 1, slot.h - 1);
-  }
+  // Build instruction text — right side of row 1
+  const buildMsg = state.placedThisRound.length < 5
+    ? `Place gems (${state.placedThisRound.length}/5)`
+    : 'Keep or combine a gem';
+  ctx.fillStyle = '#ccddee';
+  ctx.font = '11px Arial';
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(buildMsg, 664, PANEL_Y + 23);
 
   // -------------------------------------------------------------------------
   // Action buttons

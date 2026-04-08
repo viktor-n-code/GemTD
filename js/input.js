@@ -2,7 +2,7 @@
 // Tracks mouse position, derives hover state, and queues pending actions.
 
 import { CELL_SIZE, GRID_COLS, GRID_ROWS } from './grid.js';
-import { GEM_SLOTS, BTN_COMBINE, BTN_COMBINE4, BTN_KEEP, BTN_UPGRADE, BTN_RESTART, BTN_REMOVE,
+import { BTN_COMBINE, BTN_COMBINE4, BTN_KEEP, BTN_UPGRADE, BTN_RESTART, BTN_REMOVE,
          BTN_COMBINE_SPECIAL, BTN_UPGRADE_GEM, BTN_BUY_LIFE, BTN_REPICK, BTN_DOWNGRADE,
          PANEL_Y } from './ui.js';
 import { findAvailableRecipes } from './specialgem.js';
@@ -104,19 +104,7 @@ export class InputHandler {
     this._placedThisRound = state.placedThisRound || [];
     this._grid            = state.grid || null;
     this._gems            = state.gems || {};
-    if (this.mouseY >= PANEL_Y) {
-      // Find which gem slot (if any) the cursor is over
-      let found = null;
-      for (let i = 0; i < GEM_SLOTS.length; i++) {
-        if (hitTest(GEM_SLOTS[i], this.mouseX, this.mouseY)) {
-          found = state.placedThisRound[i] ?? null;
-          break;
-        }
-      }
-      this.hoveredGemId = found;
-    } else {
-      this.hoveredGemId = null;
-    }
+    this.hoveredGemId = null;
   }
 
   /** Called by the gameloop when a new build phase begins. */
@@ -177,6 +165,11 @@ export class InputHandler {
       // -----------------------------------------------------------------------
       // Click inside the build panel
       // -----------------------------------------------------------------------
+      // Downgrade shares row 1 space — check first since it's only visible during defend
+      if (this._phase === 'defend' && hitTest(BTN_DOWNGRADE, x, y)) {
+        this.pendingAction = { type: 'downgrade' };
+        return;
+      }
       if (hitTest(BTN_COMBINE, x, y)) {
         this.pendingAction = { type: 'combine', selectedGemId: this.selectedGemId };
         return;
@@ -187,10 +180,6 @@ export class InputHandler {
       }
       if (hitTest(BTN_REPICK, x, y)) {
         this.pendingAction = { type: 'repick' };
-        return;
-      }
-      if (hitTest(BTN_DOWNGRADE, x, y)) {
-        this.pendingAction = { type: 'downgrade' };
         return;
       }
       if (hitTest(BTN_KEEP, x, y)) {
@@ -246,18 +235,6 @@ export class InputHandler {
           this.pendingAction = { type: 'upgradeSpecial', gemId: this.selectedGemId };
         }
         return;
-      }
-      // Check gem slots — derive gem ID directly from cached placedThisRound
-      // so clicks are never dependent on hoveredGemId being current.
-      for (let i = 0; i < GEM_SLOTS.length; i++) {
-        if (hitTest(GEM_SLOTS[i], x, y)) {
-          const gemId = this._placedThisRound[i] ?? null;
-          if (gemId != null) {
-            this.selectedGemId = gemId;
-            this.pendingAction = { type: 'selectGem', gemId };
-          }
-          return;
-        }
       }
     } else {
       // -----------------------------------------------------------------------
