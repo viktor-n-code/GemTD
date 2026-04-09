@@ -10,7 +10,7 @@ export const GEM_TYPES = {
       standard: { damageMin: 14,  damageMax: 25,  attackSpeed: 1.0,  range: 86,  effect: { type: 'poison', dps: 5,  slow: 0.20, duration: 5 } },
       flawless: { damageMin: 29,  damageMax: 38,  attackSpeed: 1.0,  range: 100, effect: { type: 'poison', dps: 8,  slow: 0.25, duration: 6 } },
       perfect:  { damageMin: 79,  damageMax: 90,  attackSpeed: 1.0,  range: 114, effect: { type: 'poison', dps: 16, slow: 0.30, duration: 8 } },
-      great:    { damageMin: 199, damageMax: 240, attackSpeed: 1.0,  range: 129, effect: { type: 'poison', dps: 32, slow: 0.35, duration: 10 } },
+      great:    { damageMin: 199, damageMax: 240, attackSpeed: 1.0,  range: 129, effect: { type: 'poison', dps: 40, slow: 0.35, duration: 300 } },
     },
   },
   Ruby: {
@@ -85,7 +85,7 @@ export const GEM_TYPES = {
       standard: { damageMin: 23, damageMax: 30,  attackSpeed: 2.80, range: 54, effect: null },
       flawless: { damageMin: 47, damageMax: 55,  attackSpeed: 2.85, range: 61, effect: null },
       perfect:  { damageMin: 94,  damageMax: 114, attackSpeed: 2.90, range: 79, effect: null },
-      great:    { damageMin: 279, damageMax: 280, attackSpeed: 2.95, range: 86, effect: null },
+      great:    { damageMin: 279, damageMax: 280, attackSpeed: 3.0, range: 101, effect: null },
     },
   },
   Opal: {

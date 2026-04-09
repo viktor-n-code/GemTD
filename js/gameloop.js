@@ -940,7 +940,31 @@ function updateDefend(dt, now) {
 // ---------------------------------------------------------------------------
 
 function findTarget(gem) {
-  // Prio 1: keep attacking current target if still alive and in range
+  const stats = getGemStats(gem);
+  const effectType = stats.effect?.type;
+
+  // Greedy targeting for poison gems: prefer unpoisoned or weakly-poisoned enemies
+  if (effectType === 'poison' || effectType === 'lucky_jade') {
+    const gemDps = stats.effect.dps;
+    let unpoisoned = null; // no DoT at all
+    let weakPoison = null; // DoT weaker than ours (we can override)
+    let fallback   = null; // any enemy in range
+
+    for (const e of gameState.enemies) {
+      if (e.dead || e.exited) continue;
+      if (!isInRange(gem, e)) continue;
+      if (e.poisonDps === 0 || e.poisonUntil <= performance.now()) {
+        if (!unpoisoned || e.hp < unpoisoned.hp) unpoisoned = e;
+      } else if (e.poisonDps < gemDps) {
+        if (!weakPoison || e.hp < weakPoison.hp) weakPoison = e;
+      }
+      if (!fallback || e.hp < fallback.hp) fallback = e;
+    }
+
+    return unpoisoned || weakPoison || fallback;
+  }
+
+  // Standard targeting: keep current target, then lowest HP
   if (gem.lastTargetId) {
     const current = gameState.enemies.find(
       e => e.id === gem.lastTargetId && !e.dead && !e.exited
@@ -948,7 +972,6 @@ function findTarget(gem) {
     if (current && isInRange(gem, current)) return current;
   }
 
-  // Prio 2: lowest HP enemy in range
   let best = null;
   for (const e of gameState.enemies) {
     if (e.dead || e.exited) continue;

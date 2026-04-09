@@ -226,7 +226,7 @@ function _buildEffectHTML(effect, baseEffect) {
         _row('Slow', `-${Math.round(effect.slow * 100)}% for ${effect.duration}s`) +
         _row(`${(effect.critChance * 100).toFixed(1)}% Crit`, `×${effect.critMult.toFixed(1)} damage${_lvlNote(effect.critMult, b.critMult, d => d.toFixed(1) + '×')}`) +
         _row(`${(effect.stunChance * 100).toFixed(1)}% Stun`, `${effect.stunDuration}s`) +
-        _row('5% Gold', `+floor(wave/2) gold`)
+        _row(`${(effect.goldChance * 100).toFixed(1)}% Gold`, `+floor(wave/2) gold`)
       );
     case 'splash_slow':
       return wrap(

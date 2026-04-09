@@ -558,6 +558,7 @@ export function getSpecialGemLeveledStats(specialType, level) {
         effect.dps        = effect.dps        + bonus;
         effect.critMult   = effect.critMult   + bonus * 0.1;
         effect.stunChance = effect.stunChance + bonus * 0.001;
+        effect.goldChance = effect.goldChance + bonus * 0.001;
         break;
       case 'multi':
         // No target scaling; gains attackSpeed and range instead (below)
@@ -570,7 +571,7 @@ export function getSpecialGemLeveledStats(specialType, level) {
         break;
       case 'air_crystal':
         effect.armorAura = effect.armorAura + bonus * 0.2;
-        effect.auraRange = effect.auraRange + bonus * 1.5;
+        effect.auraRange = effect.auraRange + bonus * 7.5; // 0.5 tiles/lvl
         break;
       case 'crit_ground':
         effect.critMult   = effect.critMult   + bonus * 0.1;
@@ -610,8 +611,9 @@ export function getSpecialGemLeveledStats(specialType, level) {
     }
   }
 
-  // All special gems gain +0.1 tile range per level
-  const range = base.range + bonus * 1.5;
+  // All special gems gain +0.1 tile range per level; air_crystal gets +0.5t/lvl
+  const rangePerLvl = effect?.type === 'air_crystal' ? 7.5 : 1.5;
+  const range = base.range + bonus * rangePerLvl;
   // Malachite chain gains attack speed per level
   const attackSpeed = effect?.type === 'multi'
     ? base.attackSpeed + bonus * 0.02
