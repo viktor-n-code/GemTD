@@ -20,6 +20,7 @@ export function initTabs() {
       document.getElementById('game-wrapper').classList.toggle('hidden', target !== 'game');
       document.getElementById('leaderboard-view').classList.toggle('hidden', target !== 'leaderboard');
       document.getElementById('comments-view').classList.toggle('hidden', target !== 'comments');
+      document.getElementById('patchnotes-view').classList.toggle('hidden', target !== 'patchnotes');
 
       window.gameTabActive = (target === 'game');
 
