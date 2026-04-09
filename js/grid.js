@@ -410,3 +410,24 @@ export function computeBoardFillPct(grid, groundPath) {
 
   return (filled / totalCells) * 100;
 }
+
+/**
+ * Returns true if the player can still place at least one gem, or has rocks
+ * that can be removed to free space. Returns false only when the board is
+ * truly full (no empty 2x2 blocks and no rocks) — triggering a Win.
+ */
+export function hasValidPlacement(grid) {
+  // If any rock exists, player can remove it to potentially free space
+  for (let y = 1; y <= GRID_ROWS; y++) {
+    for (let x = 1; x <= GRID_COLS; x++) {
+      if (grid[y]?.[x]?.type === 'rock') return true;
+    }
+  }
+  // Check if any valid 2x2 placement exists
+  for (let y = 1; y + 1 <= GRID_ROWS; y++) {
+    for (let x = 1; x + 1 <= GRID_COLS; x++) {
+      if (validatePlacement(grid, x, y)) return true;
+    }
+  }
+  return false;
+}

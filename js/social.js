@@ -45,19 +45,23 @@ async function refreshLeaderboard() {
 
   let html = `<table class="leaderboard-table">
     <thead><tr>
-      <th>#</th><th>Name</th><th>Wave</th><th>Kills</th><th>Time</th><th>Maze</th><th>Fill%</th>
+      <th>#</th><th>Name</th><th>Wave</th><th>Result</th><th>Kills</th><th>Time</th><th>Maze</th><th>Fill%</th><th>Ver</th>
     </tr></thead><tbody>`;
 
+  const resultLabels = { win: 'Win', lose: 'Lose', forfeit: 'FF' };
   scores.forEach((s, i) => {
     const time = formatTime(s.defendTime || 0);
+    const result = resultLabels[s.endReason] || '—';
     html += `<tr>
       <td>${i + 1}</td>
       <td>${escapeHtml(s.name || 'Anonymous')}</td>
       <td>${s.wave}</td>
+      <td>${result}</td>
       <td>${s.finalWaveKills ?? 0}</td>
       <td>${time}</td>
       <td>${s.mazeLength ?? 0}</td>
       <td>${(s.boardFillPct ?? 0).toFixed(1)}%</td>
+      <td>${escapeHtml(s.version || '—')}</td>
     </tr>`;
   });
 
@@ -117,10 +121,12 @@ export function initCommentForm() {
 // Score submission modal
 // ---------------------------------------------------------------------------
 
-export function showScoreModal(gameState, mazeLength, boardFillPct) {
+export function showScoreModal(gameState, mazeLength, boardFillPct, endReason = 'lose') {
   const modal = document.getElementById('score-modal');
   if (!modal) return;
 
+  const resultLabels = { win: 'Victory', lose: 'Defeat', forfeit: 'Forfeit' };
+  document.getElementById('score-result').textContent = resultLabels[endReason] || 'Game Over';
   document.getElementById('score-wave').textContent = gameState.wave;
   document.getElementById('score-kills').textContent = gameState.finalWaveKills ?? 0;
   document.getElementById('score-time').textContent = formatTime(gameState.defendTime ?? 0);
@@ -148,6 +154,7 @@ export function showScoreModal(gameState, mazeLength, boardFillPct) {
     submitBtn.disabled = true;
     submitBtn.textContent = 'Submitting...';
 
+    const version = document.getElementById('panel-version')?.textContent || 'unknown';
     await submitScore({
       name,
       wave: gameState.wave,
@@ -155,6 +162,8 @@ export function showScoreModal(gameState, mazeLength, boardFillPct) {
       mazeLength,
       boardFillPct,
       defendTime: gameState.defendTime ?? 0,
+      endReason,
+      version,
     });
 
     cleanup();

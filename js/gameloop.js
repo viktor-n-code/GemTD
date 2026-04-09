@@ -5,7 +5,8 @@
 
 import { createInitialState, saveState, loadState, clearState } from './state.js';
 import { createGrid, validatePlacement, placeGem, placeRock, removeRock, findPath,
-         GRID_COLS, GRID_ROWS, CELL_SIZE, ENTRY, CHECKPOINTS, EXIT, computeBoardFillPct } from './grid.js';
+         GRID_COLS, GRID_ROWS, CELL_SIZE, ENTRY, CHECKPOINTS, EXIT, computeBoardFillPct,
+         hasValidPlacement } from './grid.js';
 import { initFirebase } from './firebase.js';
 import { initTabs, initCommentForm, showScoreModal } from './social.js';
 import { rollGem, getStats, getLeveledStats, getVisual, GEM_CHANCE_LEVELS, QUALITY_LEVELS } from './gem.js';
@@ -132,7 +133,7 @@ function gameLoop(timestamp) {
     drawEndScreen(ctx);
     const mazeLen = gameState.groundPath?.length ?? 0;
     const fillPct = computeBoardFillPct(gameState.grid, gameState.groundPath);
-    showScoreModal(gameState, mazeLen, fillPct);
+    showScoreModal(gameState, mazeLen, fillPct, gameState.endReason || 'lose');
   }
 }
 
@@ -156,6 +157,13 @@ function handleUpgrade() {
 // ---------------------------------------------------------------------------
 
 function updateBuild(dt, now) {
+  // --- Win detection: board is full, no rocks to remove ---
+  if (gameState.placedThisRound.length === 0 && !hasValidPlacement(gameState.grid)) {
+    gameState.endReason = 'win';
+    gameState.gameOver = true;
+    return;
+  }
+
   // --- Placement ---
   const placement = inputHandler.consumePlacement();
   if (placement && gameState.placedThisRound.length < 5) {
@@ -329,6 +337,7 @@ function updateBuild(dt, now) {
         break;
 
       case 'forfeit':
+        gameState.endReason = 'forfeit';
         gameState.gameOver = true;
         return;
 
@@ -694,7 +703,7 @@ function updateDefend(dt, now) {
   // Check for actions (restart, upgrade, forfeit, special gem combine/upgrade)
   const action = inputHandler.consumeAction();
   if (action?.type === 'restart') { clearState(); location.reload(); return; }
-  if (action?.type === 'forfeit') { gameState.gameOver = true; return; }
+  if (action?.type === 'forfeit') { gameState.endReason = 'forfeit'; gameState.gameOver = true; return; }
   if (action?.type === 'upgrade') { handleUpgrade(); }
   if (action?.type === 'buyLife') { _handleBuyLife(); }
   if (action?.type === 'downgrade') { _handleDowngrade(); }
@@ -728,6 +737,7 @@ function updateDefend(dt, now) {
     if (e.exited) {
       gameState.lives -= 1;
       if (gameState.lives <= 0) {
+        gameState.endReason = 'lose';
         gameState.gameOver = true;
         return;
       }
