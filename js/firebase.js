@@ -44,7 +44,7 @@ export async function getScores(limit = 50) {
     const snap = await db.ref('scores').limitToLast(limit).once('value');
     console.log('getScores: snap exists:', snap.exists(), 'numChildren:', snap.numChildren());
     const scores = [];
-    snap.forEach(child => scores.push({ id: child.key, ...child.val() }));
+    snap.forEach(child => { scores.push({ id: child.key, ...child.val() }); });
   // Sort: wave DESC, finalWaveKills DESC, defendTime ASC, mazeLength DESC, boardFillPct DESC
   scores.sort((a, b) => {
     if (b.wave !== a.wave) return b.wave - a.wave;
@@ -80,7 +80,7 @@ export async function getComments(limit = 100) {
     const snap = await db.ref('comments').limitToLast(limit).once('value');
     console.log('getComments: snap exists:', snap.exists(), 'numChildren:', snap.numChildren());
     const comments = [];
-    snap.forEach(child => comments.push({ id: child.key, ...child.val() }));
+    snap.forEach(child => { comments.push({ id: child.key, ...child.val() }); });
     comments.sort((a, b) => b.timestamp - a.timestamp);
     return comments;
   } catch (e) {
