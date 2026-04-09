@@ -3,15 +3,14 @@
 let db = null;
 
 export function initFirebase() {
-  // Config — replace with actual Firebase project config before deploying
   const config = {
-    apiKey: 'YOUR_API_KEY',
-    authDomain: 'YOUR_PROJECT.firebaseapp.com',
-    databaseURL: 'https://YOUR_PROJECT-default-rtdb.firebaseio.com',
-    projectId: 'YOUR_PROJECT',
-    storageBucket: 'YOUR_PROJECT.appspot.com',
-    messagingSenderId: '000000000000',
-    appId: '1:000000000000:web:000000000000',
+    apiKey: 'AIzaSyDoLt16hmVy3b_uzbNHugwvdE_eFDqABX0',
+    authDomain: 'gemtd-f925a.firebaseapp.com',
+    databaseURL: 'https://gemtd-f925a-default-rtdb.europe-west1.firebasedatabase.app',
+    projectId: 'gemtd-f925a',
+    storageBucket: 'gemtd-f925a.firebasestorage.app',
+    messagingSenderId: '338773200228',
+    appId: '1:338773200228:web:2c0379b38f2b2889e13e71',
   };
 
   if (typeof firebase === 'undefined') {
