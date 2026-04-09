@@ -729,8 +729,14 @@ function updateDefend(dt, now) {
     if (poisonResult.damage > 0 && e.poisonGemId) {
       const pg = gameState.gems[e.poisonGemId];
       if (pg) {
-        pg.totalDamage  += poisonResult.damage;
-        pg.roundDamage  += poisonResult.damage;
+        // Apply weakness modifier to poison DoT damage
+        const weakMultP = getGemAttackType(pg) === e.weakness ? 1.75 : 0.90;
+        const adjDmg = poisonResult.damage * weakMultP;
+        // Adjust the HP difference (tickPoison already subtracted base damage)
+        e.hp -= adjDmg - poisonResult.damage;
+        if (e.hp <= 0 && !e.dead) { e.dead = true; poisonResult.killed = true; }
+        pg.totalDamage  += adjDmg;
+        pg.roundDamage  += adjDmg;
         if (poisonResult.killed) {
           pg.kills++;
           _checkLevelUp(pg);
