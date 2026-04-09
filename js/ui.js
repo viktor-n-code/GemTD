@@ -2,6 +2,7 @@
 // Draws the semi-transparent panel at the bottom of the canvas during 'build' phase.
 
 import { getVisual, getStats, getLeveledStats, GEM_CHANCE_LEVELS, GEM_TYPES, QUALITY_LEVELS } from './gem.js';
+import { getGemAttackType } from './combat.js';
 import { GRID_ROWS, CELL_SIZE } from './grid.js';
 import { HUD_HEIGHT } from './renderer.js';
 import { SPECIAL_GEM_DEFS, getSpecialGemLeveledStats, getSpecialVisual, findAvailableRecipes } from './specialgem.js';
@@ -348,6 +349,7 @@ function _buildSpecialGemHTML(gem, state) {
   let html = `
     <div class="info-section-title">Selected Gem</div>
     <div class="info-gem-name">${gem.name}${levelLabel}</div>
+    <div class="info-row"><span class="info-label">Attack</span><span class="info-value">${getGemAttackType(gem)}</span></div>
     <div class="info-row"><span class="info-label">Damage</span><span class="info-value">${dmgHTML}${dmgAuraNote}</span></div>
     <div class="info-row"><span class="info-label">Speed</span><span class="info-value">${spdHTML}</span></div>
     <div class="info-row"><span class="info-label">Range</span><span class="info-value">${(ls.range / 15).toFixed(1)} tiles${rangeLvlNote}</span></div>`;
@@ -424,6 +426,10 @@ function _buildGemHTML(gem, state) {
   let html = `
     <div class="info-section-title">Selected Gem</div>
     <div class="info-gem-name">${gem.name || gem.quality + ' ' + gem.type}${levelLabel}</div>
+    <div class="info-row">
+      <span class="info-label">Attack</span>
+      <span class="info-value">${getGemAttackType(gem)}</span>
+    </div>
     <div class="info-row">
       <span class="info-label">Damage</span>
       <span class="info-value">${dmgHTML}</span>
@@ -504,6 +510,10 @@ function _buildEnemyHTML(enemy, state) {
     <div class="info-row">
       <span class="info-label">Speed</span>
       <span class="info-value">${_enemySpeedHTML(enemy, now)}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Weakness</span>
+      <span class="info-value">${enemy.weakness ?? '—'} <span class="info-level-note">(+75% ${enemy.weakness} dmg, −10% other)</span></span>
     </div>`;
 
   const tags = [];

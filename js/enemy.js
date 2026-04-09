@@ -101,8 +101,17 @@ export const GOLD_PER_WAVE = [
  * Waves 1–36 use the hand-designed ENEMY_STATS table.
  * Waves 37+ use a scaling formula based on the design doc.
  */
+const WEAKNESS_ORDER = ['Amethyst','Aquamarine','Diamond','Emerald','Opal','Ruby','Sapphire','Topaz'];
+
+function getWeakness(wave, flying) {
+  return flying ? 'Amethyst' : WEAKNESS_ORDER[(wave - 1) % WEAKNESS_ORDER.length];
+}
+
 export function getWaveStats(wave) {
-  if (wave <= ENEMY_STATS.length) return ENEMY_STATS[wave - 1];
+  if (wave <= ENEMY_STATS.length) {
+    const s = ENEMY_STATS[wave - 1];
+    return { ...s, weakness: getWeakness(wave, s.flying) };
+  }
 
   const flying      = wave % 4 === 0;
   const armor       = Math.min(10 + Math.floor((wave - 1) / 4), 20);
@@ -111,8 +120,9 @@ export function getWaveStats(wave) {
   const baseHp      = 45000 * (1 + (wave - 30) * 0.10);
   const hp          = Math.round(flying ? baseHp / 3 : baseHp);
   const stunImmune  = wave % 50 === 0;
+  const weakness    = getWeakness(wave, flying);
 
-  return { hp, armor, speed, minSpeed, flying, stunImmune };
+  return { hp, armor, speed, minSpeed, flying, stunImmune, weakness };
 }
 
 /**
@@ -151,6 +161,7 @@ export function spawnEnemy(waveNumber, path) {
     speed: stats.speed * SPEED_SCALE,
     minSpeed: stats.minSpeed * SPEED_SCALE,
     flying: stats.flying,
+    weakness: stats.weakness,
     x: entryPixelX,
     y: entryPixelY,
     path: stats.flying ? [...CHECKPOINTS, EXIT] : path,

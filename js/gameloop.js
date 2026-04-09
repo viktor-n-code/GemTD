@@ -13,7 +13,7 @@ import { rollGem, getStats, getLeveledStats, getVisual, GEM_CHANCE_LEVELS, QUALI
 import { SPECIAL_GEM_DEFS, getSpecialGemLeveledStats, getSpecialVisual, findAvailableRecipes } from './specialgem.js';
 import { moveEnemy, getWaveGold } from './enemy.js';
 import { WaveSpawner } from './wave.js';
-import { attackEnemy, canAttack, isInRange, tickPoison, getGemStats, applyEffect } from './combat.js';
+import { attackEnemy, canAttack, isInRange, tickPoison, getGemStats, getGemAttackType, applyEffect } from './combat.js';
 import { render, HUD_HEIGHT } from './renderer.js';
 import { InputHandler } from './input.js';
 import { drawUI, updateInfoPanel, PANEL_H } from './ui.js';
@@ -872,7 +872,8 @@ function updateDefend(dt, now) {
       const dx = enemy.x - gemCx;
       const dy = enemy.y - gemCy;
       if (Math.sqrt(dx * dx + dy * dy) > auraRadiusPx) continue;
-      const dmg = sStats.effect.auraDps * dt;
+      const weakMult1 = getGemAttackType(gem) === enemy.weakness ? 1.75 : 0.90;
+      const dmg = sStats.effect.auraDps * dt * weakMult1;
       enemy.hp       -= dmg;
       gem.totalDamage += dmg;
       gem.roundDamage += dmg;
@@ -897,8 +898,9 @@ function updateDefend(dt, now) {
       const dx = enemy.x - gemCx;
       const dy = enemy.y - gemCy;
       if (Math.sqrt(dx * dx + dy * dy) > auraRadiusPx) continue;
-      // Burn DPS
-      const dmg = sStats.effect.auraDps * dt;
+      // Burn DPS (with weakness modifier)
+      const weakMult2 = getGemAttackType(gem) === enemy.weakness ? 1.75 : 0.90;
+      const dmg = sStats.effect.auraDps * dt * weakMult2;
       enemy.hp        -= dmg;
       gem.totalDamage += dmg;
       gem.roundDamage += dmg;

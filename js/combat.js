@@ -5,7 +5,7 @@
 
 import { CELL_SIZE } from './grid.js';
 import { getLeveledStats, getStats } from './gem.js';
-import { getSpecialGemLeveledStats } from './specialgem.js';
+import { getSpecialGemLeveledStats, SPECIAL_GEM_DEFS } from './specialgem.js';
 
 // ---------------------------------------------------------------------------
 // getGemStats — unified stat lookup for regular and special gems
@@ -21,6 +21,11 @@ import { getSpecialGemLeveledStats } from './specialgem.js';
 export function getGemStats(gem) {
   if (gem.type === 'special') return getSpecialGemLeveledStats(gem.specialType, gem.level);
   return getLeveledStats(gem.type, gem.quality, gem.level);
+}
+
+export function getGemAttackType(gem) {
+  if (gem.type === 'special') return SPECIAL_GEM_DEFS.find(d => d.id === gem.specialType)?.attackType;
+  return gem.type;
 }
 
 // ---------------------------------------------------------------------------
@@ -232,7 +237,13 @@ export function attackEnemy(gem, enemy, enemies, now, wave) {
   const totalDmgBonus = (gem.dmgBonus ?? 0) + (gem.dmgBonus2 ?? 0);
   if (totalDmgBonus > 0) damage = Math.round(damage * (1 + totalDmgBonus * 0.01));
 
-  // 1d. Crit chance — Diamond, Lucky Asian Jade, Pink Diamond, or Gold
+  // 1d. Weakness/resistance — matching attack type = ×1.75, non-matching = ×0.90
+  const attackType = gem.type === 'special'
+    ? SPECIAL_GEM_DEFS.find(d => d.id === gem.specialType)?.attackType
+    : gem.type;
+  damage = Math.round(damage * (attackType === enemy.weakness ? 1.75 : 0.90));
+
+  // 1e. Crit chance — Diamond, Lucky Asian Jade, Pink Diamond, or Gold
   let isCrit = false;
   if (stats.effect?.type === 'crit' && Math.random() < stats.effect.chance) {
     damage *= stats.effect.multiplier;

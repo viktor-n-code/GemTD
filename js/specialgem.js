@@ -43,6 +43,7 @@ export const SPECIAL_GEM_DEFS = [
   {
     id: 'jade',
     name: 'Jade',
+    attackType: 'Aquamarine',
     color: '#3aaa5a',
     ingredients: [
       { type: 'Emerald',  quality: 'standard' },
@@ -59,6 +60,7 @@ export const SPECIAL_GEM_DEFS = [
   {
     id: 'asian_jade',
     name: 'Asian Jade',
+    attackType: 'Aquamarine',
     color: '#2a9a4a',
     stats: {
       damageMin: 49, damageMax: 50, attackSpeed: 2.0, range: 114,
@@ -70,6 +72,7 @@ export const SPECIAL_GEM_DEFS = [
   {
     id: 'lucky_asian_jade',
     name: 'Lucky Asian Jade',
+    attackType: 'Aquamarine',
     color: '#1a8a3a',
     stats: {
       damageMin: 54, damageMax: 55, attackSpeed: 2.85, range: 122,
@@ -91,6 +94,7 @@ export const SPECIAL_GEM_DEFS = [
   {
     id: 'malachite',
     name: 'Malachite',
+    attackType: 'Emerald',
     color: '#4cae5c',
     ingredients: [
       { type: 'Opal',       quality: 'chipped' },
@@ -107,6 +111,7 @@ export const SPECIAL_GEM_DEFS = [
   {
     id: 'vivid_malachite',
     name: 'Vivid Malachite',
+    attackType: 'Emerald',
     color: '#5abe6c',
     stats: {
       damageMin: 10, damageMax: 11, attackSpeed: 2.86, range: 114,
@@ -118,6 +123,7 @@ export const SPECIAL_GEM_DEFS = [
   {
     id: 'mighty_malachite',
     name: 'Mighty Malachite',
+    attackType: 'Emerald',
     color: '#6ece7c',
     stats: {
       damageMin: 44, damageMax: 45, attackSpeed: 2.86, range: 114,
@@ -131,6 +137,7 @@ export const SPECIAL_GEM_DEFS = [
   {
     id: 'silver',
     name: 'Silver',
+    attackType: 'Sapphire',
     color: '#aaaacc',
     ingredients: [
       { type: 'Topaz',    quality: 'chipped' },
@@ -147,6 +154,7 @@ export const SPECIAL_GEM_DEFS = [
   {
     id: 'sterling_silver',
     name: 'Sterling Silver',
+    attackType: 'Sapphire',
     color: '#bbbbdd',
     stats: {
       damageMin: 39, damageMax: 40, attackSpeed: 1.0, range: 93,
@@ -158,6 +166,7 @@ export const SPECIAL_GEM_DEFS = [
   {
     id: 'silver_knight',
     name: 'Silver Knight',
+    attackType: 'Sapphire',
     color: '#ccccee',
     stats: {
       damageMin: 149, damageMax: 150, attackSpeed: 1.0, range: 107,
@@ -171,6 +180,7 @@ export const SPECIAL_GEM_DEFS = [
   {
     id: 'star_ruby',
     name: 'Star Ruby',
+    attackType: 'Ruby',
     color: '#ff2244',
     ingredients: [
       { type: 'Ruby',     quality: 'flawed'  },
@@ -187,6 +197,7 @@ export const SPECIAL_GEM_DEFS = [
   {
     id: 'blazing_star_ruby',
     name: 'Blazing Star Ruby',
+    attackType: 'Ruby',
     color: '#ff5522',
     stats: {
       damageMin: 15, damageMax: 16, attackSpeed: 4.0, range: 44,
@@ -198,6 +209,7 @@ export const SPECIAL_GEM_DEFS = [
   {
     id: 'grand_star_ruby',
     name: 'Grand Star Ruby',
+    attackType: 'Ruby',
     color: '#ff8800',
     stats: {
       damageMin: 24, damageMax: 25, attackSpeed: 4.0, range: 52,
@@ -211,6 +223,7 @@ export const SPECIAL_GEM_DEFS = [
   {
     id: 'red_crystal',
     name: 'Red Crystal',
+    attackType: 'Amethyst',
     color: '#e84040',
     ingredients: [
       { type: 'Emerald',  quality: 'flawless' },
@@ -227,6 +240,7 @@ export const SPECIAL_GEM_DEFS = [
   {
     id: 'red_crystal_facet',
     name: 'Red Crystal Facet',
+    attackType: 'Amethyst',
     color: '#d03030',
     stats: {
       damageMin: 74, damageMax: 100, attackSpeed: 1.25, range: 200,
@@ -238,6 +252,7 @@ export const SPECIAL_GEM_DEFS = [
   {
     id: 'rose_quartz_crystal',
     name: 'Rose Quartz Crystal',
+    attackType: 'Amethyst',
     color: '#ff8099',
     stats: {
       damageMin: 99, damageMax: 125, attackSpeed: 1.25, range: 215,
@@ -251,6 +266,7 @@ export const SPECIAL_GEM_DEFS = [
   {
     id: 'pink_diamond',
     name: 'Pink Diamond',
+    attackType: 'Diamond',
     color: '#ff88cc',
     ingredients: [
       { type: 'Diamond', quality: 'perfect'  },
@@ -267,6 +283,7 @@ export const SPECIAL_GEM_DEFS = [
   {
     id: 'great_pink_diamond',
     name: 'Great Pink Diamond',
+    attackType: 'Diamond',
     color: '#ff55aa',
     stats: {
       damageMin: 174, damageMax: 195, attackSpeed: 1.538, range: 122,
@@ -280,6 +297,7 @@ export const SPECIAL_GEM_DEFS = [
   {
     id: 'gold',
     name: 'Gold',
+    attackType: 'Amethyst',
     color: '#f5c518',
     ingredients: [
       { type: 'Amethyst', quality: 'perfect'  },
@@ -296,6 +314,7 @@ export const SPECIAL_GEM_DEFS = [
   {
     id: 'egyptian_gold',
     name: 'Egyptian Gold',
+    attackType: 'Amethyst',
     color: '#e6a800',
     stats: {
       damageMin: 159, damageMax: 200, attackSpeed: 1.429, range: 114,
@@ -309,6 +328,7 @@ export const SPECIAL_GEM_DEFS = [
   {
     id: 'paraiba_tourmaline',
     name: 'Paraiba Tourmaline',
+    attackType: 'Aquamarine',
     color: '#4fd1e8',
     ingredients: [
       { type: 'Aquamarine', quality: 'perfect'  },
@@ -326,6 +346,7 @@ export const SPECIAL_GEM_DEFS = [
   {
     id: 'paraiba_tourmaline_facet',
     name: 'Paraiba Tourmaline Facet',
+    attackType: 'Aquamarine',
     color: '#3ab8cf',
     stats: {
       damageMin: 125, damageMax: 204, attackSpeed: 1.667, range: 129,
@@ -339,6 +360,7 @@ export const SPECIAL_GEM_DEFS = [
   {
     id: 'black_opal',
     name: 'Black Opal',
+    attackType: 'Opal',
     color: '#2a1a3e',
     ingredients: [
       { type: 'Opal',       quality: 'perfect'  },
@@ -355,6 +377,7 @@ export const SPECIAL_GEM_DEFS = [
   {
     id: 'mystic_black_opal',
     name: 'Mystic Black Opal',
+    attackType: 'Opal',
     color: '#3d2a5e',
     stats: {
       damageMin: 49, damageMax: 50, attackSpeed: 1.0, range: 143,
@@ -368,6 +391,7 @@ export const SPECIAL_GEM_DEFS = [
   {
     id: 'dark_emerald',
     name: 'Dark Emerald',
+    attackType: 'Emerald',
     color: '#1a5c2a',
     ingredients: [
       { type: 'Emerald',  quality: 'perfect'  },
@@ -384,6 +408,7 @@ export const SPECIAL_GEM_DEFS = [
   {
     id: 'enchanted_emerald',
     name: 'Enchanted Emerald',
+    attackType: 'Emerald',
     color: '#2a7a3a',
     stats: {
       damageMin: 98, damageMax: 200, attackSpeed: 1.429, range: 100,
@@ -397,6 +422,7 @@ export const SPECIAL_GEM_DEFS = [
   {
     id: 'yellow_sapphire',
     name: 'Yellow Sapphire',
+    attackType: 'Sapphire',
     color: '#ffe066',
     ingredients: [
       { type: 'Sapphire', quality: 'perfect'  },
@@ -413,6 +439,7 @@ export const SPECIAL_GEM_DEFS = [
   {
     id: 'star_yellow_sapphire',
     name: 'Star Yellow Sapphire',
+    attackType: 'Sapphire',
     color: '#ffd700',
     stats: {
       damageMin: 99, damageMax: 100, attackSpeed: 1.0, range: 114,
@@ -427,6 +454,7 @@ export const SPECIAL_GEM_DEFS = [
   {
     id: 'blood_stone',
     name: 'Blood Stone',
+    attackType: 'Ruby',
     color: '#cc2222',
     ingredients: [
       { type: 'Ruby',       quality: 'perfect'  },
@@ -443,6 +471,7 @@ export const SPECIAL_GEM_DEFS = [
   {
     id: 'ancient_blood_stone',
     name: 'Ancient Blood Stone',
+    attackType: 'Ruby',
     color: '#880000',
     stats: {
       damageMin: 159, damageMax: 240, attackSpeed: 1.333, range: 100,
@@ -457,6 +486,7 @@ export const SPECIAL_GEM_DEFS = [
   {
     id: 'uranium_235',
     name: 'Uranium 235',
+    attackType: 'Topaz',
     color: '#aaff44',
     ingredients: [
       { type: 'Topaz',    quality: 'perfect'  },
@@ -473,6 +503,7 @@ export const SPECIAL_GEM_DEFS = [
   {
     id: 'uranium_238',
     name: 'Uranium 238',
+    attackType: 'Topaz',
     color: '#66cc00',
     stats: {
       damageMin: 64, damageMax: 65, attackSpeed: 4.0, range: 86,
