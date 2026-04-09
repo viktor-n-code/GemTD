@@ -45,10 +45,10 @@ async function refreshLeaderboard() {
 
   let html = `<table class="leaderboard-table">
     <thead><tr>
-      <th>#</th><th>Name</th><th>Wave</th><th>Result</th><th>Kills</th><th>Time</th><th>Maze</th><th>Fill%</th><th>Ver</th>
+      <th>#</th><th>Name</th><th>Wave</th><th>Result</th><th>Kills (Final wave)</th><th>Time</th><th>Maze</th><th>Fill%</th><th>Ver</th>
     </tr></thead><tbody>`;
 
-  const resultLabels = { win: 'Win', lose: 'Lose', forfeit: 'FF' };
+  const resultLabels = { win: 'Win', lose: 'Lose', forfeit: 'Forfeit' };
   scores.forEach((s, i) => {
     const time = formatTime(s.defendTime || 0);
     const result = resultLabels[s.endReason] || '—';
