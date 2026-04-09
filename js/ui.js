@@ -626,7 +626,8 @@ export function updateLeftPanel(state) {
     waveEl.innerHTML = `
       <div style="color:#00d4ff;font-size:10px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">${phaseLabel}</div>
       <div style="color:#ffffff;font-size:20px;font-weight:bold">Wave ${state.wave}</div>
-      ${state.phase === 'defend' ? `<div class="hud-row"><span class="hud-label">Enemies left</span><span class="hud-value">${enemiesLeft}</span></div>` : ''}`;
+      ${state.phase === 'defend' ? `<div class="hud-row"><span class="hud-label">Enemies left</span> <span class="hud-value">${enemiesLeft}</span></div>
+      <div class="hud-row"><span class="hud-label">Kills this wave</span> <span class="hud-value">${state.finalWaveKills ?? 0}</span></div>` : ''}`;
   }
 
   // HUD info
