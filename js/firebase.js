@@ -20,22 +20,31 @@ export function initFirebase() {
 
   if (!firebase.apps.length) firebase.initializeApp(config);
   db = firebase.database();
+  console.log('Firebase initialized, db:', db ? 'OK' : 'NULL');
   return true;
 }
 
 export async function submitScore(scoreData) {
-  if (!db) return null;
-  const ref = db.ref('scores').push();
-  await ref.set({ ...scoreData, timestamp: Date.now() });
-  return ref.key;
+  if (!db) { console.warn('submitScore: db is null'); return null; }
+  try {
+    const ref = db.ref('scores').push();
+    console.log('submitScore: writing to', ref.key, scoreData);
+    await ref.set({ ...scoreData, timestamp: Date.now() });
+    console.log('submitScore: success');
+    return ref.key;
+  } catch (e) {
+    console.error('submitScore failed:', e);
+    return null;
+  }
 }
 
 export async function getScores(limit = 50) {
-  if (!db) return [];
-  // Read all scores and sort client-side (avoids needing .indexOn rules)
-  const snap = await db.ref('scores').limitToLast(limit).once('value');
-  const scores = [];
-  snap.forEach(child => scores.push({ id: child.key, ...child.val() }));
+  if (!db) { console.warn('getScores: db is null'); return []; }
+  try {
+    const snap = await db.ref('scores').limitToLast(limit).once('value');
+    console.log('getScores: snap exists:', snap.exists(), 'numChildren:', snap.numChildren());
+    const scores = [];
+    snap.forEach(child => scores.push({ id: child.key, ...child.val() }));
   // Sort: wave DESC, finalWaveKills DESC, defendTime ASC, mazeLength DESC, boardFillPct DESC
   scores.sort((a, b) => {
     if (b.wave !== a.wave) return b.wave - a.wave;
@@ -45,20 +54,37 @@ export async function getScores(limit = 50) {
     return b.boardFillPct - a.boardFillPct;
   });
   return scores;
+  } catch (e) {
+    console.error('getScores failed:', e);
+    return [];
+  }
 }
 
 export async function submitComment(commentData) {
-  if (!db) return null;
-  const ref = db.ref('comments').push();
-  await ref.set({ ...commentData, timestamp: Date.now() });
-  return ref.key;
+  if (!db) { console.warn('submitComment: db is null'); return null; }
+  try {
+    const ref = db.ref('comments').push();
+    console.log('submitComment: writing to', ref.key);
+    await ref.set({ ...commentData, timestamp: Date.now() });
+    console.log('submitComment: success');
+    return ref.key;
+  } catch (e) {
+    console.error('submitComment failed:', e);
+    return null;
+  }
 }
 
 export async function getComments(limit = 100) {
-  if (!db) return [];
-  const snap = await db.ref('comments').limitToLast(limit).once('value');
-  const comments = [];
-  snap.forEach(child => comments.push({ id: child.key, ...child.val() }));
-  comments.sort((a, b) => b.timestamp - a.timestamp); // newest first
-  return comments;
+  if (!db) { console.warn('getComments: db is null'); return []; }
+  try {
+    const snap = await db.ref('comments').limitToLast(limit).once('value');
+    console.log('getComments: snap exists:', snap.exists(), 'numChildren:', snap.numChildren());
+    const comments = [];
+    snap.forEach(child => comments.push({ id: child.key, ...child.val() }));
+    comments.sort((a, b) => b.timestamp - a.timestamp);
+    return comments;
+  } catch (e) {
+    console.error('getComments failed:', e);
+    return [];
+  }
 }
