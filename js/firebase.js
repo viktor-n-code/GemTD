@@ -38,7 +38,7 @@ export async function submitScore(scoreData) {
   }
 }
 
-export async function getScores(limit = 50) {
+export async function getScores(limit = 500) {
   if (!db) { console.warn('getScores: db is null'); return []; }
   try {
     const snap = await db.ref('scores').limitToLast(limit).once('value');
@@ -74,7 +74,7 @@ export async function submitComment(commentData) {
   }
 }
 
-export async function getComments(limit = 100) {
+export async function getComments(limit = 500) {
   if (!db) { console.warn('getComments: db is null'); return []; }
   try {
     const snap = await db.ref('comments').limitToLast(limit).once('value');
