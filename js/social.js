@@ -39,6 +39,7 @@ async function refreshLeaderboard() {
   container.innerHTML = '<p class="social-loading">Loading scores...</p>';
 
   const scores = await getScores(50);
+  console.log('refreshLeaderboard: rendering', scores.length, 'scores', scores);
   if (scores.length === 0) {
     container.innerHTML = '<p class="social-empty">No scores yet. Be the first!</p>';
     return;
@@ -46,7 +47,7 @@ async function refreshLeaderboard() {
 
   let html = `<table class="leaderboard-table">
     <thead><tr>
-      <th>#</th><th>Name</th><th>Wave</th><th>Result</th><th>Kills (Final wave)</th><th>Time</th><th>Maze</th><th>Fill%</th><th>Ver</th>
+      <th>#</th><th>Name</th><th>Wave</th><th>Result</th><th>Kills (Final wave)</th><th>Time</th><th>Maze</th><th>Fill%</th><th>Ver</th><th>Date</th>
     </tr></thead><tbody>`;
 
   const resultLabels = { win: 'Win', lose: 'Lose', forfeit: 'Forfeit' };
@@ -63,6 +64,7 @@ async function refreshLeaderboard() {
       <td>${s.mazeLength ?? 0}</td>
       <td>${(s.boardFillPct ?? 0).toFixed(1)}%</td>
       <td>${escapeHtml(s.version || '—')}</td>
+      <td>${s.timestamp ? new Date(s.timestamp).toLocaleDateString() : '—'}</td>
     </tr>`;
   });
 
@@ -79,6 +81,7 @@ async function refreshComments() {
   list.innerHTML = '<p class="social-loading">Loading comments...</p>';
 
   const comments = await getComments(100);
+  console.log('refreshComments: rendering', comments.length, 'comments', comments);
   if (comments.length === 0) {
     list.innerHTML = '<p class="social-empty">No comments yet.</p>';
     return;
