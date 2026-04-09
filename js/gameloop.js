@@ -14,7 +14,7 @@ import { SPECIAL_GEM_DEFS, getSpecialGemLeveledStats, getSpecialVisual, findAvai
 import { moveEnemy, getWaveGold } from './enemy.js';
 import { WaveSpawner } from './wave.js';
 import { attackEnemy, canAttack, isInRange, tickPoison, getGemStats, getGemAttackType, applyEffect } from './combat.js';
-import { render, HUD_HEIGHT } from './renderer.js';
+import { render } from './renderer.js';
 import { InputHandler } from './input.js';
 import { drawUI, updateInfoPanel, updateLeftPanel, PANEL_H } from './ui.js';
 
@@ -40,7 +40,7 @@ function init() {
   ctx = canvas.getContext('2d');
 
   canvas.width  = GRID_COLS * CELL_SIZE;                         // 672
-  canvas.height = GRID_ROWS * CELL_SIZE + HUD_HEIGHT + PANEL_H; // 752 + 24 + 46 = 822
+  canvas.height = GRID_ROWS * CELL_SIZE + PANEL_H; // 752 + 78 = 830 (HUD moved to left panel)
 
   // Sync info panel height to canvas
   const infoPanel = document.getElementById('info-panel');

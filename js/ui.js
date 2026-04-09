@@ -5,7 +5,6 @@ import { getVisual, getStats, getLeveledStats, GEM_CHANCE_LEVELS, GEM_TYPES, QUA
 import { getGemAttackType } from './combat.js';
 import { GRID_ROWS, CELL_SIZE } from './grid.js';
 import { getWaveStats } from './enemy.js';
-import { HUD_HEIGHT } from './renderer.js';
 import { SPECIAL_GEM_DEFS, getSpecialGemLeveledStats, getSpecialVisual, findAvailableRecipes } from './specialgem.js';
 
 // ---------------------------------------------------------------------------
@@ -13,7 +12,7 @@ import { SPECIAL_GEM_DEFS, getSpecialGemLeveledStats, getSpecialVisual, findAvai
 // ---------------------------------------------------------------------------
 
 export const PANEL_H = 78;
-export const PANEL_Y = GRID_ROWS * CELL_SIZE + HUD_HEIGHT; // 752 + 24 = 776 — below grid and HUD
+export const PANEL_Y = GRID_ROWS * CELL_SIZE; // 752 — directly below grid (HUD moved to left panel)
 
 // Action buttons — row 1 (full width, no gem slots)
 export const BTN_COMBINE  = { x: 8,   y: PANEL_Y + 9, w: 72,  h: 28 };
@@ -615,15 +614,26 @@ export function updateInfoPanel(state, inputState) {
 // ---------------------------------------------------------------------------
 
 export function updateLeftPanel(state) {
+  const waveEl = document.getElementById('left-wave');
   const hudEl = document.getElementById('left-hud');
   const trackEl = document.getElementById('left-trackers');
   if (!hudEl || !trackEl) return;
+
+  // Wave status section
+  if (waveEl) {
+    const enemiesLeft = state.enemies ? state.enemies.filter(e => !e.dead && !e.exited).length : 0;
+    const phaseLabel = state.phase === 'defend' ? 'Wave in Progress' : state.phase === 'build' ? 'Build Phase' : 'Between Waves';
+    waveEl.innerHTML = `
+      <div style="color:#00d4ff;font-size:10px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">${phaseLabel}</div>
+      <div style="color:#ffffff;font-size:20px;font-weight:bold">Wave ${state.wave}</div>
+      ${state.phase === 'defend' ? `<div class="hud-row"><span class="hud-label">Enemies left</span><span class="hud-value">${enemiesLeft}</span></div>` : ''}`;
+  }
 
   // HUD info
   const mins = Math.floor((state.defendTime || 0) / 60);
   const secs = Math.floor((state.defendTime || 0) % 60);
   const timeStr = `${mins}:${secs.toString().padStart(2, '0')}`;
-  const enemiesLeft = state.enemies ? state.enemies.filter(e => !e.dead && !e.exited).length : 0;
+  const mazeLen = state.groundPath?.length ?? 0;
 
   // Weakness for current/next wave
   let weakLabel = '—';
@@ -634,11 +644,11 @@ export function updateLeftPanel(state) {
   }
 
   hudEl.innerHTML = `
-    <div class="hud-row"><span class="hud-label">Wave</span><span class="hud-value">${state.wave}</span></div>
     <div class="hud-row"><span class="hud-label">Lives</span><span class="hud-value">${state.lives}</span></div>
     <div class="hud-row"><span class="hud-label">Gold</span><span class="hud-value">${state.gold}g</span></div>
+    <div class="hud-row"><span class="hud-label">Lvl</span><span class="hud-value">${state.gemChanceLevel}</span></div>
     <div class="hud-row"><span class="hud-label">Time</span><span class="hud-value">${timeStr}</span></div>
-    <div class="hud-row"><span class="hud-label">Enemies</span><span class="hud-value">${enemiesLeft}</span></div>
+    <div class="hud-row"><span class="hud-label">Maze</span><span class="hud-value">${mazeLen} tiles</span></div>
     <div class="hud-row"><span class="hud-label">Weakness</span><span class="hud-value weakness">${weakLabel}</span></div>`;
 
   // Gem trackers — top 5 by kills and MVP
