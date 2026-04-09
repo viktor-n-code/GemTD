@@ -585,7 +585,4 @@ export function render(state, canvas, hudY, selectedGemId = null) {
 
   // 6. Crit damage numbers
   drawCritNumbers(ctx, state.critNumbers);
-
-  // 7. HUD (drawn last, below grid)
-  drawHUD(ctx, state, canvas.width, hudY);
 }
