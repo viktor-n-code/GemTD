@@ -4,6 +4,7 @@
  */
 
 import { GRID_COLS, GRID_ROWS, CELL_SIZE, CHECKPOINTS, ENTRY, EXIT } from './grid.js';
+import { getWaveStats } from './enemy.js';
 import { getVisual } from './gem.js';
 import { getSpecialVisual, getSpecialGemLeveledStats } from './specialgem.js';
 
@@ -540,7 +541,9 @@ function drawHUD(ctx, state, canvasWidth, hudY) {
   const timeStr = `${mins}:${secs.toString().padStart(2, '0')}`;
   const mazeLen = state.groundPath?.length ?? 0;
 
-  const text = `Wave: ${state.wave}  Lives: ${state.lives}  Gold: ${state.gold}g  Lvl: ${state.gemChanceLevel}  Time: ${timeStr}  Maze: ${mazeLen}`;
+  const nextWave = state.wave + (state.phase === 'build' ? 1 : 0);
+  const weakness = nextWave > 0 ? getWaveStats(nextWave).weakness : '—';
+  const text = `Wave: ${state.wave}  Lives: ${state.lives}  Gold: ${state.gold}g  Lvl: ${state.gemChanceLevel}  Time: ${timeStr}  Weak: ${weakness}`;
   ctx.fillText(text, 8, hudY + HUD_HEIGHT / 2);
   ctx.restore();
 }

@@ -13,10 +13,10 @@ import { rollGem, getStats, getLeveledStats, getVisual, GEM_CHANCE_LEVELS, QUALI
 import { SPECIAL_GEM_DEFS, getSpecialGemLeveledStats, getSpecialVisual, findAvailableRecipes } from './specialgem.js';
 import { moveEnemy, getWaveGold } from './enemy.js';
 import { WaveSpawner } from './wave.js';
-import { attackEnemy, canAttack, isInRange, tickPoison, getGemStats, applyEffect } from './combat.js';
+import { attackEnemy, canAttack, isInRange, tickPoison, getGemStats, getGemAttackType, applyEffect } from './combat.js';
 import { render, HUD_HEIGHT } from './renderer.js';
 import { InputHandler } from './input.js';
-import { drawUI, updateInfoPanel, PANEL_H } from './ui.js';
+import { drawUI, updateInfoPanel, updateLeftPanel, PANEL_H } from './ui.js';
 
 // ---------------------------------------------------------------------------
 // Module-level state
@@ -45,6 +45,8 @@ function init() {
   // Sync info panel height to canvas
   const infoPanel = document.getElementById('info-panel');
   if (infoPanel) infoPanel.style.height = canvas.height + 'px';
+  const leftPanel = document.getElementById('left-panel');
+  if (leftPanel) leftPanel.style.height = canvas.height + 'px';
 
   document.getElementById('loading').classList.add('hidden');
 
@@ -126,6 +128,7 @@ function gameLoop(timestamp) {
   render(gameState, canvas, HUD_Y, inputHandler.getState().selectedGemId);
   drawUI(ctx, gameState, inputHandler.getState());
   updateInfoPanel(gameState, inputHandler.getState());
+  updateLeftPanel(gameState);
 
   if (!gameState.gameOver) {
     requestAnimationFrame(gameLoop);
@@ -726,8 +729,14 @@ function updateDefend(dt, now) {
     if (poisonResult.damage > 0 && e.poisonGemId) {
       const pg = gameState.gems[e.poisonGemId];
       if (pg) {
-        pg.totalDamage  += poisonResult.damage;
-        pg.roundDamage  += poisonResult.damage;
+        // Apply weakness modifier to poison DoT damage
+        const weakMultP = getGemAttackType(pg) === e.weakness ? 1.75 : 0.90;
+        const adjDmg = poisonResult.damage * weakMultP;
+        // Adjust the HP difference (tickPoison already subtracted base damage)
+        e.hp -= adjDmg - poisonResult.damage;
+        if (e.hp <= 0 && !e.dead) { e.dead = true; poisonResult.killed = true; }
+        pg.totalDamage  += adjDmg;
+        pg.roundDamage  += adjDmg;
         if (poisonResult.killed) {
           pg.kills++;
           _checkLevelUp(pg);
@@ -872,7 +881,8 @@ function updateDefend(dt, now) {
       const dx = enemy.x - gemCx;
       const dy = enemy.y - gemCy;
       if (Math.sqrt(dx * dx + dy * dy) > auraRadiusPx) continue;
-      const dmg = sStats.effect.auraDps * dt;
+      const weakMult1 = getGemAttackType(gem) === enemy.weakness ? 1.75 : 0.90;
+      const dmg = sStats.effect.auraDps * dt * weakMult1;
       enemy.hp       -= dmg;
       gem.totalDamage += dmg;
       gem.roundDamage += dmg;
@@ -897,8 +907,9 @@ function updateDefend(dt, now) {
       const dx = enemy.x - gemCx;
       const dy = enemy.y - gemCy;
       if (Math.sqrt(dx * dx + dy * dy) > auraRadiusPx) continue;
-      // Burn DPS
-      const dmg = sStats.effect.auraDps * dt;
+      // Burn DPS (with weakness modifier)
+      const weakMult2 = getGemAttackType(gem) === enemy.weakness ? 1.75 : 0.90;
+      const dmg = sStats.effect.auraDps * dt * weakMult2;
       enemy.hp        -= dmg;
       gem.totalDamage += dmg;
       gem.roundDamage += dmg;
@@ -935,7 +946,31 @@ function updateDefend(dt, now) {
 // ---------------------------------------------------------------------------
 
 function findTarget(gem) {
-  // Prio 1: keep attacking current target if still alive and in range
+  const stats = getGemStats(gem);
+  const effectType = stats.effect?.type;
+
+  // Greedy targeting for poison gems: prefer unpoisoned or weakly-poisoned enemies
+  if (effectType === 'poison' || effectType === 'lucky_jade') {
+    const gemDps = stats.effect.dps;
+    let unpoisoned = null; // no DoT at all
+    let weakPoison = null; // DoT weaker than ours (we can override)
+    let fallback   = null; // any enemy in range
+
+    for (const e of gameState.enemies) {
+      if (e.dead || e.exited) continue;
+      if (!isInRange(gem, e)) continue;
+      if (e.poisonDps === 0 || e.poisonUntil <= performance.now()) {
+        if (!unpoisoned || e.hp < unpoisoned.hp) unpoisoned = e;
+      } else if (e.poisonDps < gemDps) {
+        if (!weakPoison || e.hp < weakPoison.hp) weakPoison = e;
+      }
+      if (!fallback || e.hp < fallback.hp) fallback = e;
+    }
+
+    return unpoisoned || weakPoison || fallback;
+  }
+
+  // Standard targeting: keep current target, then lowest HP
   if (gem.lastTargetId) {
     const current = gameState.enemies.find(
       e => e.id === gem.lastTargetId && !e.dead && !e.exited
@@ -943,7 +978,6 @@ function findTarget(gem) {
     if (current && isInRange(gem, current)) return current;
   }
 
-  // Prio 2: lowest HP enemy in range
   let best = null;
   for (const e of gameState.enemies) {
     if (e.dead || e.exited) continue;

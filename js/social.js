@@ -108,13 +108,17 @@ export function initCommentForm() {
 
     btn.disabled = true;
     btn.textContent = 'Posting...';
-    await submitComment({ name, text });
-    lastPlayerName = name;
-    nameEl.value = name;
-    textEl.value = '';
+    try {
+      await submitComment({ name, text });
+      lastPlayerName = name;
+      nameEl.value = name;
+      textEl.value = '';
+      refreshComments();
+    } catch (e) {
+      console.error('Comment submit failed:', e);
+    }
     btn.disabled = false;
     btn.textContent = 'Post';
-    refreshComments();
   });
 }
 

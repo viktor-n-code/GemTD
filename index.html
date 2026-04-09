@@ -329,6 +329,31 @@
         }
         .comment-form button:hover { background: #2a5a7a; }
 
+        /* ── Left info panel ── */
+        #left-panel {
+            width: 160px;
+            background: #0d1b2a;
+            border-right: 1px solid #1e3a5f;
+            border-top: 2px solid #0f3460;
+            border-left: 2px solid #0f3460;
+            border-bottom: 2px solid #0f3460;
+            padding: 10px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            font-size: 11px;
+            color: #cce0f0;
+            line-height: 1.6;
+        }
+        .left-divider { border: none; border-top: 1px solid #1e3a5f; margin: 8px 0; }
+        #left-hud .hud-row { display: flex; justify-content: space-between; padding: 1px 0; }
+        #left-hud .hud-label { color: #6699bb; font-size: 11px; }
+        #left-hud .hud-value { color: #ffffff; font-size: 11px; font-weight: bold; }
+        #left-hud .hud-value.weakness { color: #ffcc44; }
+        #left-trackers .tracker-title { color: #00d4ff; font-size: 10px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-top: 8px; margin-bottom: 4px; }
+        #left-trackers .tracker-title:first-child { margin-top: 0; }
+
         .patch-version { margin-bottom: 20px; }
         .patch-version h3 { color: #00d4ff; font-size: 14px; margin-bottom: 6px; }
         .patch-version ul { list-style: disc; padding-left: 20px; font-size: 12px; line-height: 1.8; }
@@ -371,11 +396,16 @@
             <button class="tab" data-tab="patchnotes">Patch Notes</button>
         </div>
         <div id="game-wrapper">
+            <div id="left-panel">
+                <div id="left-hud"></div>
+                <hr class="left-divider">
+                <div id="left-trackers"></div>
+            </div>
             <canvas id="game"></canvas>
             <div id="info-panel">
                 <div id="panel-header">
                     <div id="panel-title">GEM TD</div>
-                    <div id="panel-version">v1.1.3</div>
+                    <div id="panel-version">v1.2.0</div>
                 </div>
                 <hr id="panel-divider">
                 <div id="panel-content">
@@ -400,6 +430,22 @@
         </div>
         <div id="patchnotes-view" class="tab-content hidden">
             <h2>Patch Notes</h2>
+            <div class="patch-version">
+                <h3>v1.2 &mdash; Attack Types</h3>
+                <ul>
+                    <li>Every gem now has an attack type matching its gem family</li>
+                    <li>Enemies have a rotating weakness &mdash; ground enemies cycle through all 8 types each wave</li>
+                    <li>Flying enemies are always weak to Amethyst</li>
+                    <li>Matching weakness: +75% damage. Non-matching: &minus;10% damage</li>
+                    <li>Attack type shown in gem info, weakness shown when selecting enemies</li>
+                    <li>Left panel with always-visible game stats and top gem trackers</li>
+                    <li>Emeralds now use greedy targeting &mdash; prefer enemies without poison or with weaker poison</li>
+                    <li>Great Emerald buffed: 40 dps, 5-minute poison duration</li>
+                    <li>Great Aquamarine buffed: 3.0 attacks/sec, +1 tile range</li>
+                    <li>Rose Quartz Crystal gains +0.5 tiles range per level (attack and aura)</li>
+                    <li>Lucky Asian Jade gold chance now scales with level</li>
+                </ul>
+            </div>
             <div class="patch-version">
                 <h3>v1.1 &mdash; Social Patch</h3>
                 <ul>

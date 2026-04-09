@@ -32,7 +32,8 @@ export async function submitScore(scoreData) {
 
 export async function getScores(limit = 50) {
   if (!db) return [];
-  const snap = await db.ref('scores').orderByChild('wave').limitToLast(limit).once('value');
+  // Read all scores and sort client-side (avoids needing .indexOn rules)
+  const snap = await db.ref('scores').limitToLast(limit).once('value');
   const scores = [];
   snap.forEach(child => scores.push({ id: child.key, ...child.val() }));
   // Sort: wave DESC, finalWaveKills DESC, defendTime ASC, mazeLength DESC, boardFillPct DESC
@@ -55,7 +56,7 @@ export async function submitComment(commentData) {
 
 export async function getComments(limit = 100) {
   if (!db) return [];
-  const snap = await db.ref('comments').orderByChild('timestamp').limitToLast(limit).once('value');
+  const snap = await db.ref('comments').limitToLast(limit).once('value');
   const comments = [];
   snap.forEach(child => comments.push({ id: child.key, ...child.val() }));
   comments.sort((a, b) => b.timestamp - a.timestamp); // newest first
