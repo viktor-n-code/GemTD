@@ -16,7 +16,7 @@ import { WaveSpawner } from './wave.js';
 import { attackEnemy, canAttack, isInRange, tickPoison, getGemStats, getGemAttackType, applyEffect } from './combat.js';
 import { render, HUD_HEIGHT } from './renderer.js';
 import { InputHandler } from './input.js';
-import { drawUI, updateInfoPanel, PANEL_H } from './ui.js';
+import { drawUI, updateInfoPanel, updateLeftPanel, PANEL_H } from './ui.js';
 
 // ---------------------------------------------------------------------------
 // Module-level state
@@ -45,6 +45,8 @@ function init() {
   // Sync info panel height to canvas
   const infoPanel = document.getElementById('info-panel');
   if (infoPanel) infoPanel.style.height = canvas.height + 'px';
+  const leftPanel = document.getElementById('left-panel');
+  if (leftPanel) leftPanel.style.height = canvas.height + 'px';
 
   document.getElementById('loading').classList.add('hidden');
 
@@ -126,6 +128,7 @@ function gameLoop(timestamp) {
   render(gameState, canvas, HUD_Y, inputHandler.getState().selectedGemId);
   drawUI(ctx, gameState, inputHandler.getState());
   updateInfoPanel(gameState, inputHandler.getState());
+  updateLeftPanel(gameState);
 
   if (!gameState.gameOver) {
     requestAnimationFrame(gameLoop);

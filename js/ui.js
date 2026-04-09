@@ -4,6 +4,7 @@
 import { getVisual, getStats, getLeveledStats, GEM_CHANCE_LEVELS, GEM_TYPES, QUALITY_LEVELS } from './gem.js';
 import { getGemAttackType } from './combat.js';
 import { GRID_ROWS, CELL_SIZE } from './grid.js';
+import { getWaveStats } from './enemy.js';
 import { HUD_HEIGHT } from './renderer.js';
 import { SPECIAL_GEM_DEFS, getSpecialGemLeveledStats, getSpecialVisual, findAvailableRecipes } from './specialgem.js';
 
@@ -607,6 +608,59 @@ export function updateInfoPanel(state, inputState) {
 
   // — Gem chances section (bottom, always shown) —
   chancesEl.innerHTML = _buildChancesHTML(state);
+}
+
+// ---------------------------------------------------------------------------
+// Left panel — HUD + trackers
+// ---------------------------------------------------------------------------
+
+export function updateLeftPanel(state) {
+  const hudEl = document.getElementById('left-hud');
+  const trackEl = document.getElementById('left-trackers');
+  if (!hudEl || !trackEl) return;
+
+  // HUD info
+  const mins = Math.floor((state.defendTime || 0) / 60);
+  const secs = Math.floor((state.defendTime || 0) % 60);
+  const timeStr = `${mins}:${secs.toString().padStart(2, '0')}`;
+  const enemiesLeft = state.enemies ? state.enemies.filter(e => !e.dead && !e.exited).length : 0;
+
+  // Weakness for current/next wave
+  let weakLabel = '—';
+  if (state.phase === 'defend' && state.wave > 0) {
+    weakLabel = state.enemies.find(e => !e.dead && !e.exited)?.weakness ?? getWaveStats(state.wave).weakness;
+  } else if (state.phase === 'build') {
+    weakLabel = getWaveStats(state.wave + 1).weakness;
+  }
+
+  hudEl.innerHTML = `
+    <div class="hud-row"><span class="hud-label">Wave</span><span class="hud-value">${state.wave}</span></div>
+    <div class="hud-row"><span class="hud-label">Lives</span><span class="hud-value">${state.lives}</span></div>
+    <div class="hud-row"><span class="hud-label">Gold</span><span class="hud-value">${state.gold}g</span></div>
+    <div class="hud-row"><span class="hud-label">Time</span><span class="hud-value">${timeStr}</span></div>
+    <div class="hud-row"><span class="hud-label">Enemies</span><span class="hud-value">${enemiesLeft}</span></div>
+    <div class="hud-row"><span class="hud-label">Weakness</span><span class="hud-value weakness">${weakLabel}</span></div>`;
+
+  // Gem trackers — top 5 by kills and MVP
+  const gems = Object.values(state.gems || {});
+  if (gems.length === 0) { trackEl.innerHTML = ''; return; }
+
+  const byKills = [...gems].sort((a, b) => (b.kills || 0) - (a.kills || 0)).slice(0, 5);
+  const byMvp   = [...gems].sort((a, b) => (b.mvpBonus || 0) - (a.mvpBonus || 0)).slice(0, 5);
+
+  let html = '<div class="tracker-title">Top Kills</div>';
+  for (const g of byKills) {
+    if (!g.kills) break;
+    html += `<div class="lb-row"><span class="lb-name">${g.name || '?'}</span><span class="lb-value">${g.kills}</span></div>`;
+  }
+
+  html += '<div class="tracker-title">Top MVP Bonus</div>';
+  for (const g of byMvp) {
+    if (!g.mvpBonus) break;
+    html += `<div class="lb-row"><span class="lb-name">${g.name || '?'}</span><span class="lb-value">+${g.mvpBonus}%</span></div>`;
+  }
+
+  trackEl.innerHTML = html;
 }
 
 // ---------------------------------------------------------------------------
