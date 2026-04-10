@@ -7,16 +7,21 @@ import { GRID_COLS, GRID_ROWS, CELL_SIZE, CHECKPOINTS, ENTRY, EXIT } from './gri
 import { getWaveStats } from './enemy.js';
 import { getVisual } from './gem.js';
 import { getSpecialVisual, getSpecialGemLeveledStats } from './specialgem.js';
+import { getGemSprite, getSpecialGemSprite, getEnemySprite } from './sprites.js';
 
 // ---------------------------------------------------------------------------
 // Color constants
 // ---------------------------------------------------------------------------
 
 const COLOR_EMPTY     = '#1a2a3a';
-const COLOR_PATH      = '#1e3020'; // slightly greener empty — marks the enemy ground path
+const COLOR_EMPTY_EDGE = '#152535'; // darker edge for subtle gradient effect
+const COLOR_PATH      = '#2a3828'; // warmer earth tone
+const COLOR_PATH_EDGE = '#1e2e1c';
 const COLOR_BLOCKED   = '#0f1f2f';
 const COLOR_ROCK      = '#555566';
-const COLOR_GRID_LINE = '#2a3a4a';
+const COLOR_ROCK_LIGHT = '#666677'; // bevel highlight
+const COLOR_ROCK_DARK  = '#444455'; // bevel shadow
+const COLOR_GRID_LINE = '#1a2535'; // softer, near-invisible
 
 const COLOR_CHECKPOINT = '#ffff00';
 const COLOR_ENTRY      = '#00ff00';
@@ -91,32 +96,43 @@ function drawGrid(ctx, state) {
       const px = (x - 1) * CELL_SIZE;
       const py = (y - 1) * CELL_SIZE;
 
-      // Determine fill color
-      let fillColor;
-      if (cell.type === 'rock') {
-        fillColor = COLOR_ROCK;
-      } else if (cell.type === 'blocked') {
-        fillColor = COLOR_BLOCKED;
-      } else if (cell.type === 'gem' && cell.gemId !== null) {
-        const gem = gems[cell.gemId];
-        if (gem) {
-          const visual = gem.type === 'special'
-            ? getSpecialVisual(gem.specialType)
-            : getVisual(gem.type, gem.quality);
-          fillColor = visual.color;
-        } else {
-          fillColor = COLOR_EMPTY;
-        }
-      } else if (pathCells.has(`${x},${y}`)) {
-        fillColor = COLOR_PATH;
-      } else {
-        // 'empty'
-        fillColor = COLOR_EMPTY;
-      }
+      // Determine fill — gem cells use dark neutral since sprites draw on top
+      const cs = CELL_SIZE - 1; // leave 1px for grid line
+      const fx = px + 1;
+      const fy = py + 1;
 
-      // Fill cell leaving 1px gap for grid lines (draw 1px smaller on each side)
-      ctx.fillStyle = fillColor;
-      ctx.fillRect(px + 1, py + 1, CELL_SIZE - 1, CELL_SIZE - 1);
+      if (cell.type === 'rock') {
+        // Beveled rock: light top-left edge, dark bottom-right
+        ctx.fillStyle = COLOR_ROCK;
+        ctx.fillRect(fx, fy, cs, cs);
+        ctx.fillStyle = COLOR_ROCK_LIGHT;
+        ctx.fillRect(fx, fy, cs, 1);        // top highlight
+        ctx.fillRect(fx, fy, 1, cs);        // left highlight
+        ctx.fillStyle = COLOR_ROCK_DARK;
+        ctx.fillRect(fx, fy + cs - 1, cs, 1); // bottom shadow
+        ctx.fillRect(fx + cs - 1, fy, 1, cs); // right shadow
+      } else if (cell.type === 'blocked') {
+        ctx.fillStyle = COLOR_BLOCKED;
+        ctx.fillRect(fx, fy, cs, cs);
+      } else if (cell.type === 'gem' && cell.gemId !== null) {
+        // Dark neutral base — gem sprite renders on top
+        ctx.fillStyle = '#111a24';
+        ctx.fillRect(fx, fy, cs, cs);
+      } else if (pathCells.has(`${x},${y}`)) {
+        // Path with subtle edge darkening
+        ctx.fillStyle = COLOR_PATH;
+        ctx.fillRect(fx, fy, cs, cs);
+        ctx.fillStyle = COLOR_PATH_EDGE;
+        ctx.fillRect(fx, fy, cs, 1);
+        ctx.fillRect(fx, fy, 1, cs);
+      } else {
+        // Empty with subtle edge darkening
+        ctx.fillStyle = COLOR_EMPTY;
+        ctx.fillRect(fx, fy, cs, cs);
+        ctx.fillStyle = COLOR_EMPTY_EDGE;
+        ctx.fillRect(fx, fy, cs, 1);
+        ctx.fillRect(fx, fy, 1, cs);
+      }
     }
   }
 
@@ -243,84 +259,26 @@ function drawGems(ctx, state, selectedGemId = null) {
       const gem = gems[cell.gemId];
       if (!gem) continue;
 
-      const visual = gem.type === 'special'
-        ? getSpecialVisual(gem.specialType)
-        : getVisual(gem.type, gem.quality);
-
       // The gem occupies a 2×2 block with top-left at (gem.x, gem.y).
       // Center: ((gem.x-1)*CS + (gem.x+1)*CS) / 2 = gem.x * CS
       const cx = gem.x * CELL_SIZE;
       const cy = gem.y * CELL_SIZE;
-      const R  = 12; // radius / half-size
 
-      ctx.fillStyle   = visual.color;
-      ctx.strokeStyle = _contrastStroke(visual.color);
-      ctx.lineWidth   = 1;
-
-      switch (visual.shape) {
-        case 'circle':
-          ctx.beginPath();
-          ctx.arc(cx, cy, R, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.stroke();
-          break;
-
-        case 'square':
-          ctx.fillRect(cx - R, cy - R, R * 2, R * 2);
-          ctx.strokeRect(cx - R, cy - R, R * 2, R * 2);
-          break;
-
-        case 'diamond':
-          ctx.beginPath();
-          ctx.moveTo(cx,     cy - R);
-          ctx.lineTo(cx + R, cy    );
-          ctx.lineTo(cx,     cy + R);
-          ctx.lineTo(cx - R, cy    );
-          ctx.closePath();
-          ctx.fill();
-          ctx.stroke();
-          break;
-
-        case 'pentagon':
-          drawPolygon(ctx, cx, cy, R, 5);
-          ctx.fill();
-          ctx.stroke();
-          break;
-
-        case 'star':
-          drawStar(ctx, cx, cy, R, R * 0.45);
-          ctx.fill();
-          ctx.stroke();
-          break;
-
-        case 'hexagram':
-          drawStar(ctx, cx, cy, R, R * 0.45, 6);
-          ctx.fill();
-          ctx.stroke();
-          // White outer glow for Great tier
-          ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-          ctx.lineWidth   = 1;
-          drawStar(ctx, cx, cy, R + 2, (R + 2) * 0.45, 6);
-          ctx.stroke();
-          break;
-
-        case 'hexagon':
-          drawPolygon(ctx, cx, cy, R, 6);
-          ctx.fill();
-          ctx.stroke();
-          // Gold outer ring
-          ctx.strokeStyle = 'rgba(255,220,80,0.7)';
-          ctx.lineWidth   = 1;
-          drawPolygon(ctx, cx, cy, R + 2, 6);
-          ctx.stroke();
-          break;
-
-        default:
-          // Fallback: circle
-          ctx.beginPath();
-          ctx.arc(cx, cy, R, 0, Math.PI * 2);
-          ctx.fill();
-          break;
+      // Draw cached sprite
+      const sprite = gem.type === 'special'
+        ? getSpecialGemSprite(gem.specialType)
+        : getGemSprite(gem.type, gem.quality);
+      if (sprite) {
+        ctx.drawImage(sprite, cx - sprite.width / 2, cy - sprite.height / 2);
+      } else {
+        // Fallback: simple circle using old visual data
+        const visual = gem.type === 'special'
+          ? getSpecialVisual(gem.specialType)
+          : getVisual(gem.type, gem.quality);
+        ctx.fillStyle = visual.color;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 12, 0, Math.PI * 2);
+        ctx.fill();
       }
 
       // Aura rings — only shown when this gem is selected
@@ -446,14 +404,19 @@ function drawEnemies(ctx, enemies) {
 
   for (const enemy of enemies) {
     const { x, y, hp, maxHp, flying } = enemy;
-    const color = flying ? COLOR_ENEMY_FLYING : COLOR_ENEMY_GROUND;
     const radius = 6;
 
-    // Body circle
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.arc(x, y, radius, 0, Math.PI * 2);
-    ctx.fill();
+    // Sprite
+    const sprite = getEnemySprite(flying);
+    if (sprite) {
+      ctx.drawImage(sprite, x - sprite.width / 2, y - sprite.height / 2);
+    } else {
+      const color = flying ? COLOR_ENEMY_FLYING : COLOR_ENEMY_GROUND;
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
 
     // Stun ring — light blue outline when frozen
     if (now < (enemy.stunUntil ?? 0)) {
@@ -569,7 +532,7 @@ export function render(state, canvas, hudY, selectedGemId = null) {
   drawZones(ctx);
 
   // 2b. Flying path — dashed blue polyline connecting all waypoints
-  drawFlyingPath(ctx);
+  // Flying path dashed line removed — checkpoint arrows indicate the route
 
   // 3. Gem tower shapes (drawn over the colored cells)
   drawGems(ctx, state, selectedGemId);
