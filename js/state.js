@@ -24,6 +24,8 @@ export function createInitialState() {
     defendTime: 0,
     finalWaveKills: 0,
     waveEnemiesGone: 0,
+    opalAttunement: 0,
+    opalAttunementDone: false,
     gameOver: false,
     gameWon: false,
   };
@@ -43,6 +45,13 @@ export function loadState() {
     if (s.gameOver === undefined) s.gameOver = false;
     if (s.gameWon  === undefined) s.gameWon  = false;
     if (s.livesLost === undefined) s.livesLost = 0;
+    if (s.opalAttunement === undefined) s.opalAttunement = 0;
+    if (s.opalAttunementDone === undefined) {
+      const hasGreatOpal = Object.values(s.gems || {}).some(
+        g => g.type === 'Opal' && g.quality === 'great'
+      );
+      s.opalAttunementDone = hasGreatOpal;
+    }
     return s;
   } catch {
     return null;

@@ -148,7 +148,26 @@ function updateBuild(dt, now) {
   if (placement && gameState.placedThisRound.length < 5) {
     const { x, y } = placement;
     if (validatePlacement(gameState.grid, x, y)) {
-      const { type, quality } = rollGem(gameState.gemChanceLevel);
+      // Opal Attunement: if a Perfect Opal is already placed this round,
+      // boost the chance of rolling another (deducted from Chipped chance).
+      let rolled;
+      const attuned = gameState.opalAttunement > 0
+        && !gameState.opalAttunementDone
+        && gameState.placedThisRound.some(id => {
+          const g = gameState.gems[id];
+          return g && g.type === 'Opal' && g.quality === 'perfect';
+        });
+      if (attuned) {
+        const attunePct = gameState.opalAttunement * 100;
+        if (Math.random() * 100 < attunePct) {
+          rolled = { type: 'Opal', quality: 'perfect' };
+        } else {
+          rolled = rollGem(gameState.gemChanceLevel);
+        }
+      } else {
+        rolled = rollGem(gameState.gemChanceLevel);
+      }
+      const { type, quality } = rolled;
       const id = `gem_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
       const stats = getStats(type, quality);
       gameState.gems[id] = {
@@ -217,6 +236,11 @@ function updateBuild(dt, now) {
           const qi = QUALITY_LEVELS.indexOf(g1.quality);
           g1.quality = QUALITY_LEVELS[Math.min(qi + 1, QUALITY_LEVELS.length - 1)];
           g1.attackCooldown = Math.round(1000 / getLeveledStats(g1.type, g1.quality, g1.level || 1).attackSpeed);
+          // Opal Attunement: disable once a Great Opal is on the board
+          if (g1.type === 'Opal' && g1.quality === 'great' && !gameState.opalAttunementDone) {
+            gameState.opalAttunementDone = true;
+            gameState.opalAttunement = 0;
+          }
           // Removed gem's position becomes a permanent rock
           placeRock(gameState.grid, g2.x, g2.y);
           for (let dy = 0; dy <= 1; dy++)
@@ -258,6 +282,11 @@ function updateBuild(dt, now) {
         // Upgrade survivor by 2 tiers
         s4.quality = QUALITY_LEVELS[qi4 + 2];
         s4.attackCooldown = Math.round(1000 / getLeveledStats(s4.type, s4.quality, s4.level || 1).attackSpeed);
+        // Opal Attunement: disable once a Great Opal is on the board
+        if (s4.type === 'Opal' && s4.quality === 'great' && !gameState.opalAttunementDone) {
+          gameState.opalAttunementDone = true;
+          gameState.opalAttunement = 0;
+        }
         // Convert partners to rocks
         for (const id of partners4) {
           const g = gameState.gems[id];
@@ -415,7 +444,7 @@ function applyAuraBuffs(state) {
     for (const gem of Object.values(state.gems)) {
       const dx = gem.x * CELL_SIZE - opx;
       const dy = gem.y * CELL_SIZE - opy;
-      if (Math.sqrt(dx * dx + dy * dy) <= radiusPx && bonus > gem.auraBonus) {
+      if (Math.sqrt(dx * dx + dy * dy) <= radiusPx + CELL_SIZE / 2 && bonus > gem.auraBonus) {
         gem.auraBonus = bonus;
         const ls = getGemStats(gem);
         gem.attackCooldown = Math.round(1000 / (ls.attackSpeed * (1 + bonus)));
@@ -447,7 +476,7 @@ function applyDmgAuraBuffs(state) {
     for (const gem of Object.values(state.gems)) {
       const dx = gem.x * CELL_SIZE - apx;
       const dy = gem.y * CELL_SIZE - apy;
-      if (Math.sqrt(dx * dx + dy * dy) <= radiusPx && bonus > gem.dmgBonus) {
+      if (Math.sqrt(dx * dx + dy * dy) <= radiusPx + CELL_SIZE / 2 && bonus > gem.dmgBonus) {
         gem.dmgBonus = bonus;
       }
     }
@@ -464,7 +493,7 @@ function applyDmgAuraBuffs(state) {
     for (const gem of Object.values(state.gems)) {
       const dx = gem.x * CELL_SIZE - apx;
       const dy = gem.y * CELL_SIZE - apy;
-      if (Math.sqrt(dx * dx + dy * dy) <= radiusPx && bonus > gem.dmgBonus2) {
+      if (Math.sqrt(dx * dx + dy * dy) <= radiusPx + CELL_SIZE / 2 && bonus > gem.dmgBonus2) {
         gem.dmgBonus2 = bonus;
       }
     }
@@ -610,6 +639,11 @@ function startDefendPhase() {
   // Compute ground path once (all ground enemies share it)
   groundPath = computeFullPath(gameState.grid);
   gameState.groundPath = groundPath; // expose to renderer for path highlight
+
+  // Opal Attunement: +0.1% per round at max gem level, capped at 10%
+  if (gameState.gemChanceLevel === 9 && !gameState.opalAttunementDone) {
+    gameState.opalAttunement = Math.min(gameState.opalAttunement + 0.001, 0.10);
+  }
 
   // Reset per-wave kill counter for leaderboard tracking
   gameState.finalWaveKills = 0;
