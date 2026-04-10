@@ -22,6 +22,7 @@ export function createInitialState() {
     downgradeAvailableId: null,
     defendTime: 0,
     finalWaveKills: 0,
+    waveEnemiesGone: 0,
     gameOver: false,
     gameWon: false,
   };
