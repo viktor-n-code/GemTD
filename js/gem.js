@@ -184,11 +184,14 @@ export function getLeveledStats(type, quality, level) {
         effect.dps      = effect.dps  + bonus;
         break;
       case 'Ruby':
+        effect.radius += bonus * 1;     // +1px splash radius per level
+        effect.dmgMod += bonus * 0.01;  // +1% splash damage per level
         break;
       case 'Sapphire':
         break;
       case 'Diamond':
         effect.multiplier = effect.multiplier + bonus * 0.1;
+        effect.chance += bonus * 0.001; // +0.1% crit chance per level
         break;
       case 'Topaz':
         break;

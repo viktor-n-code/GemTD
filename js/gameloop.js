@@ -101,7 +101,18 @@ function gameLoop(timestamp) {
     drawEndScreen(ctx);
     const mazeLen = gameState.groundPath?.length ?? 0;
     const fillPct = computeBoardFillPct(gameState.grid, gameState.groundPath);
-    showScoreModal(gameState, mazeLen, fillPct, gameState.endReason || 'lose');
+
+    // Find MVP gem (highest kills)
+    let mvpGem = '';
+    let mvpGemKills = 0;
+    for (const gem of Object.values(gameState.gems)) {
+      if ((gem.kills || 0) > mvpGemKills) {
+        mvpGemKills = gem.kills;
+        mvpGem = gem.name || '?';
+      }
+    }
+
+    showScoreModal(gameState, mazeLen, fillPct, gameState.endReason || 'lose', mvpGem, mvpGemKills);
   }
 }
 
@@ -366,6 +377,12 @@ function _handleDowngrade() {
   const ls = getLeveledStats(gem.type, gem.quality, gem.level || 1);
   gem.attackCooldown = Math.round(1000 / ls.attackSpeed);
   gameState.downgradeAvailableId = null;
+
+  // Regenerate name with new quality
+  const nameKey = `${gem.quality}_${gem.type}`;
+  gameState.gemCounters[nameKey] = (gameState.gemCounters[nameKey] || 0) + 1;
+  gem.name = `${gem.quality} ${gem.type} ${gameState.gemCounters[nameKey]}`;
+
   applyAllAuraBuffs(gameState);
   saveState(gameState);
 }
@@ -569,7 +586,11 @@ function _handleUpgradeSpecial(gemId) {
   gem.specialType = def.upgradeTo;
 
   const nextDef = SPECIAL_GEM_DEFS.find(d => d.id === gem.specialType);
-  gem.name = nextDef.name; // name changes; no counter increment
+  const nameKey = `special_${nextDef.id}`;
+  gameState.gemCounters[nameKey] = (gameState.gemCounters[nameKey] || 0) + 1;
+  gem.name = gameState.gemCounters[nameKey] === 1
+    ? nextDef.name
+    : `${nextDef.name} ${gameState.gemCounters[nameKey]}`;
 
   const sStats = getSpecialGemLeveledStats(gem.specialType, gem.level);
   gem.attackCooldown = Math.round(1000 / sStats.attackSpeed);
@@ -711,6 +732,7 @@ function updateDefend(dt, now) {
     }
     if (e.exited) {
       gameState.lives -= 1;
+      gameState.livesLost += 1;
       if (gameState.lives <= 0) {
         gameState.endReason = 'lose';
         gameState.gameOver = true;

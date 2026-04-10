@@ -557,6 +557,7 @@ export function getSpecialGemLeveledStats(specialType, level) {
       case 'lucky_jade':
         effect.dps        = effect.dps        + bonus;
         effect.critMult   = effect.critMult   + bonus * 0.1;
+        effect.critChance += bonus * 0.001;  // +0.1% crit chance per level
         effect.stunChance = effect.stunChance + bonus * 0.001;
         effect.goldChance = effect.goldChance + bonus * 0.001;
         break;
@@ -564,6 +565,8 @@ export function getSpecialGemLeveledStats(specialType, level) {
         // No target scaling; gains attackSpeed and range instead (below)
         break;
       case 'splash_slow':
+        effect.radius += bonus * 1;     // +1px splash radius per level
+        effect.dmgMod += bonus * 0.01;  // +1% splash damage per level
         break;
       case 'burn_aura':
         effect.auraDps   = effect.auraDps   + bonus * 2;
@@ -575,14 +578,18 @@ export function getSpecialGemLeveledStats(specialType, level) {
         break;
       case 'crit_ground':
         effect.critMult   = effect.critMult   + bonus * 0.1;
+        effect.critChance += bonus * 0.001; // +0.1% crit chance per level
         break;
       case 'armor_debuff':
         effect.critMult    = effect.critMult    + bonus * 0.1;
+        effect.critChance += bonus * 0.001; // +0.1% crit chance per level
         effect.armorDebuff = effect.armorDebuff + bonus * 0.2;
         break;
       case 'paraiba_nova':
         effect.groundArmorAura = effect.groundArmorAura + bonus * 0.2;
         effect.auraRange       = effect.auraRange       + bonus * 1.5;
+        effect.novaRadius  += bonus * 1;     // +1px nova radius per level
+        effect.novaDmgMod  += bonus * 0.01;  // +1% nova damage per level
         break;
       case 'dmg_aura':
         effect.bonus     = effect.bonus     + bonus;
@@ -594,15 +601,20 @@ export function getSpecialGemLeveledStats(specialType, level) {
       case 'splash_slow_dmg_aura':
         effect.dmgBonus     = effect.dmgBonus     + bonus;
         effect.dmgAuraRange = effect.dmgAuraRange + bonus * 1.5;
+        effect.radius += bonus * 1;     // +1px splash radius per level
+        effect.dmgMod += bonus * 0.01;  // +1% splash damage per level
         break;
       case 'blood_stone':
         effect.auraDps   = effect.auraDps   + bonus * 2;
         effect.auraRange = effect.auraRange + bonus * 1.5;
         break;
       case 'ancient_blood_stone':
-        effect.critMult     = effect.critMult     + bonus * 0.1;
-        effect.auraDps      = effect.auraDps      + bonus * 2;
-        effect.auraRange    = effect.auraRange    + bonus * 1.5;
+        effect.critMult      = effect.critMult      + bonus * 0.1;
+        effect.critChance   += bonus * 0.001;  // +0.1% crit chance per level
+        effect.auraDps       = effect.auraDps       + bonus * 2;
+        effect.auraRange     = effect.auraRange     + bonus * 1.5;
+        effect.splashRadius += bonus * 1;      // +1px splash radius per level
+        effect.splashDmgMod += bonus * 0.01;   // +1% splash damage per level
         break;
       case 'uranium':
         effect.auraDps   = effect.auraDps   + bonus * 2;

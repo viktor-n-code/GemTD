@@ -543,7 +543,7 @@ function drawHUD(ctx, state, canvasWidth, hudY) {
 
   const nextWave = state.wave + (state.phase === 'build' ? 1 : 0);
   const weakness = nextWave > 0 ? getWaveStats(nextWave).weakness : '—';
-  const text = `Wave: ${state.wave}  Lives: ${state.lives}  Gold: ${state.gold}g  Lvl: ${state.gemChanceLevel}  Time: ${timeStr}  Weak: ${weakness}`;
+  const text = `Wave: ${state.wave}  Lives: ${state.lives}  Leaks: ${state.livesLost || 0}  Gold: ${state.gold}g  Lvl: ${state.gemChanceLevel}  Time: ${timeStr}  Weak: ${weakness}`;
   ctx.fillText(text, 8, hudY + HUD_HEIGHT / 2);
   ctx.restore();
 }

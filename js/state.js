@@ -7,6 +7,7 @@ export function createInitialState() {
     phase: 'build',
     wave: 0,
     lives: 10,
+    livesLost: 0,
     gold: 10,
     gemChanceLevel: 1,
     grid: null,
@@ -41,6 +42,7 @@ export function loadState() {
     // Ensure fields added after initial release exist on older saves
     if (s.gameOver === undefined) s.gameOver = false;
     if (s.gameWon  === undefined) s.gameWon  = false;
+    if (s.livesLost === undefined) s.livesLost = 0;
     return s;
   } catch {
     return null;

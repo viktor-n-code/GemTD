@@ -653,6 +653,7 @@ export function updateLeftPanel(state) {
 
   hudEl.innerHTML = `
     <div class="hud-row"><span class="hud-label">Lives</span><span class="hud-value">${state.lives}</span></div>
+    <div class="hud-row"><span class="hud-label">Leaks</span><span class="hud-value">${state.livesLost || 0}</span></div>
     <div class="hud-row"><span class="hud-label">Gold</span><span class="hud-value">${state.gold}g</span></div>
     <div class="hud-row"><span class="hud-label">Lvl</span><span class="hud-value">${state.gemChanceLevel}</span></div>
     <div class="hud-row"><span class="hud-label">Time</span><span class="hud-value">${timeStr}</span></div>
