@@ -604,7 +604,7 @@ export function updateInfoPanel(state, inputState) {
     selEl.innerHTML = (enemy
       ? _buildEnemyHTML(enemy, state)
       : (state.phase === 'defend' || state.phase === 'between')
-        ? _buildWaveHTML(state)
+        ? ''
         : '')
       + _buildLeaderboardHTML(state);
   }
