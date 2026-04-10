@@ -513,7 +513,11 @@ function _buildEnemyHTML(enemy, state) {
     </div>
     <div class="info-row">
       <span class="info-label">Weakness</span>
-      <span class="info-value">${enemy.weakness ?? '—'} <span class="info-level-note">(+75% ${enemy.weakness} dmg, −10% other)</span></span>
+      <span class="info-value">${enemy.weakness ?? '—'}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label"></span>
+      <span class="info-value"><span class="info-level-note">+75% ${enemy.weakness} dmg, −10% other</span></span>
     </div>`;
 
   const tags = [];
