@@ -621,13 +621,16 @@ export function updateLeftPanel(state) {
 
   // Wave status section
   if (waveEl) {
-    const enemiesLeft = state.enemies ? state.enemies.filter(e => !e.dead && !e.exited).length : 0;
-    const phaseLabel = state.phase === 'defend' ? 'Wave in Progress' : state.phase === 'build' ? 'Build Phase' : 'Between Waves';
+    const remaining = 10 - (state.waveEnemiesGone ?? 0);
+    const phaseLabel = state.phase === 'defend' ? 'Wave In Progress' : state.phase === 'build' ? 'Build Phase' : 'Between Waves';
     waveEl.innerHTML = `
-      <div style="color:#00d4ff;font-size:10px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">${phaseLabel}</div>
-      <div style="color:#ffffff;font-size:20px;font-weight:bold">Wave ${state.wave}</div>
-      ${state.phase === 'defend' ? `<div class="hud-row"><span class="hud-label">Enemies left</span> <span class="hud-value">${enemiesLeft}</span></div>
-      <div class="hud-row"><span class="hud-label">Kills this wave</span> <span class="hud-value">${state.finalWaveKills ?? 0}</span></div>` : ''}`;
+      <div class="info-section-title">${phaseLabel}</div>
+      <div class="info-wave-stat">${state.wave}</div>
+      <div class="info-wave-sub">Wave ${state.wave}</div>
+      ${state.phase === 'defend' ? `<div class="info-row" style="margin-top:8px">
+        <span class="info-label">Enemies left</span>
+        <span class="info-value">${remaining}</span>
+      </div>` : ''}`;
   }
 
   // HUD info

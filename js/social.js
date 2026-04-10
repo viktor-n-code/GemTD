@@ -47,7 +47,7 @@ async function refreshLeaderboard() {
 
   let html = `<table class="leaderboard-table">
     <thead><tr>
-      <th>#</th><th>Name</th><th>Wave</th><th>Result</th><th>Kills (Final wave)</th><th>Time</th><th>Maze</th><th>Fill%</th><th>Ver</th><th>Date</th>
+      <th>#</th><th>Name</th><th>Wave</th><th>Result</th><th>Kills (Final wave)</th><th>Time</th><th>Maze</th><th>Fill%</th><th>Ver</th><th>Date</th><th>At</th>
     </tr></thead><tbody>`;
 
   const resultLabels = { win: 'Win', lose: 'Lose', forfeit: 'Forfeit' };
@@ -65,6 +65,7 @@ async function refreshLeaderboard() {
       <td>${(s.boardFillPct ?? 0).toFixed(1)}%</td>
       <td>${escapeHtml(s.version || '—')}</td>
       <td>${s.timestamp ? new Date(s.timestamp).toLocaleDateString() : '—'}</td>
+      <td>${s.timestamp ? new Date(s.timestamp).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '—'}</td>
     </tr>`;
   });
 
@@ -89,10 +90,12 @@ async function refreshComments() {
 
   let html = '';
   comments.forEach(c => {
-    const date = new Date(c.timestamp).toLocaleDateString();
+    const d = new Date(c.timestamp);
+    const date = d.toLocaleDateString();
+    const time = d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
     html += `<div class="comment">
       <span class="comment-name">${escapeHtml(c.name || 'Anonymous')}</span>
-      <span class="comment-date">${date}</span>
+      <span class="comment-date">${date} ${time}</span>
       <p class="comment-text">${escapeHtml(c.text)}</p>
     </div>`;
   });

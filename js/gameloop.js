@@ -50,44 +50,9 @@ function init() {
 
   document.getElementById('loading').classList.add('hidden');
 
-  // Load or create state
-  const saved = loadState();
-  if (saved && confirm('Continue previous game?')) {
-    gameState = saved;
-    // Ensure new fields exist on loaded saves
-    if (gameState.gameOver   === undefined) gameState.gameOver   = false;
-    if (gameState.extraLivesPurchased === undefined) gameState.extraLivesPurchased = 0;
-    if (gameState.repickCount === undefined) gameState.repickCount = 0;
-    if (gameState.downgradeAvailableId === undefined) gameState.downgradeAvailableId = null;
-    if (gameState.defendTime === undefined) gameState.defendTime = 0;
-    if (gameState.finalWaveKills === undefined) gameState.finalWaveKills = 0;
-    if (!gameState.critNumbers)            gameState.critNumbers = [];
-    if (!gameState.gemCounters) gameState.gemCounters = {};
-    for (const gem of Object.values(gameState.gems || {})) {
-      if (gem.level       === undefined) gem.level       = 1;
-      if (gem.auraBonus   === undefined) gem.auraBonus   = 0;
-      if (gem.dmgBonus    === undefined) gem.dmgBonus    = 0;
-      if (gem.dmgBonus2   === undefined) gem.dmgBonus2   = 0;
-      if (gem.roundDamage === undefined) gem.roundDamage = 0;
-      if (gem.mvpBonus    === undefined) gem.mvpBonus    = 0;
-      if (gem.goldGenerated === undefined) gem.goldGenerated = 0;
-      if (!gem.name) {
-        const k = `${gem.quality}_${gem.type}`;
-        gameState.gemCounters[k] = (gameState.gemCounters[k] || 0) + 1;
-        gem.name = `${gem.quality} ${gem.type} ${gameState.gemCounters[k]}`;
-      }
-    }
-    for (const enemy of (gameState.enemies || [])) {
-      if (enemy.poisonGemId         === undefined) enemy.poisonGemId         = null;
-      if (enemy.armorDebuff         === undefined) enemy.armorDebuff         = 0;
-      if (enemy.armorDebuffUntil    === undefined) enemy.armorDebuffUntil    = 0;
-      if (enemy.armorAuraDebuff     === undefined) enemy.armorAuraDebuff     = 0;
-      if (enemy.armorAuraDebuffUntil === undefined) enemy.armorAuraDebuffUntil = 0;
-    }
-  } else {
-    clearState();
-    gameState = createInitialState();
-  }
+  // Always start a fresh game (save/load disabled for now)
+  clearState();
+  gameState = createInitialState();
 
   // Grid is not serialisable (circular-ish structure), rebuild it each time
   gameState.grid = createGrid();
@@ -627,6 +592,7 @@ function startDefendPhase() {
 
   // Reset per-wave kill counter for leaderboard tracking
   gameState.finalWaveKills = 0;
+  gameState.waveEnemiesGone = 0;
 
   // Apply all aura bonuses (attack speed + damage) before wave begins
   applyAllAuraBuffs(gameState);
@@ -923,13 +889,14 @@ function updateDefend(dt, now) {
     }
   }
 
-  // 4. Award gold for kills, then remove dead/exited enemies
+  // 4. Award gold for kills, count removed enemies, then filter
   const killGold = getWaveGold(gameState.wave).killGold;
   for (const e of gameState.enemies) {
     if (e.dead) {
       gameState.gold += killGold;
       gameState.finalWaveKills += 1;
     }
+    if (e.dead || e.exited) gameState.waveEnemiesGone += 1;
   }
   gameState.enemies = gameState.enemies.filter(e => !e.dead && !e.exited);
 
