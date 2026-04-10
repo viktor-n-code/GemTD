@@ -444,7 +444,7 @@ function applyAuraBuffs(state) {
     for (const gem of Object.values(state.gems)) {
       const dx = gem.x * CELL_SIZE - opx;
       const dy = gem.y * CELL_SIZE - opy;
-      if (Math.sqrt(dx * dx + dy * dy) <= radiusPx && bonus > gem.auraBonus) {
+      if (Math.sqrt(dx * dx + dy * dy) <= radiusPx + CELL_SIZE / 2 && bonus > gem.auraBonus) {
         gem.auraBonus = bonus;
         const ls = getGemStats(gem);
         gem.attackCooldown = Math.round(1000 / (ls.attackSpeed * (1 + bonus)));
@@ -476,7 +476,7 @@ function applyDmgAuraBuffs(state) {
     for (const gem of Object.values(state.gems)) {
       const dx = gem.x * CELL_SIZE - apx;
       const dy = gem.y * CELL_SIZE - apy;
-      if (Math.sqrt(dx * dx + dy * dy) <= radiusPx && bonus > gem.dmgBonus) {
+      if (Math.sqrt(dx * dx + dy * dy) <= radiusPx + CELL_SIZE / 2 && bonus > gem.dmgBonus) {
         gem.dmgBonus = bonus;
       }
     }
@@ -493,7 +493,7 @@ function applyDmgAuraBuffs(state) {
     for (const gem of Object.values(state.gems)) {
       const dx = gem.x * CELL_SIZE - apx;
       const dy = gem.y * CELL_SIZE - apy;
-      if (Math.sqrt(dx * dx + dy * dy) <= radiusPx && bonus > gem.dmgBonus2) {
+      if (Math.sqrt(dx * dx + dy * dy) <= radiusPx + CELL_SIZE / 2 && bonus > gem.dmgBonus2) {
         gem.dmgBonus2 = bonus;
       }
     }
