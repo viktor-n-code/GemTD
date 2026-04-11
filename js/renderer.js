@@ -344,81 +344,42 @@ function drawGems(ctx, state, selectedGemId = null) {
       // Aura rings — only shown when this gem is selected
       if (gem.type === 'special' && gem.id === selectedGemId) {
         const sStats = getSpecialGemLeveledStats(gem.specialType, gem.level || 1);
+        // Double-ring aura helper: outer faint ring + inner brighter ring + fill
+        const drawAuraRing = (auraR, r, g, b, outerAlpha, innerAlpha, fillAlpha) => {
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(cx, cy, auraR, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${r},${g},${b},${fillAlpha})`;
+          ctx.fill();
+          ctx.strokeStyle = `rgba(${r},${g},${b},${outerAlpha})`;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(cx, cy, auraR - 2, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(${r},${g},${b},${innerAlpha})`;
+          ctx.lineWidth = 1;
+          ctx.stroke();
+          ctx.restore();
+        };
         if (sStats?.effect?.type === 'burn_aura' ||
             sStats?.effect?.type === 'blood_stone' ||
             sStats?.effect?.type === 'ancient_blood_stone') {
-          const auraR = sStats.effect.auraRange * (CELL_SIZE / 15);
-          ctx.save();
-          ctx.strokeStyle = 'rgba(255,60,60,0.25)';
-          ctx.lineWidth   = 1;
-          ctx.beginPath();
-          ctx.arc(cx, cy, auraR, 0, Math.PI * 2);
-          ctx.stroke();
-          ctx.restore();
+          drawAuraRing(sStats.effect.auraRange * (CELL_SIZE / 15), 255, 60, 60, 0.15, 0.35, 0.06);
         }
         if (sStats?.effect?.type === 'air_crystal') {
-          const auraR = sStats.effect.auraRange * (CELL_SIZE / 15);
-          ctx.save();
-          ctx.strokeStyle = 'rgba(232,64,64,0.4)';
-          ctx.fillStyle   = 'rgba(232,64,64,0.08)';
-          ctx.lineWidth   = 1;
-          ctx.beginPath();
-          ctx.arc(cx, cy, auraR, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.stroke();
-          ctx.restore();
+          drawAuraRing(sStats.effect.auraRange * (CELL_SIZE / 15), 232, 64, 64, 0.25, 0.45, 0.08);
         }
         if (sStats?.effect?.type === 'paraiba_nova') {
-          // Ground armor aura ring — teal
-          const auraR = sStats.effect.auraRange * (CELL_SIZE / 15);
-          ctx.save();
-          ctx.strokeStyle = 'rgba(79,209,232,0.4)';
-          ctx.fillStyle   = 'rgba(79,209,232,0.06)';
-          ctx.lineWidth   = 1;
-          ctx.beginPath();
-          ctx.arc(cx, cy, auraR, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.stroke();
-          ctx.restore();
+          drawAuraRing(sStats.effect.auraRange * (CELL_SIZE / 15), 79, 209, 232, 0.25, 0.45, 0.06);
         }
         if (sStats?.effect?.type === 'dmg_aura') {
-          // Damage aura ring — gold (Black Opal)
-          const auraR = sStats.effect.auraRange * (CELL_SIZE / 15);
-          ctx.save();
-          ctx.strokeStyle = 'rgba(245,197,24,0.5)';
-          ctx.fillStyle   = 'rgba(245,197,24,0.07)';
-          ctx.lineWidth   = 1;
-          ctx.beginPath();
-          ctx.arc(cx, cy, auraR, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.stroke();
-          ctx.restore();
+          drawAuraRing(sStats.effect.auraRange * (CELL_SIZE / 15), 245, 197, 24, 0.3, 0.5, 0.07);
         }
         if (sStats?.effect?.type === 'splash_slow_dmg_aura') {
-          // Damage aura ring — gold (Star Yellow Sapphire)
-          const auraR = sStats.effect.dmgAuraRange * (CELL_SIZE / 15);
-          ctx.save();
-          ctx.strokeStyle = 'rgba(245,197,24,0.5)';
-          ctx.fillStyle   = 'rgba(245,197,24,0.07)';
-          ctx.lineWidth   = 1;
-          ctx.beginPath();
-          ctx.arc(cx, cy, auraR, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.stroke();
-          ctx.restore();
+          drawAuraRing(sStats.effect.dmgAuraRange * (CELL_SIZE / 15), 245, 197, 24, 0.3, 0.5, 0.07);
         }
         if (sStats?.effect?.type === 'uranium') {
-          // Slow + burn aura ring — green (Uranium)
-          const auraR = sStats.effect.auraRange * (CELL_SIZE / 15);
-          ctx.save();
-          ctx.strokeStyle = 'rgba(170,255,68,0.5)';
-          ctx.fillStyle   = 'rgba(170,255,68,0.07)';
-          ctx.lineWidth   = 1;
-          ctx.beginPath();
-          ctx.arc(cx, cy, auraR, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.stroke();
-          ctx.restore();
+          drawAuraRing(sStats.effect.auraRange * (CELL_SIZE / 15), 170, 255, 68, 0.3, 0.5, 0.07);
         }
       }
     }
@@ -478,28 +439,39 @@ function drawEnemies(ctx, enemies) {
       ctx.fill();
     }
 
-    // Stun ring — light blue outline when frozen
+    // Stun ring — pulsing frost effect
     if (now < (enemy.stunUntil ?? 0)) {
-      ctx.strokeStyle = 'rgba(180, 230, 255, 0.95)';
-      ctx.lineWidth = 2;
+      const pulse = 0.7 + 0.3 * Math.sin(now * 0.008);
+      ctx.strokeStyle = `rgba(180, 230, 255, ${pulse * 0.95})`;
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.arc(x, y, radius + 2, 0, Math.PI * 2);
       ctx.stroke();
+      ctx.fillStyle = `rgba(200, 240, 255, ${pulse * 0.12})`;
+      ctx.beginPath();
+      ctx.arc(x, y, radius + 1, 0, Math.PI * 2);
+      ctx.fill();
     }
 
-    // HP bar: 8px wide, 2px tall, centered above the circle
-    const barW  = 8;
+    // HP bar: 10px wide, 2px tall, with border and gradient color
+    const barW  = 10;
     const barH  = 2;
     const barX  = x - barW / 2;
-    const barY  = y - radius - barH - 2; // 2px gap above the circle
+    const barY  = y - radius - barH - 3;
     const hpPct = maxHp > 0 ? Math.max(0, Math.min(1, hp / maxHp)) : 0;
 
+    // Border
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(barX - 0.5, barY - 0.5, barW + 1, barH + 1);
+
     // Background
-    ctx.fillStyle = COLOR_ENEMY_HP_BG;
+    ctx.fillStyle = '#4a0000';
     ctx.fillRect(barX, barY, barW, barH);
 
-    // Foreground (current HP)
-    ctx.fillStyle = COLOR_ENEMY_HP_FG;
+    // Foreground — green→yellow→red based on HP
+    const cr = hpPct < 0.5 ? 255 : Math.round(255 * (1 - hpPct) * 2);
+    const cg = hpPct > 0.5 ? 255 : Math.round(255 * hpPct * 2);
+    ctx.fillStyle = `rgb(${cr}, ${cg}, 0)`;
     ctx.fillRect(barX, barY, barW * hpPct, barH);
   }
 }
@@ -512,16 +484,36 @@ function drawProjectiles(ctx, projectiles) {
   if (!projectiles || projectiles.length === 0) return;
 
   ctx.save();
-  ctx.lineWidth = 1.5;
-
   for (const p of projectiles) {
-    ctx.strokeStyle = p.color || COLOR_PROJECTILE;
+    const color = p.color || COLOR_PROJECTILE;
+    const dx = p.x2 - p.x1;
+    const dy = p.y2 - p.y1;
+    const len = Math.sqrt(dx * dx + dy * dy);
+    if (len < 1) continue;
+    const midX = p.x1 + dx * 0.4;
+    const midY = p.y1 + dy * 0.4;
+    // Trail — faint
+    ctx.strokeStyle = color;
+    ctx.globalAlpha = 0.4;
+    ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(p.x1, p.y1);
+    ctx.lineTo(midX, midY);
+    ctx.stroke();
+    // Head — bright
+    ctx.globalAlpha = 1.0;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(midX, midY);
     ctx.lineTo(p.x2, p.y2);
     ctx.stroke();
+    // Impact dot
+    ctx.beginPath();
+    ctx.arc(p.x2, p.y2, 1.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.globalAlpha = 0.6;
+    ctx.fill();
   }
-
   ctx.restore();
 }
 
@@ -529,14 +521,21 @@ function drawCritNumbers(ctx, critNumbers) {
   if (!critNumbers || critNumbers.length === 0) return;
   const now = performance.now();
   ctx.save();
-  ctx.font = 'bold 13px Arial';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   for (const n of critNumbers) {
     const t = Math.min(1, (now - n.createdAt) / 600);
     const alpha = 1 - t;
     const offsetY = t * 22;
+    const scale = 1 + (1 - t) * 0.3;
+    const fontSize = Math.round(13 * scale);
+    ctx.font = `bold ${fontSize}px Arial`;
     const [r, g, b] = n.color ?? [255, 60, 60];
+    // Outline for readability
+    ctx.strokeStyle = `rgba(0, 0, 0, ${alpha * 0.7})`;
+    ctx.lineWidth = 2.5;
+    ctx.strokeText(n.value, n.x, n.y - offsetY);
+    // Fill
     ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
     ctx.fillText(n.value, n.x, n.y - offsetY);
   }

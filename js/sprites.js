@@ -635,63 +635,95 @@ const ENEMY_SIZE = 16;
 function drawGroundEnemy(ctx, size) {
   const cx = size / 2;
   const cy = size / 2;
-  // Body — rounded rectangle
-  const bw = 8, bh = 10;
+  const bw = 9, bh = 9;
+  // Legs
+  ctx.fillStyle = '#884400';
+  ctx.fillRect(cx - 3, cy + 3, 2, 3);
+  ctx.fillRect(cx + 1, cy + 3, 2, 3);
+  // Body — rounded rectangle with richer gradient
   ctx.beginPath();
-  ctx.moveTo(cx - bw / 2 + 2, cy - bh / 2);
-  ctx.lineTo(cx + bw / 2 - 2, cy - bh / 2);
-  ctx.quadraticCurveTo(cx + bw / 2, cy - bh / 2, cx + bw / 2, cy - bh / 2 + 2);
+  ctx.moveTo(cx - bw / 2 + 2, cy - bh / 2 + 1);
+  ctx.lineTo(cx + bw / 2 - 2, cy - bh / 2 + 1);
+  ctx.quadraticCurveTo(cx + bw / 2, cy - bh / 2 + 1, cx + bw / 2, cy - bh / 2 + 3);
   ctx.lineTo(cx + bw / 2, cy + bh / 2 - 1);
-  ctx.lineTo(cx - bw / 2, cy + bh / 2 - 1);
-  ctx.lineTo(cx - bw / 2, cy - bh / 2 + 2);
-  ctx.quadraticCurveTo(cx - bw / 2, cy - bh / 2, cx - bw / 2 + 2, cy - bh / 2);
+  ctx.quadraticCurveTo(cx + bw / 2, cy + bh / 2, cx + bw / 2 - 2, cy + bh / 2);
+  ctx.lineTo(cx - bw / 2 + 2, cy + bh / 2);
+  ctx.quadraticCurveTo(cx - bw / 2, cy + bh / 2, cx - bw / 2, cy + bh / 2 - 1);
+  ctx.lineTo(cx - bw / 2, cy - bh / 2 + 3);
+  ctx.quadraticCurveTo(cx - bw / 2, cy - bh / 2 + 1, cx - bw / 2 + 2, cy - bh / 2 + 1);
   ctx.closePath();
   const g = ctx.createLinearGradient(cx - bw / 2, cy, cx + bw / 2, cy);
-  g.addColorStop(0, '#ff8833');
-  g.addColorStop(0.5, '#ffaa55');
-  g.addColorStop(1, '#cc5500');
+  g.addColorStop(0, '#ff9944');
+  g.addColorStop(0.35, '#ffbb66');
+  g.addColorStop(0.65, '#ffbb66');
+  g.addColorStop(1, '#dd6600');
   ctx.fillStyle = g;
   ctx.fill();
-  ctx.strokeStyle = '#993300';
+  ctx.strokeStyle = '#884400';
   ctx.lineWidth = 0.8;
   ctx.stroke();
-  // Head — small circle
+  // Belt/armor line
+  ctx.fillStyle = 'rgba(100, 60, 20, 0.5)';
+  ctx.fillRect(cx - bw / 2 + 1, cy, bw - 2, 1);
+  // Head
   ctx.beginPath();
-  ctx.arc(cx, cy - bh / 2 - 1.5, 2.5, 0, Math.PI * 2);
+  ctx.arc(cx, cy - bh / 2 - 1, 3, 0, Math.PI * 2);
   ctx.fillStyle = '#ffcc88';
   ctx.fill();
-  ctx.strokeStyle = '#993300';
+  ctx.strokeStyle = '#884400';
   ctx.lineWidth = 0.5;
   ctx.stroke();
+  // Eyes
+  ctx.fillStyle = '#442200';
+  ctx.fillRect(cx - 1.5, cy - bh / 2 - 2, 1, 1);
+  ctx.fillRect(cx + 0.5, cy - bh / 2 - 2, 1, 1);
 }
 
 function drawFlyingEnemy(ctx, size) {
   const cx = size / 2;
   const cy = size / 2;
-  // Wing/chevron shape
+  // Tail contrail
+  ctx.fillStyle = 'rgba(100, 200, 255, 0.2)';
   ctx.beginPath();
-  ctx.moveTo(cx, cy - 3);
-  ctx.lineTo(cx + 6, cy - 5);
-  ctx.lineTo(cx + 4, cy);
-  ctx.lineTo(cx + 6, cy + 2);
-  ctx.lineTo(cx, cy + 5);
-  ctx.lineTo(cx - 6, cy + 2);
-  ctx.lineTo(cx - 4, cy);
-  ctx.lineTo(cx - 6, cy - 5);
+  ctx.moveTo(cx - 2, cy + 3);
+  ctx.lineTo(cx + 2, cy + 3);
+  ctx.lineTo(cx, cy + 7);
   ctx.closePath();
-  const g = ctx.createLinearGradient(cx, cy - 5, cx, cy + 5);
-  g.addColorStop(0, '#66ddff');
+  ctx.fill();
+  // Wings — dynamic V-shape
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - 4);
+  ctx.lineTo(cx + 7, cy - 2);
+  ctx.lineTo(cx + 5, cy + 1);
+  ctx.lineTo(cx + 2, cy + 3);
+  ctx.lineTo(cx, cy + 2);
+  ctx.lineTo(cx - 2, cy + 3);
+  ctx.lineTo(cx - 5, cy + 1);
+  ctx.lineTo(cx - 7, cy - 2);
+  ctx.closePath();
+  const g = ctx.createLinearGradient(cx, cy - 4, cx, cy + 3);
+  g.addColorStop(0, '#88eeff');
+  g.addColorStop(0.5, '#44bbee');
   g.addColorStop(1, '#0088cc');
   ctx.fillStyle = g;
   ctx.fill();
-  ctx.strokeStyle = '#005588';
-  ctx.lineWidth = 0.8;
+  ctx.strokeStyle = '#006699';
+  ctx.lineWidth = 0.6;
   ctx.stroke();
-  // Eye dot
+  // Cockpit
   ctx.beginPath();
-  ctx.arc(cx, cy - 1, 1.2, 0, Math.PI * 2);
+  ctx.arc(cx, cy - 1, 1.5, 0, Math.PI * 2);
   ctx.fillStyle = '#ffffff';
   ctx.fill();
+  // Wing accent lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+  ctx.lineWidth = 0.5;
+  ctx.beginPath();
+  ctx.moveTo(cx + 1, cy - 2);
+  ctx.lineTo(cx + 5, cy - 1);
+  ctx.moveTo(cx - 1, cy - 2);
+  ctx.lineTo(cx - 5, cy - 1);
+  ctx.stroke();
 }
 
 /**
