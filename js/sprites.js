@@ -295,45 +295,45 @@ export function getGemSprite(type, quality) {
 /** Definitions for each special gem chain visual. */
 const SPECIAL_VISUALS = {
   // Jade chain — rounded octagon, green→gold, clover icon
-  jade:            { shape: 'octagon', light: '#3aaa5a', dark: '#1a5a2a', icon: 'clover' },
-  asian_jade:      { shape: 'octagon', light: '#2a9a4a', dark: '#0a4a1a', icon: 'clover' },
-  lucky_asian_jade:{ shape: 'octagon', light: '#1a8a3a', dark: '#005a0a', icon: 'clover' },
+  jade:            { shape: 'octagon', light: '#3aaa5a', dark: '#1a5a2a', icon: 'clover', tier: 1 },
+  asian_jade:      { shape: 'octagon', light: '#2a9a4a', dark: '#0a4a1a', icon: 'clover', tier: 2 },
+  lucky_asian_jade:{ shape: 'octagon', light: '#1a8a3a', dark: '#005a0a', icon: 'clover', tier: 3 },
   // Malachite chain — triangle, green→teal→blue
-  malachite:       { shape: 'triangle', light: '#4cae5c', dark: '#1a6a2a', icon: 'dots' },
-  chrysocolla:     { shape: 'triangle', light: '#5abe6c', dark: '#1a7a3a', icon: 'dots' },
-  azurite:         { shape: 'triangle', light: '#6ece7c', dark: '#1a8a4a', icon: 'dots' },
+  malachite:       { shape: 'triangle', light: '#4cae5c', dark: '#1a6a2a', icon: 'dots', tier: 1 },
+  chrysocolla:     { shape: 'triangle', light: '#5abe6c', dark: '#1a7a3a', icon: 'dots', tier: 2 },
+  azurite:         { shape: 'triangle', light: '#6ece7c', dark: '#1a8a4a', icon: 'dots', tier: 3 },
   // Silver chain — shield, silver→steel blue
-  silver:          { shape: 'shield', light: '#ccccee', dark: '#6666aa', icon: 'sword' },
-  sterling_silver: { shape: 'shield', light: '#bbbbdd', dark: '#5555aa', icon: 'sword' },
-  silver_knight:   { shape: 'shield', light: '#aaaacc', dark: '#4444aa', icon: 'sword' },
+  silver:          { shape: 'shield', light: '#ccccee', dark: '#6666aa', icon: 'sword', tier: 1 },
+  sterling_silver: { shape: 'shield', light: '#bbbbdd', dark: '#5555aa', icon: 'sword', tier: 2 },
+  silver_knight:   { shape: 'shield', light: '#aaaacc', dark: '#4444aa', icon: 'sword', tier: 3 },
   // Blood Stone chain — flame, dark red→crimson
-  blood_stone:     { shape: 'flame', light: '#ff4444', dark: '#660000', icon: 'skull' },
-  ancient_blood_stone: { shape: 'flame', light: '#cc0000', dark: '#440000', icon: 'skull' },
+  blood_stone:     { shape: 'flame', light: '#ff4444', dark: '#660000', icon: 'skull', tier: 1 },
+  ancient_blood_stone: { shape: 'flame', light: '#cc0000', dark: '#440000', icon: 'skull', tier: 2 },
   // Rose Quartz chain — heart/gem, pink→rose
-  rose_quartz:     { shape: 'heart', light: '#ff88cc', dark: '#993366', icon: 'spiral' },
-  rose_quartz_crystal: { shape: 'heart', light: '#ff55aa', dark: '#882255', icon: 'spiral' },
+  rose_quartz:     { shape: 'heart', light: '#ff88cc', dark: '#993366', icon: 'spiral', tier: 1 },
+  rose_quartz_crystal: { shape: 'heart', light: '#ff55aa', dark: '#882255', icon: 'spiral', tier: 2 },
   // Pink Diamond chain — cut diamond, pink→magenta
-  pink_diamond:    { shape: 'cutdiamond', light: '#ff8099', dark: '#993355', icon: 'bolt' },
-  great_pink_diamond: { shape: 'cutdiamond', light: '#ff55aa', dark: '#882244', icon: 'bolt' },
+  pink_diamond:    { shape: 'cutdiamond', light: '#ff8099', dark: '#993355', icon: 'bolt', tier: 1 },
+  great_pink_diamond: { shape: 'cutdiamond', light: '#ff55aa', dark: '#882244', icon: 'bolt', tier: 2 },
   // Gold chain — coin, gold→amber
-  gold:            { shape: 'coin', light: '#f5c518', dark: '#8a6a00', icon: 'cross' },
-  egyptian_gold:   { shape: 'coin', light: '#e6a800', dark: '#7a5a00', icon: 'cross' },
+  gold:            { shape: 'coin', light: '#f5c518', dark: '#8a6a00', icon: 'cross', tier: 1 },
+  egyptian_gold:   { shape: 'coin', light: '#e6a800', dark: '#7a5a00', icon: 'cross', tier: 2 },
   // Paraiba chain — crystal/prism, teal→cyan
-  paraiba_tourmaline:      { shape: 'prism', light: '#4fd1e8', dark: '#1a7a8a', icon: 'burst' },
-  paraiba_tourmaline_facet:{ shape: 'prism', light: '#3ab8cf', dark: '#0a6a7a', icon: 'burst' },
+  paraiba_tourmaline:      { shape: 'prism', light: '#4fd1e8', dark: '#1a7a8a', icon: 'burst', tier: 1 },
+  paraiba_tourmaline_facet:{ shape: 'prism', light: '#3ab8cf', dark: '#0a6a7a', icon: 'burst', tier: 2 },
   // Black Opal chain — dark star, black→purple
-  black_opal:        { shape: 'darkstar', light: '#6644aa', dark: '#1a0a2e', icon: 'eye' },
-  mystic_black_opal: { shape: 'darkstar', light: '#8855cc', dark: '#2a1a4e', icon: 'eye' },
+  black_opal:        { shape: 'darkstar', light: '#6644aa', dark: '#1a0a2e', icon: 'eye', tier: 1 },
+  mystic_black_opal: { shape: 'darkstar', light: '#8855cc', dark: '#2a1a4e', icon: 'eye', tier: 2 },
   // Uranium chain — hazard, green→yellow-green
-  uranium_235:     { shape: 'hazard', light: '#aaff44', dark: '#446600', icon: 'trefoil' },
-  uranium_238:     { shape: 'hazard', light: '#66cc00', dark: '#335500', icon: 'trefoil' },
+  uranium_235:     { shape: 'hazard', light: '#aaff44', dark: '#446600', icon: 'trefoil', tier: 1 },
+  uranium_238:     { shape: 'hazard', light: '#66cc00', dark: '#335500', icon: 'trefoil', tier: 2 },
   // Yellow Sapphire chain — starburst, yellow→gold
-  yellow_sapphire:      { shape: 'starburst', light: '#ffe066', dark: '#997700', icon: 'wave' },
-  star_yellow_sapphire: { shape: 'starburst', light: '#ffd700', dark: '#886600', icon: 'wave' },
+  yellow_sapphire:      { shape: 'starburst', light: '#ffe066', dark: '#997700', icon: 'wave', tier: 1 },
+  star_yellow_sapphire: { shape: 'starburst', light: '#ffd700', dark: '#886600', icon: 'wave', tier: 2 },
   // Tanzanite — hex with spikes, violet→indigo
-  tanzanite:       { shape: 'spikehex', light: '#cc2222', dark: '#660000', icon: 'hammer' },
+  tanzanite:       { shape: 'spikehex', light: '#cc2222', dark: '#660000', icon: 'hammer', tier: 1 },
   // Air Crystal — wing, white→sky blue
-  air_crystal:     { shape: 'wing', light: '#ccddff', dark: '#5577bb', icon: 'wind' },
+  air_crystal:     { shape: 'wing', light: '#ccddff', dark: '#5577bb', icon: 'wind', tier: 1 },
 };
 
 // --- Shape drawers for special gems ---
@@ -599,11 +599,12 @@ export function getSpecialGemSprite(specialType) {
     const r = R;
     const shapeFn = SPECIAL_SHAPES[vis.shape];
     if (!shapeFn) return;
+    const tier = vis.tier || 1;
 
-    // Glow
+    // Glow — scales with tier
     ctx.save();
     ctx.shadowColor = vis.light;
-    ctx.shadowBlur = 5;
+    ctx.shadowBlur = 5 + (tier - 1) * 3;
     shapeFn(ctx, cx, cy, r);
     ctx.fillStyle = gemGradient(ctx, cx, cy, r, vis.light, vis.dark);
     ctx.fill();
@@ -615,13 +616,33 @@ export function getSpecialGemSprite(specialType) {
     ctx.lineWidth = 1;
     ctx.stroke();
 
-    // Icon
+    // Accent ring for tier 2+
+    if (tier >= 2) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, r + 1.5, 0, Math.PI * 2);
+      ctx.strokeStyle = vis.light;
+      ctx.globalAlpha = tier >= 3 ? 0.6 : 0.4;
+      ctx.lineWidth = tier >= 3 ? 1.5 : 1;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+
+    // Icon — brighter at higher tiers
     const iconFn = ICON_DRAWERS[vis.icon];
     if (iconFn) {
-      ctx.fillStyle = 'rgba(255,255,255,0.6)';
-      ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+      const iconAlpha = 0.5 + tier * 0.1;
+      ctx.fillStyle = `rgba(255,255,255,${iconAlpha})`;
+      ctx.strokeStyle = `rgba(255,255,255,${iconAlpha})`;
       ctx.lineWidth = 1;
       iconFn(ctx, cx, cy, SPRITE_SIZE);
+    }
+
+    // Center sparkle for tier 3
+    if (tier >= 3) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, r * 0.1, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.5)';
+      ctx.fill();
     }
   });
 }
