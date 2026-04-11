@@ -122,7 +122,12 @@ export function getWaveStats(wave) {
   const stunImmune  = wave % 50 === 0;
   const weakness    = getWeakness(wave, flying);
 
-  return { hp, armor, speed, minSpeed, flying, stunImmune, weakness };
+  // Resistance: ground enemies gain stun/damage resistance from wave 100,
+  // capped at wave 200. Degrades over distance travelled (rewards long mazes).
+  const stunResist = !flying && wave >= 100 ? Math.min(1.0, (wave - 100) * 0.01) : 0;
+  const dmgResist  = !flying && wave >= 100 ? Math.min(0.5, (wave - 100) * 0.005) : 0;
+
+  return { hp, armor, speed, minSpeed, flying, stunImmune, weakness, stunResist, dmgResist };
 }
 
 /**
@@ -178,6 +183,9 @@ export function spawnEnemy(waveNumber, path) {
     armorDebuffUntil: 0,   // timestamp (ms) when on-hit debuff expires
     armorAuraDebuff: 0,    // aura-based armor reduction (Red Crystal, Paraiba Tourmaline)
     armorAuraDebuffUntil: 0, // timestamp (ms) when aura debuff expires (refreshed each frame)
+    stunResist: stats.stunResist || 0,  // 0.0–1.0; chance to resist stun
+    dmgResist:  stats.dmgResist  || 0,  // 0.0–0.5; flat damage reduction
+    distanceTravelled: 0,               // pixels moved; resistance degrades over distance
     dead: false,
     exited: false,
   };
@@ -232,6 +240,7 @@ export function moveEnemy(enemy, dt, now) {
 
   if (step >= dist) {
     // Snap to waypoint and advance
+    enemy.distanceTravelled += dist;
     enemy.x = targetX;
     enemy.y = targetY;
     enemy.pathIndex++;
@@ -239,7 +248,26 @@ export function moveEnemy(enemy, dt, now) {
       enemy.exited = true;
     }
   } else {
+    enemy.distanceTravelled += step;
     enemy.x += (dx / dist) * step;
     enemy.y += (dy / dist) * step;
   }
+}
+
+// ---------------------------------------------------------------------------
+// Resistance helper — returns current resistance after distance degradation
+// ---------------------------------------------------------------------------
+
+const DEGRADE_DISTANCE = 800 * CELL_SIZE; // 800 tiles = 12800px for full degradation
+
+/**
+ * Returns current stun/damage resistance after distance-based degradation.
+ * Resistance degrades linearly: fully gone after DEGRADE_DISTANCE pixels.
+ */
+export function getEnemyResistance(enemy) {
+  const factor = Math.max(0, 1 - enemy.distanceTravelled / DEGRADE_DISTANCE);
+  return {
+    stunResist: (enemy.stunResist || 0) * factor,
+    dmgResist:  (enemy.dmgResist  || 0) * factor,
+  };
 }

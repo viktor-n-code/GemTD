@@ -24,6 +24,8 @@ export function createInitialState() {
     defendTime: 0,
     finalWaveKills: 0,
     waveEnemiesGone: 0,
+    waveTotalHp: 0,          // total HP pool for current wave (count × maxHp)
+    waveDamageDealt: 0,      // accumulated damage to removed enemies (dead + leaked)
     opalAttunement: 0,
     opalAttunementDone: false,
     gameOver: false,
@@ -45,6 +47,11 @@ export function loadState() {
     if (s.gameOver === undefined) s.gameOver = false;
     if (s.gameWon  === undefined) s.gameWon  = false;
     if (s.livesLost === undefined) s.livesLost = 0;
+    for (const e of (s.enemies || [])) {
+      if (e.distanceTravelled === undefined) e.distanceTravelled = 0;
+      if (e.stunResist === undefined) e.stunResist = 0;
+      if (e.dmgResist === undefined) e.dmgResist = 0;
+    }
     if (s.opalAttunement === undefined) s.opalAttunement = 0;
     if (s.opalAttunementDone === undefined) {
       const hasGreatOpal = Object.values(s.gems || {}).some(

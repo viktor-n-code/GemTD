@@ -4,7 +4,7 @@
 import { getVisual, getStats, getLeveledStats, GEM_CHANCE_LEVELS, GEM_TYPES, QUALITY_LEVELS } from './gem.js';
 import { getGemAttackType } from './combat.js';
 import { GRID_ROWS, CELL_SIZE } from './grid.js';
-import { getWaveStats } from './enemy.js';
+import { getWaveStats, getEnemyResistance } from './enemy.js';
 import { SPECIAL_GEM_DEFS, getSpecialGemLeveledStats, getSpecialVisual, findAvailableRecipes } from './specialgem.js';
 
 // ---------------------------------------------------------------------------
@@ -520,6 +520,16 @@ function _buildEnemyHTML(enemy, state) {
       <span class="info-value"><span class="info-level-note">+75% ${enemy.weakness} dmg, −10% other</span></span>
     </div>`;
 
+  // Distance-based resistance display
+  const resist = getEnemyResistance(enemy);
+  if (resist.dmgResist > 0.001 || resist.stunResist > 0.001) {
+    html += `
+    <div class="info-row">
+      <span class="info-label">Resist</span>
+      <span class="info-value">${Math.round(resist.dmgResist * 100)}% dmg / ${Math.round(resist.stunResist * 100)}% stun</span>
+    </div>`;
+  }
+
   const tags = [];
   if (now < (enemy.stunUntil ?? 0)) tags.push(`<span class="info-status-tag tag-stunned">Stunned</span>`);
   if (now < enemy.slowUntil)   tags.push(`<span class="info-status-tag tag-slowed">Slowed</span>`);
@@ -627,6 +637,17 @@ export function updateLeftPanel(state) {
   if (waveEl) {
     const remaining = 10 - (state.waveEnemiesGone ?? 0);
     const phaseLabel = state.phase === 'defend' ? 'Wave In Progress' : state.phase === 'build' ? 'Build Phase' : 'Between Waves';
+
+    // Compute wave damage dealt % (accumulated + damage on alive enemies)
+    let waveDmgPct = 0;
+    if (state.phase === 'defend' && state.waveTotalHp > 0) {
+      let aliveDmg = 0;
+      for (const e of (state.enemies || [])) {
+        aliveDmg += Math.max(0, e.maxHp - e.hp);
+      }
+      waveDmgPct = Math.min(100, ((state.waveDamageDealt + aliveDmg) / state.waveTotalHp) * 100);
+    }
+
     waveEl.innerHTML = `
       <div class="info-section-title">${phaseLabel}</div>
       <div class="info-wave-stat">${state.wave}</div>
@@ -634,6 +655,13 @@ export function updateLeftPanel(state) {
       ${state.phase === 'defend' ? `<div class="info-row" style="margin-top:8px">
         <span class="info-label">Enemies left</span>
         <span class="info-value">${remaining}</span>
+      </div>
+      <div class="info-row" style="margin-top:4px">
+        <span class="info-label">Dmg dealt</span>
+        <span class="info-value">${waveDmgPct.toFixed(1)}%</span>
+      </div>
+      <div class="wave-dmg-bar-track">
+        <div class="wave-dmg-bar-fill" style="width:${waveDmgPct.toFixed(1)}%"></div>
       </div>` : ''}`;
   }
 

@@ -201,6 +201,20 @@
             border-top: 1px solid #1e3a5f;
         }
 
+        .wave-dmg-bar-track {
+            background: #1a1a2e;
+            border-radius: 3px;
+            height: 6px;
+            margin: 4px 0 2px;
+            width: 100%;
+        }
+        .wave-dmg-bar-fill {
+            background: linear-gradient(90deg, #e8a000, #ffcc33);
+            border-radius: 3px;
+            height: 6px;
+            transition: width 0.15s ease;
+        }
+
         .hp-bar-track {
             background: #2a0000;
             border-radius: 3px;
@@ -399,7 +413,7 @@
             <div id="left-panel">
                 <div id="panel-header">
                     <div id="panel-title">GEM TD</div>
-                    <div id="panel-version">v1.4.1</div>
+                    <div id="panel-version">v1.5.0</div>
                     <div style="color:#556677;font-size:9px;margin-top:2px">by viktor-n</div>
                 </div>
                 <hr class="left-divider">
@@ -433,6 +447,17 @@
         </div>
         <div id="patchnotes-view" class="tab-content hidden">
             <h2>Patch Notes</h2>
+            <div class="patch-version">
+                <h3>v1.5 &mdash; Enemy Resistance</h3>
+                <ul>
+                    <li>Ground enemies gain damage and stun resistance starting at wave 100</li>
+                    <li>Resistance scales linearly: +0.5% damage / +1% stun per wave, capping at wave 200 (50% dmg / 100% stun)</li>
+                    <li>Resistance degrades as enemies travel through the maze &mdash; 800 tiles of maze fully removes it</li>
+                    <li>Long mazes are now essential for high-wave survival; short stun-tower mazes are countered</li>
+                    <li>Flying enemies are unaffected by resistance</li>
+                    <li>Resistance shown in enemy info panel when selecting an enemy</li>
+                </ul>
+            </div>
             <div class="patch-version">
                 <h3>v1.4 &mdash; Visual Overhaul</h3>
                 <ul>
@@ -517,7 +542,8 @@
                 Maze length: <span id="score-maze">0</span> tiles<br>
                 Board fill: <span id="score-fill">0</span><br>
                 Leaks: <span id="score-leaks">0</span><br>
-                MVP Gem: <span id="score-mvp">&mdash;</span>
+                MVP Gem: <span id="score-mvp">&mdash;</span><br>
+                Final wave dmg: <span id="score-wavedmg">0%</span>
             </div>
             <div class="modal-buttons">
                 <button id="score-submit">Submit</button>
