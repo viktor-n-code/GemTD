@@ -352,6 +352,13 @@ function _buildEffectHTML(effect, baseEffect) {
   }
 }
 
+function _attackToggleHTML(gem) {
+  const disabled = gem.attackDisabled || false;
+  const label = disabled ? 'Attacks: OFF' : 'Attacks: ON';
+  const cls = disabled ? 'attack-toggle off' : 'attack-toggle on';
+  return `<button class="${cls}" onclick="window._toggleGemAttack('${gem.id}')">${label}</button>`;
+}
+
 function _buildSpecialGemHTML(gem, state) {
   const level = gem.level || 1;
   const ls    = getSpecialGemLeveledStats(gem.specialType, level);
@@ -388,6 +395,7 @@ function _buildSpecialGemHTML(gem, state) {
   let html = `
     <div class="info-section-title">Selected Gem</div>
     <div class="info-gem-name">${gem.name}${levelLabel}</div>
+    ${_attackToggleHTML(gem)}
     <div class="info-row"><span class="info-label">Attack</span><span class="info-value">${getGemAttackType(gem)}</span></div>
     <div class="info-row"><span class="info-label">Damage</span><span class="info-value">${dmgHTML}${dmgAuraNote}</span></div>
     <div class="info-row"><span class="info-label">Speed</span><span class="info-value">${spdHTML}</span></div>
@@ -473,6 +481,7 @@ function _buildGemHTML(gem, state) {
   let html = `
     <div class="info-section-title">Selected Gem</div>
     <div class="info-gem-name">${gem.name || gem.quality + ' ' + gem.type}${levelLabel}</div>
+    ${_attackToggleHTML(gem)}
     <div class="info-row">
       <span class="info-label">Attack</span>
       <span class="info-value">${getGemAttackType(gem)}</span>
@@ -656,7 +665,16 @@ function _buildLeaderboardHTML(state) {
  * Updates the DOM info panel to the right of the canvas.
  * Called every frame from gameloop.js.
  */
+// Global toggle handler for attack on/off button in info panel
+let _uiState = null;
+window._toggleGemAttack = (gemId) => {
+  if (!_uiState) return;
+  const gem = _uiState.gems[gemId];
+  if (gem) gem.attackDisabled = !gem.attackDisabled;
+};
+
 export function updateInfoPanel(state, inputState) {
+  _uiState = state;
   const selEl     = document.getElementById('panel-selection');
   const chancesEl = document.getElementById('panel-chances');
   if (!selEl || !chancesEl) return;

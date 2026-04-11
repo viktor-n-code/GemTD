@@ -716,6 +716,7 @@ function startDefendPhase() {
     gem.roundSplashDamage = 0;
     gem.roundDotDamage = 0;
     gem.roundAuraDamage = 0;
+    gem.attackDisabled = false;
   }
 
   // Reset round state
@@ -830,6 +831,7 @@ function updateDefend(dt, now) {
 
   // 3. Gem attacks
   for (const gem of Object.values(gameState.gems)) {
+    if (gem.attackDisabled) continue;
     if (!canAttack(gem, now)) continue;
     const target = findTarget(gem);
     if (target) {
@@ -909,6 +911,7 @@ function updateDefend(dt, now) {
 
   // 3b. Red Crystal: passive armor aura debuffs flying enemies within range
   for (const gem of Object.values(gameState.gems)) {
+    if (gem.attackDisabled) continue;
     if (gem.type !== 'special') continue;
     const sStats = getSpecialGemLeveledStats(gem.specialType, gem.level);
     if (sStats?.effect?.type !== 'air_crystal') continue;
@@ -952,6 +955,7 @@ function updateDefend(dt, now) {
 
   // 3c. Star Ruby / Blood Stone / Ancient Blood Stone: passive burn aura damages all enemies within aura range
   for (const gem of Object.values(gameState.gems)) {
+    if (gem.attackDisabled) continue;
     if (gem.type !== 'special') continue;
     const sStats = getSpecialGemLeveledStats(gem.specialType, gem.level);
     const effectType = sStats?.effect?.type;
@@ -981,6 +985,7 @@ function updateDefend(dt, now) {
 
   // 3d. Uranium 235 / Uranium 238: passive slow aura + burn aura
   for (const gem of Object.values(gameState.gems)) {
+    if (gem.attackDisabled) continue;
     if (gem.type !== 'special') continue;
     const sStats = getSpecialGemLeveledStats(gem.specialType, gem.level);
     if (sStats?.effect?.type !== 'uranium') continue;
