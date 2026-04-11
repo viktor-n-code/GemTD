@@ -40,7 +40,7 @@ const GEM_COLORS = {
   Amethyst:   { light: '#c86bff', dark: '#5a1a8b' },
   Diamond:    { light: '#e8f4ff', dark: '#8ab8d6' },
   Topaz:      { light: '#ffd24d', dark: '#b87a00' },
-  Aquamarine: { light: '#6bffd2', dark: '#1a8b6b' },
+  Aquamarine: { light: '#5ce0ee', dark: '#1a6b8b' },
   Opal:       { light: '#fff5e6', dark: '#c9a87c' },
 };
 

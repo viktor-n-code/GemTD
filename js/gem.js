@@ -76,7 +76,7 @@ export const GEM_TYPES = {
     },
   },
   Aquamarine: {
-    color: '#44ddaa',
+    color: '#3cbbd0',
     effect: null,
     note: 'Very fast attack speed',
     stats: {
