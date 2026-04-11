@@ -52,6 +52,16 @@ export function loadState() {
       if (e.stunResist === undefined) e.stunResist = 0;
       if (e.dmgResist === undefined) e.dmgResist = 0;
     }
+    for (const gem of Object.values(s.gems || {})) {
+      if (gem.directDamage === undefined) gem.directDamage = 0;
+      if (gem.splashDamage === undefined) gem.splashDamage = 0;
+      if (gem.dotDamage    === undefined) gem.dotDamage = 0;
+      if (gem.auraDamage   === undefined) gem.auraDamage = 0;
+      if (gem.roundDirectDamage === undefined) gem.roundDirectDamage = 0;
+      if (gem.roundSplashDamage === undefined) gem.roundSplashDamage = 0;
+      if (gem.roundDotDamage    === undefined) gem.roundDotDamage = 0;
+      if (gem.roundAuraDamage   === undefined) gem.roundAuraDamage = 0;
+    }
     if (s.opalAttunement === undefined) s.opalAttunement = 0;
     if (s.opalAttunementDone === undefined) {
       const hasGreatOpal = Object.values(s.gems || {}).some(

@@ -364,6 +364,14 @@ function _buildSpecialGemHTML(gem, state) {
   } else if (gem.totalDamage > 0) {
     html += `<div class="info-kills">Dmg: ${Math.round(gem.totalDamage)}</div>`;
   }
+  const cats1 = [];
+  if ((gem.directDamage || 0) > 0) cats1.push(`Direct: ${Math.round(gem.directDamage)}`);
+  if ((gem.splashDamage || 0) > 0) cats1.push(`Splash: ${Math.round(gem.splashDamage)}`);
+  if ((gem.dotDamage    || 0) > 0) cats1.push(`DoT: ${Math.round(gem.dotDamage)}`);
+  if ((gem.auraDamage   || 0) > 0) cats1.push(`Aura: ${Math.round(gem.auraDamage)}`);
+  if (cats1.length >= 2) {
+    html += `<div class="info-damage-breakdown">${cats1.join(' &nbsp;|&nbsp; ')}</div>`;
+  }
   if (gem.goldGenerated > 0) {
     html += `<div class="info-kills">Gold generated: ${gem.goldGenerated}</div>`;
   }
@@ -457,6 +465,14 @@ function _buildGemHTML(gem, state) {
     html += `<div class="info-kills">Kills: ${gem.kills} &nbsp; Dmg: ${Math.round(gem.totalDamage)}</div>`;
   } else if (gem.totalDamage > 0) {
     html += `<div class="info-kills">Dmg: ${Math.round(gem.totalDamage)}</div>`;
+  }
+  const cats2 = [];
+  if ((gem.directDamage || 0) > 0) cats2.push(`Direct: ${Math.round(gem.directDamage)}`);
+  if ((gem.splashDamage || 0) > 0) cats2.push(`Splash: ${Math.round(gem.splashDamage)}`);
+  if ((gem.dotDamage    || 0) > 0) cats2.push(`DoT: ${Math.round(gem.dotDamage)}`);
+  if ((gem.auraDamage   || 0) > 0) cats2.push(`Aura: ${Math.round(gem.auraDamage)}`);
+  if (cats2.length >= 2) {
+    html += `<div class="info-damage-breakdown">${cats2.join(' &nbsp;|&nbsp; ')}</div>`;
   }
   if (mvpBonus > 0) {
     html += `<div class="info-mvp">MVP wins: ${mvpBonus} &nbsp; (+${mvpBonus}% dmg)</div>`;

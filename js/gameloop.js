@@ -182,6 +182,8 @@ function updateBuild(dt, now) {
         name: null, // assigned in startDefendPhase once quality is final
         level: 1,
         kills: 0, totalDamage: 0, roundDamage: 0, goldGenerated: 0,
+        directDamage: 0, splashDamage: 0, dotDamage: 0, auraDamage: 0,
+        roundDirectDamage: 0, roundSplashDamage: 0, roundDotDamage: 0, roundAuraDamage: 0,
         mvpBonus: 0,
         lastAttackTime: 0,
         attackCooldown: Math.round(1000 / stats.attackSpeed),
@@ -546,10 +548,25 @@ function _handleCombineSpecial(selectedGemId, phase) {
   const totalDmg   = allParticipants.reduce((s, g) => s + (g.totalDamage || 0), 0);
   const totalMvp   = allParticipants.reduce((s, g) => s + (g.mvpBonus || 0), 0);
   const totalGold  = allParticipants.reduce((s, g) => s + (g.goldGenerated || 0), 0);
+  let sumDirect = allParticipants.reduce((s, g) => s + (g.directDamage || 0), 0);
+  let sumSplash = allParticipants.reduce((s, g) => s + (g.splashDamage || 0), 0);
+  let sumDot    = allParticipants.reduce((s, g) => s + (g.dotDamage || 0), 0);
+  let sumAura   = allParticipants.reduce((s, g) => s + (g.auraDamage || 0), 0);
   const newLevel   = Math.max(1, Math.floor(totalKills / 10) + 1);
 
-  // Transform master gem into the special gem
+  // Fold orphaned damage categories into direct if the new gem can't produce them
   const sStats = getSpecialGemLeveledStats(def.id, newLevel);
+  const et = sStats?.effect?.type;
+  const canDoT    = et === 'poison' || et === 'lucky_jade';
+  const canSplash = et === 'splash' || et === 'splash_slow' || et === 'splash_slow_dmg_aura'
+                 || et === 'ancient_blood_stone' || et === 'paraiba_nova';
+  const canAura   = et === 'burn_aura' || et === 'blood_stone' || et === 'ancient_blood_stone'
+                 || et === 'uranium';
+  if (!canDoT)    { sumDirect += sumDot;    sumDot = 0; }
+  if (!canSplash) { sumDirect += sumSplash; sumSplash = 0; }
+  if (!canAura)   { sumDirect += sumAura;   sumAura = 0; }
+
+  // Transform master gem into the special gem
   master.type        = 'special';
   master.specialType = def.id;
   master.quality     = null;
@@ -557,6 +574,10 @@ function _handleCombineSpecial(selectedGemId, phase) {
   master.totalDamage = totalDmg;
   master.mvpBonus    = totalMvp;
   master.goldGenerated = totalGold;
+  master.directDamage = sumDirect;
+  master.splashDamage = sumSplash;
+  master.dotDamage    = sumDot;
+  master.auraDamage   = sumAura;
   master.level       = newLevel;
   master.attackCooldown = Math.round(1000 / sStats.attackSpeed);
 
@@ -681,6 +702,10 @@ function startDefendPhase() {
   // Reset per-round damage counters for all active gems
   for (const gem of Object.values(gameState.gems)) {
     gem.roundDamage = 0;
+    gem.roundDirectDamage = 0;
+    gem.roundSplashDamage = 0;
+    gem.roundDotDamage = 0;
+    gem.roundAuraDamage = 0;
   }
 
   // Reset round state
@@ -769,6 +794,8 @@ function updateDefend(dt, now) {
         if (e.hp <= 0 && !e.dead) { e.dead = true; poisonResult.killed = true; }
         pg.totalDamage  += adjDmg;
         pg.roundDamage  += adjDmg;
+        pg.dotDamage    += adjDmg;
+        pg.roundDotDamage += adjDmg;
         if (poisonResult.killed) {
           pg.kills++;
           _checkLevelUp(pg);
@@ -795,6 +822,10 @@ function updateDefend(dt, now) {
       gem.lastTargetId = target.id;
       gem.totalDamage  += result.damage + result.splashDamage;
       gem.roundDamage  += result.damage + result.splashDamage;
+      gem.directDamage += result.damage;
+      gem.splashDamage += result.splashDamage;
+      gem.roundDirectDamage += result.damage;
+      gem.roundSplashDamage += result.splashDamage;
       if (target.dead) gem.kills++;
       gem.kills += result.splashKills;
       _checkLevelUp(gem);
@@ -829,6 +860,8 @@ function updateDefend(dt, now) {
           const extraResult = attackEnemy(gem, extra, gameState.enemies, now, gameState.wave);
           gem.totalDamage  += extraResult.damage;
           gem.roundDamage  += extraResult.damage;
+          gem.directDamage += extraResult.damage;
+          gem.roundDirectDamage += extraResult.damage;
           if (extra.dead) { gem.kills++; _checkLevelUp(gem); }
           gameState.projectiles.push({ x1: gem.x * CELL_SIZE, y1: gem.y * CELL_SIZE, x2: extra.x, y2: extra.y, color });
           if (extraResult.crit) {
@@ -847,6 +880,8 @@ function updateDefend(dt, now) {
           const extraResult = attackEnemy(gem, extra, gameState.enemies, now, gameState.wave);
           gem.totalDamage  += extraResult.damage;
           gem.roundDamage  += extraResult.damage;
+          gem.directDamage += extraResult.damage;
+          gem.roundDirectDamage += extraResult.damage;
           if (extra.dead) { gem.kills++; _checkLevelUp(gem); }
           gameState.projectiles.push({ x1: gem.x * CELL_SIZE, y1: gem.y * CELL_SIZE, x2: extra.x, y2: extra.y, color });
           if (extraResult.crit) {
@@ -919,6 +954,8 @@ function updateDefend(dt, now) {
       enemy.hp       -= dmg;
       gem.totalDamage += dmg;
       gem.roundDamage += dmg;
+      gem.auraDamage  += dmg;
+      gem.roundAuraDamage += dmg;
       if (enemy.hp <= 0 && !enemy.dead) {
         enemy.dead = true;
         gem.kills++;
@@ -946,6 +983,8 @@ function updateDefend(dt, now) {
       enemy.hp        -= dmg;
       gem.totalDamage += dmg;
       gem.roundDamage += dmg;
+      gem.auraDamage  += dmg;
+      gem.roundAuraDamage += dmg;
       if (enemy.hp <= 0 && !enemy.dead) {
         enemy.dead = true;
         gem.kills++;
