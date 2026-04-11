@@ -378,6 +378,20 @@
         .patch-version h3 { color: #00d4ff; font-size: 14px; margin-bottom: 6px; }
         .patch-version ul { list-style: disc; padding-left: 20px; font-size: 12px; line-height: 1.8; }
 
+        .donate-button {
+            display: inline-block;
+            background: #ff5e5b;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 12px;
+        }
+        .donate-button:hover { background: #ff7b79; }
+        #donate-view p { font-size: 13px; line-height: 1.6; margin-bottom: 8px; }
+
         /* ── Score modal ── */
         #score-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -414,6 +428,7 @@
             <button class="tab" data-tab="leaderboard">Leaderboard</button>
             <button class="tab" data-tab="comments">Comments</button>
             <button class="tab" data-tab="patchnotes">Patch Notes</button>
+            <button class="tab" data-tab="donate">Donate</button>
         </div>
         <div id="game-wrapper">
             <div id="left-panel">
@@ -543,6 +558,11 @@
                     <li>Level bonus and MVP bonus are now additive</li>
                 </ul>
             </div>
+        </div>
+        <div id="donate-view" class="tab-content hidden">
+            <h2>Support Gem TD</h2>
+            <p>If you're enjoying Gem TD, consider buying me a coffee! Every donation helps fuel new features, waves, and gems.</p>
+            <a href="https://ko-fi.com/viktorncode" target="_blank" rel="noopener" class="donate-button">☕ Buy me a coffee on Ko-fi</a>
         </div>
     </div>
 

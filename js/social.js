@@ -21,6 +21,7 @@ export function initTabs() {
       document.getElementById('leaderboard-view').classList.toggle('hidden', target !== 'leaderboard');
       document.getElementById('comments-view').classList.toggle('hidden', target !== 'comments');
       document.getElementById('patchnotes-view').classList.toggle('hidden', target !== 'patchnotes');
+      document.getElementById('donate-view').classList.toggle('hidden', target !== 'donate');
 
       window.gameTabActive = (target === 'game');
 
