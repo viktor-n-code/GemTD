@@ -743,7 +743,11 @@ export function updateLeftPanel(state) {
       </div>
       <div class="wave-dmg-bar-track">
         <div class="wave-dmg-bar-fill" style="width:${waveDmgPct.toFixed(1)}%"></div>
-      </div>` : ''}`;
+      </div>` : `<div class="info-row" style="margin-top:8px">
+        <span class="info-label" style="color:#ccddee">${state.placedThisRound.length < 5
+          ? `Place gems (${state.placedThisRound.length}/5)`
+          : 'Keep or combine a gem'}</span>
+      </div>`}`;
   }
 
   // HUD info
@@ -1078,16 +1082,6 @@ export function drawUI(ctx, state, inputState) {
   if (state.phase !== 'build') return;
 
   ctx.save();
-
-  // Build instruction text — right side of row 1
-  const buildMsg = state.placedThisRound.length < 5
-    ? `Place gems (${state.placedThisRound.length}/5)`
-    : 'Keep or combine a gem';
-  ctx.fillStyle = '#ccddee';
-  ctx.font = '11px Arial';
-  ctx.textAlign = 'right';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(buildMsg, 664, PANEL_Y + 23);
 
   // -------------------------------------------------------------------------
   // Action buttons
