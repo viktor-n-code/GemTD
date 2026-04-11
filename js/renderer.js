@@ -17,14 +17,14 @@ const COLOR_GRASS      = '#1e3020'; // dark green — buildable empty tiles
 const COLOR_GRASS_EDGE = '#182818';
 const COLOR_LANE       = '#3a2a1a'; // brown/muddy — fixed corridor road
 const COLOR_LANE_EDGE  = '#2e2015';
-const COLOR_PATH       = '#4a3520'; // warm tan — contrasts against green grass
-const COLOR_PATH_EDGE  = '#3a2815';
+const COLOR_PATH       = '#5a4a28'; // olive-gold — distinct from brown lanes
+const COLOR_PATH_EDGE  = '#4a3a1e';
 const COLOR_BLOCKED    = '#0f1f2f'; // non-lane blocked zones
 const COLOR_ROCK_A     = '#555566'; // rock shade A (checkerboard)
 const COLOR_ROCK_B     = '#4a4a5a'; // rock shade B (checkerboard)
 const COLOR_ROCK_LIGHT = '#666677'; // bevel highlight
 const COLOR_ROCK_DARK  = '#444455'; // bevel shadow
-const COLOR_GRID_LINE  = '#1a2535'; // softer, near-invisible
+const COLOR_GRID_LINE  = '#1c2838'; // subtle but slightly more visible
 
 // ---------------------------------------------------------------------------
 // Lane regions — fixed two-tile-wide corridors connecting checkpoints
@@ -128,13 +128,18 @@ function drawGrid(ctx, state) {
       const inLane = laneCells.has((y << 8) | x);
 
       if (cell.type === 'rock') {
-        // Beveled rock with checkerboard shade for visual separation
+        // Beveled rock with checkerboard shade and stone speckle
         ctx.fillStyle = (x + y) % 2 === 0 ? COLOR_ROCK_A : COLOR_ROCK_B;
         ctx.fillRect(fx, fy, cs, cs);
-        ctx.fillStyle = COLOR_ROCK_LIGHT;
+        // Stone speckle texture
+        ctx.fillStyle = 'rgba(255,255,255,0.08)';
+        if ((x * 7 + y * 13) % 3 === 0) ctx.fillRect(fx + 4, fy + 3, 2, 1);
+        if ((x * 11 + y * 5) % 4 === 0) ctx.fillRect(fx + 8, fy + 9, 1, 2);
+        // Stronger bevel
+        ctx.fillStyle = '#777788';
         ctx.fillRect(fx, fy, cs, 1);        // top highlight
         ctx.fillRect(fx, fy, 1, cs);        // left highlight
-        ctx.fillStyle = COLOR_ROCK_DARK;
+        ctx.fillStyle = '#3a3a4a';
         ctx.fillRect(fx, fy + cs - 1, cs, 1); // bottom shadow
         ctx.fillRect(fx + cs - 1, fy, 1, cs); // right shadow
       } else if (cell.type === 'blocked') {
@@ -148,26 +153,41 @@ function drawGrid(ctx, state) {
           ctx.fillRect(fx, fy, 1, cs);
         }
       } else if (cell.type === 'gem' && cell.gemId !== null) {
-        // Dark neutral base — gem sprite renders on top
-        ctx.fillStyle = '#111a24';
+        // Dark neutral base with socket border — gem sprite renders on top
+        ctx.fillStyle = '#0e1620';
         ctx.fillRect(fx, fy, cs, cs);
+        ctx.fillStyle = 'rgba(60, 80, 100, 0.15)';
+        ctx.fillRect(fx, fy, cs, 1);
+        ctx.fillRect(fx, fy, 1, cs);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        ctx.fillRect(fx, fy + cs - 1, cs, 1);
+        ctx.fillRect(fx + cs - 1, fy, 1, cs);
       } else if (inLane) {
-        // Fixed corridor — muddy road
+        // Fixed corridor — muddy road with groove marks
         ctx.fillStyle = COLOR_LANE;
         ctx.fillRect(fx, fy, cs, cs);
         ctx.fillStyle = COLOR_LANE_EDGE;
         ctx.fillRect(fx, fy, cs, 1);
         ctx.fillRect(fx, fy, 1, cs);
+        // Center groove for worn road feel
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
+        ctx.fillRect(fx + Math.floor(cs / 2), fy, 1, cs);
+        ctx.fillRect(fx, fy + Math.floor(cs / 2), cs, 1);
       } else if (pathCells.has(`${x},${y}`)) {
-        // Dynamic A* path — visible against grass
+        // Dynamic A* path — olive-gold, distinct from brown lanes
         ctx.fillStyle = COLOR_PATH;
         ctx.fillRect(fx, fy, cs, cs);
         ctx.fillStyle = COLOR_PATH_EDGE;
         ctx.fillRect(fx, fy, cs, 1);
         ctx.fillRect(fx, fy, 1, cs);
+        // Subtle dot overlay for additional path distinction
+        if ((x + y) % 2 === 0) {
+          ctx.fillStyle = 'rgba(180, 150, 90, 0.25)';
+          ctx.fillRect(fx + Math.floor(cs / 2) - 1, fy + 1, 2, cs - 2);
+        }
       } else {
-        // Empty buildable — grass
-        ctx.fillStyle = COLOR_GRASS;
+        // Empty buildable — grass with subtle checker texture
+        ctx.fillStyle = (x + y) % 2 === 0 ? COLOR_GRASS : '#1d2e1e';
         ctx.fillRect(fx, fy, cs, cs);
         ctx.fillStyle = COLOR_GRASS_EDGE;
         ctx.fillRect(fx, fy, cs, 1);
@@ -324,81 +344,42 @@ function drawGems(ctx, state, selectedGemId = null) {
       // Aura rings — only shown when this gem is selected
       if (gem.type === 'special' && gem.id === selectedGemId) {
         const sStats = getSpecialGemLeveledStats(gem.specialType, gem.level || 1);
+        // Double-ring aura helper: outer faint ring + inner brighter ring + fill
+        const drawAuraRing = (auraR, r, g, b, outerAlpha, innerAlpha, fillAlpha) => {
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(cx, cy, auraR, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${r},${g},${b},${fillAlpha})`;
+          ctx.fill();
+          ctx.strokeStyle = `rgba(${r},${g},${b},${outerAlpha})`;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(cx, cy, auraR - 2, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(${r},${g},${b},${innerAlpha})`;
+          ctx.lineWidth = 1;
+          ctx.stroke();
+          ctx.restore();
+        };
         if (sStats?.effect?.type === 'burn_aura' ||
             sStats?.effect?.type === 'blood_stone' ||
             sStats?.effect?.type === 'ancient_blood_stone') {
-          const auraR = sStats.effect.auraRange * (CELL_SIZE / 15);
-          ctx.save();
-          ctx.strokeStyle = 'rgba(255,60,60,0.25)';
-          ctx.lineWidth   = 1;
-          ctx.beginPath();
-          ctx.arc(cx, cy, auraR, 0, Math.PI * 2);
-          ctx.stroke();
-          ctx.restore();
+          drawAuraRing(sStats.effect.auraRange * (CELL_SIZE / 15), 255, 60, 60, 0.15, 0.35, 0.06);
         }
         if (sStats?.effect?.type === 'air_crystal') {
-          const auraR = sStats.effect.auraRange * (CELL_SIZE / 15);
-          ctx.save();
-          ctx.strokeStyle = 'rgba(232,64,64,0.4)';
-          ctx.fillStyle   = 'rgba(232,64,64,0.08)';
-          ctx.lineWidth   = 1;
-          ctx.beginPath();
-          ctx.arc(cx, cy, auraR, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.stroke();
-          ctx.restore();
+          drawAuraRing(sStats.effect.auraRange * (CELL_SIZE / 15), 232, 64, 64, 0.25, 0.45, 0.08);
         }
         if (sStats?.effect?.type === 'paraiba_nova') {
-          // Ground armor aura ring — teal
-          const auraR = sStats.effect.auraRange * (CELL_SIZE / 15);
-          ctx.save();
-          ctx.strokeStyle = 'rgba(79,209,232,0.4)';
-          ctx.fillStyle   = 'rgba(79,209,232,0.06)';
-          ctx.lineWidth   = 1;
-          ctx.beginPath();
-          ctx.arc(cx, cy, auraR, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.stroke();
-          ctx.restore();
+          drawAuraRing(sStats.effect.auraRange * (CELL_SIZE / 15), 79, 209, 232, 0.25, 0.45, 0.06);
         }
         if (sStats?.effect?.type === 'dmg_aura') {
-          // Damage aura ring — gold (Black Opal)
-          const auraR = sStats.effect.auraRange * (CELL_SIZE / 15);
-          ctx.save();
-          ctx.strokeStyle = 'rgba(245,197,24,0.5)';
-          ctx.fillStyle   = 'rgba(245,197,24,0.07)';
-          ctx.lineWidth   = 1;
-          ctx.beginPath();
-          ctx.arc(cx, cy, auraR, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.stroke();
-          ctx.restore();
+          drawAuraRing(sStats.effect.auraRange * (CELL_SIZE / 15), 245, 197, 24, 0.3, 0.5, 0.07);
         }
         if (sStats?.effect?.type === 'splash_slow_dmg_aura') {
-          // Damage aura ring — gold (Star Yellow Sapphire)
-          const auraR = sStats.effect.dmgAuraRange * (CELL_SIZE / 15);
-          ctx.save();
-          ctx.strokeStyle = 'rgba(245,197,24,0.5)';
-          ctx.fillStyle   = 'rgba(245,197,24,0.07)';
-          ctx.lineWidth   = 1;
-          ctx.beginPath();
-          ctx.arc(cx, cy, auraR, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.stroke();
-          ctx.restore();
+          drawAuraRing(sStats.effect.dmgAuraRange * (CELL_SIZE / 15), 245, 197, 24, 0.3, 0.5, 0.07);
         }
         if (sStats?.effect?.type === 'uranium') {
-          // Slow + burn aura ring — green (Uranium)
-          const auraR = sStats.effect.auraRange * (CELL_SIZE / 15);
-          ctx.save();
-          ctx.strokeStyle = 'rgba(170,255,68,0.5)';
-          ctx.fillStyle   = 'rgba(170,255,68,0.07)';
-          ctx.lineWidth   = 1;
-          ctx.beginPath();
-          ctx.arc(cx, cy, auraR, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.stroke();
-          ctx.restore();
+          drawAuraRing(sStats.effect.auraRange * (CELL_SIZE / 15), 170, 255, 68, 0.3, 0.5, 0.07);
         }
       }
     }
@@ -458,28 +439,39 @@ function drawEnemies(ctx, enemies) {
       ctx.fill();
     }
 
-    // Stun ring — light blue outline when frozen
+    // Stun ring — pulsing frost effect
     if (now < (enemy.stunUntil ?? 0)) {
-      ctx.strokeStyle = 'rgba(180, 230, 255, 0.95)';
-      ctx.lineWidth = 2;
+      const pulse = 0.7 + 0.3 * Math.sin(now * 0.008);
+      ctx.strokeStyle = `rgba(180, 230, 255, ${pulse * 0.95})`;
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.arc(x, y, radius + 2, 0, Math.PI * 2);
       ctx.stroke();
+      ctx.fillStyle = `rgba(200, 240, 255, ${pulse * 0.12})`;
+      ctx.beginPath();
+      ctx.arc(x, y, radius + 1, 0, Math.PI * 2);
+      ctx.fill();
     }
 
-    // HP bar: 8px wide, 2px tall, centered above the circle
-    const barW  = 8;
+    // HP bar: 10px wide, 2px tall, with border and gradient color
+    const barW  = 10;
     const barH  = 2;
     const barX  = x - barW / 2;
-    const barY  = y - radius - barH - 2; // 2px gap above the circle
+    const barY  = y - radius - barH - 3;
     const hpPct = maxHp > 0 ? Math.max(0, Math.min(1, hp / maxHp)) : 0;
 
+    // Border
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(barX - 0.5, barY - 0.5, barW + 1, barH + 1);
+
     // Background
-    ctx.fillStyle = COLOR_ENEMY_HP_BG;
+    ctx.fillStyle = '#4a0000';
     ctx.fillRect(barX, barY, barW, barH);
 
-    // Foreground (current HP)
-    ctx.fillStyle = COLOR_ENEMY_HP_FG;
+    // Foreground — green→yellow→red based on HP
+    const cr = hpPct < 0.5 ? 255 : Math.round(255 * (1 - hpPct) * 2);
+    const cg = hpPct > 0.5 ? 255 : Math.round(255 * hpPct * 2);
+    ctx.fillStyle = `rgb(${cr}, ${cg}, 0)`;
     ctx.fillRect(barX, barY, barW * hpPct, barH);
   }
 }
@@ -492,16 +484,36 @@ function drawProjectiles(ctx, projectiles) {
   if (!projectiles || projectiles.length === 0) return;
 
   ctx.save();
-  ctx.lineWidth = 1.5;
-
   for (const p of projectiles) {
-    ctx.strokeStyle = p.color || COLOR_PROJECTILE;
+    const color = p.color || COLOR_PROJECTILE;
+    const dx = p.x2 - p.x1;
+    const dy = p.y2 - p.y1;
+    const len = Math.sqrt(dx * dx + dy * dy);
+    if (len < 1) continue;
+    const midX = p.x1 + dx * 0.4;
+    const midY = p.y1 + dy * 0.4;
+    // Trail — faint
+    ctx.strokeStyle = color;
+    ctx.globalAlpha = 0.4;
+    ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(p.x1, p.y1);
+    ctx.lineTo(midX, midY);
+    ctx.stroke();
+    // Head — bright
+    ctx.globalAlpha = 1.0;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(midX, midY);
     ctx.lineTo(p.x2, p.y2);
     ctx.stroke();
+    // Impact dot
+    ctx.beginPath();
+    ctx.arc(p.x2, p.y2, 1.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.globalAlpha = 0.6;
+    ctx.fill();
   }
-
   ctx.restore();
 }
 
@@ -509,14 +521,21 @@ function drawCritNumbers(ctx, critNumbers) {
   if (!critNumbers || critNumbers.length === 0) return;
   const now = performance.now();
   ctx.save();
-  ctx.font = 'bold 13px Arial';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   for (const n of critNumbers) {
     const t = Math.min(1, (now - n.createdAt) / 600);
     const alpha = 1 - t;
     const offsetY = t * 22;
+    const scale = 1 + (1 - t) * 0.3;
+    const fontSize = Math.round(13 * scale);
+    ctx.font = `bold ${fontSize}px Arial`;
     const [r, g, b] = n.color ?? [255, 60, 60];
+    // Outline for readability
+    ctx.strokeStyle = `rgba(0, 0, 0, ${alpha * 0.7})`;
+    ctx.lineWidth = 2.5;
+    ctx.strokeText(n.value, n.x, n.y - offsetY);
+    // Fill
     ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
     ctx.fillText(n.value, n.x, n.y - offsetY);
   }
