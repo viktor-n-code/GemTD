@@ -356,7 +356,7 @@ function _attackToggleHTML(gem) {
   const disabled = gem.attackDisabled || false;
   const label = disabled ? 'Attacks: OFF' : 'Attacks: ON';
   const cls = disabled ? 'attack-toggle off' : 'attack-toggle on';
-  return `<button class="${cls}" onclick="window._toggleGemAttack('${gem.id}')">${label}</button>`;
+  return `<button class="${cls}" data-toggle-gem="${gem.id}">${label}</button>`;
 }
 
 function _buildSpecialGemHTML(gem, state) {
@@ -665,13 +665,17 @@ function _buildLeaderboardHTML(state) {
  * Updates the DOM info panel to the right of the canvas.
  * Called every frame from gameloop.js.
  */
-// Global toggle handler for attack on/off button in info panel
+// Attack toggle — event delegation on the panel (avoids inline onclick)
 let _uiState = null;
-window._toggleGemAttack = (gemId) => {
-  if (!_uiState) return;
-  const gem = _uiState.gems[gemId];
-  if (gem) gem.attackDisabled = !gem.attackDisabled;
-};
+const _selPanel = document.getElementById('panel-selection');
+if (_selPanel) {
+  _selPanel.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-toggle-gem]');
+    if (!btn || !_uiState) return;
+    const gem = _uiState.gems[btn.dataset.toggleGem];
+    if (gem) gem.attackDisabled = !gem.attackDisabled;
+  });
+}
 
 export function updateInfoPanel(state, inputState) {
   _uiState = state;
@@ -739,7 +743,11 @@ export function updateLeftPanel(state) {
       </div>
       <div class="wave-dmg-bar-track">
         <div class="wave-dmg-bar-fill" style="width:${waveDmgPct.toFixed(1)}%"></div>
-      </div>` : ''}`;
+      </div>` : `<div class="info-row" style="margin-top:8px">
+        <span class="info-label" style="color:#ccddee">${state.placedThisRound.length < 5
+          ? `Place gems (${state.placedThisRound.length}/5)`
+          : 'Keep or combine a gem'}</span>
+      </div>`}`;
   }
 
   // HUD info
@@ -1074,16 +1082,6 @@ export function drawUI(ctx, state, inputState) {
   if (state.phase !== 'build') return;
 
   ctx.save();
-
-  // Build instruction text — right side of row 1
-  const buildMsg = state.placedThisRound.length < 5
-    ? `Place gems (${state.placedThisRound.length}/5)`
-    : 'Keep or combine a gem';
-  ctx.fillStyle = '#ccddee';
-  ctx.font = '11px Arial';
-  ctx.textAlign = 'right';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(buildMsg, 664, PANEL_Y + 23);
 
   // -------------------------------------------------------------------------
   // Action buttons
