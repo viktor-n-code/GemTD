@@ -28,6 +28,7 @@ export const BTN_UPGRADE   = { x: 324, y: R1Y, w: 88,  h: BH };
 export const BTN_REMOVE    = { x: 418, y: R1Y, w: 68,  h: BH };
 export const BTN_FORFEIT   = { x: 492, y: R1Y, w: 62,  h: BH };
 export const BTN_DOWNGRADE = { x: 8,   y: R1Y, w: 150, h: BH }; // defend phase only
+export const BTN_SPEED     = { x: 560, y: R1Y, w: 48,  h: BH };
 
 // Action buttons — row 2
 export const BTN_COMBINE_SPECIAL = { x: 232, y: R2Y, w: 108, h: BH };
@@ -351,6 +352,13 @@ function _buildEffectHTML(effect, baseEffect) {
   }
 }
 
+function _attackToggleHTML(gem) {
+  const disabled = gem.attackDisabled || false;
+  const label = disabled ? 'Attacks: OFF' : 'Attacks: ON';
+  const cls = disabled ? 'attack-toggle off' : 'attack-toggle on';
+  return `<button class="${cls}" onclick="window._toggleGemAttack('${gem.id}')">${label}</button>`;
+}
+
 function _buildSpecialGemHTML(gem, state) {
   const level = gem.level || 1;
   const ls    = getSpecialGemLeveledStats(gem.specialType, level);
@@ -387,6 +395,7 @@ function _buildSpecialGemHTML(gem, state) {
   let html = `
     <div class="info-section-title">Selected Gem</div>
     <div class="info-gem-name">${gem.name}${levelLabel}</div>
+    ${_attackToggleHTML(gem)}
     <div class="info-row"><span class="info-label">Attack</span><span class="info-value">${getGemAttackType(gem)}</span></div>
     <div class="info-row"><span class="info-label">Damage</span><span class="info-value">${dmgHTML}${dmgAuraNote}</span></div>
     <div class="info-row"><span class="info-label">Speed</span><span class="info-value">${spdHTML}</span></div>
@@ -472,6 +481,7 @@ function _buildGemHTML(gem, state) {
   let html = `
     <div class="info-section-title">Selected Gem</div>
     <div class="info-gem-name">${gem.name || gem.quality + ' ' + gem.type}${levelLabel}</div>
+    ${_attackToggleHTML(gem)}
     <div class="info-row">
       <span class="info-label">Attack</span>
       <span class="info-value">${getGemAttackType(gem)}</span>
@@ -537,7 +547,7 @@ function _enemySpeedHTML(enemy, now) {
 }
 
 function _buildEnemyHTML(enemy, state) {
-  const now    = performance.now();
+  const now    = state.gameTime || performance.now();
   const pct    = enemy.maxHp > 0 ? Math.max(0, Math.min(100, (enemy.hp / enemy.maxHp) * 100)) : 0;
   const hpColor = pct > 50 ? '#00ff44' : pct > 25 ? '#ffcc00' : '#ff4444';
   const auraReduction = (now < (enemy.armorAuraDebuffUntil ?? 0)) ? (enemy.armorAuraDebuff ?? 0) : 0;
@@ -655,7 +665,16 @@ function _buildLeaderboardHTML(state) {
  * Updates the DOM info panel to the right of the canvas.
  * Called every frame from gameloop.js.
  */
+// Global toggle handler for attack on/off button in info panel
+let _uiState = null;
+window._toggleGemAttack = (gemId) => {
+  if (!_uiState) return;
+  const gem = _uiState.gems[gemId];
+  if (gem) gem.attackDisabled = !gem.attackDisabled;
+};
+
 export function updateInfoPanel(state, inputState) {
+  _uiState = state;
   const selEl     = document.getElementById('panel-selection');
   const chancesEl = document.getElementById('panel-chances');
   if (!selEl || !chancesEl) return;
@@ -1032,6 +1051,11 @@ export function drawUI(ctx, state, inputState) {
   const forfeitLabel = forfeitPending ? 'Forfeit?' : 'Forfeit';
   const forfeitColor = forfeitPending ? '#8a2a00' : '#6a1a1a';
   drawButton(ctx, BTN_FORFEIT, forfeitLabel, true, forfeitColor);
+
+  // Speed toggle — always visible
+  const speedLabel = `${state.gameSpeed || 1}x`;
+  const speedColor = (state.gameSpeed || 1) > 1 ? '#4a6a2a' : '#3a3a4a';
+  drawButton(ctx, BTN_SPEED, speedLabel, true, speedColor);
 
   // Downgrade — available during defend phase for the just-kept gem
   if (state.phase === 'defend' && state.downgradeAvailableId) {

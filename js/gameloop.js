@@ -75,17 +75,20 @@ function init() {
 // ---------------------------------------------------------------------------
 
 function gameLoop(timestamp) {
-  const dt = Math.min((timestamp - lastTimestamp) / 1000, 0.1); // cap at 100 ms
+  const realDt = Math.min((timestamp - lastTimestamp) / 1000, 0.1); // cap at 100 ms
   lastTimestamp = timestamp;
 
-  const now = timestamp; // rAF timestamp in ms
+  // Scale time by game speed — game logic uses gameDt and gameTime
+  const gameDt = realDt * (gameState.gameSpeed || 1);
+  gameState.gameTime += gameDt * 1000;
+  const now = gameState.gameTime; // virtual game clock for all game logic
 
   inputHandler.update(gameState);
 
   // Pause game logic when viewing Leaderboard/Comments tabs (still render)
   if (window.gameTabActive !== false) {
-    if      (gameState.phase === 'build')   updateBuild(dt, now);
-    else if (gameState.phase === 'defend')  updateDefend(dt, now);
+    if      (gameState.phase === 'build')   updateBuild(gameDt, now);
+    else if (gameState.phase === 'defend')  updateDefend(gameDt, now);
     else if (gameState.phase === 'between') updateBetween();
   }
 
@@ -362,6 +365,13 @@ function updateBuild(dt, now) {
         clearState();
         location.reload();
         break;
+
+      case 'toggleSpeed': {
+        const speeds = [1, 2, 4];
+        const idx = speeds.indexOf(gameState.gameSpeed);
+        gameState.gameSpeed = speeds[(idx + 1) % speeds.length];
+        break;
+      }
 
       // selectGem is purely a UI selection — no game-state change needed here
       case 'selectGem':
@@ -706,6 +716,7 @@ function startDefendPhase() {
     gem.roundSplashDamage = 0;
     gem.roundDotDamage = 0;
     gem.roundAuraDamage = 0;
+    gem.attackDisabled = false;
   }
 
   // Reset round state
@@ -769,6 +780,11 @@ function updateDefend(dt, now) {
   if (action?.type === 'downgrade') { _handleDowngrade(); }
   if (action?.type === 'combineSpecial')  { _handleCombineSpecial(action.selectedGemId, 'defend'); }
   if (action?.type === 'upgradeSpecial')  { _handleUpgradeSpecial(action.gemId); }
+  if (action?.type === 'toggleSpeed') {
+    const speeds = [1, 2, 4];
+    const idx = speeds.indexOf(gameState.gameSpeed);
+    gameState.gameSpeed = speeds[(idx + 1) % speeds.length];
+  }
 
   // Clear last frame's projectiles; expire old crit numbers
   gameState.projectiles = [];
@@ -815,6 +831,7 @@ function updateDefend(dt, now) {
 
   // 3. Gem attacks
   for (const gem of Object.values(gameState.gems)) {
+    if (gem.attackDisabled) continue;
     if (!canAttack(gem, now)) continue;
     const target = findTarget(gem);
     if (target) {
@@ -894,6 +911,7 @@ function updateDefend(dt, now) {
 
   // 3b. Red Crystal: passive armor aura debuffs flying enemies within range
   for (const gem of Object.values(gameState.gems)) {
+    if (gem.attackDisabled) continue;
     if (gem.type !== 'special') continue;
     const sStats = getSpecialGemLeveledStats(gem.specialType, gem.level);
     if (sStats?.effect?.type !== 'air_crystal') continue;
@@ -937,6 +955,7 @@ function updateDefend(dt, now) {
 
   // 3c. Star Ruby / Blood Stone / Ancient Blood Stone: passive burn aura damages all enemies within aura range
   for (const gem of Object.values(gameState.gems)) {
+    if (gem.attackDisabled) continue;
     if (gem.type !== 'special') continue;
     const sStats = getSpecialGemLeveledStats(gem.specialType, gem.level);
     const effectType = sStats?.effect?.type;
@@ -966,6 +985,7 @@ function updateDefend(dt, now) {
 
   // 3d. Uranium 235 / Uranium 238: passive slow aura + burn aura
   for (const gem of Object.values(gameState.gems)) {
+    if (gem.attackDisabled) continue;
     if (gem.type !== 'special') continue;
     const sStats = getSpecialGemLeveledStats(gem.specialType, gem.level);
     if (sStats?.effect?.type !== 'uranium') continue;
@@ -1036,7 +1056,7 @@ function findTarget(gem) {
     for (const e of gameState.enemies) {
       if (e.dead || e.exited) continue;
       if (!isInRange(gem, e)) continue;
-      if (e.poisonDps === 0 || e.poisonUntil <= performance.now()) {
+      if (e.poisonDps === 0 || e.poisonUntil <= gameState.gameTime) {
         if (!unpoisoned || e.hp < unpoisoned.hp) unpoisoned = e;
       } else if (e.poisonDps < gemDps) {
         if (!weakPoison || e.hp < weakPoison.hp) weakPoison = e;
