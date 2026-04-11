@@ -75,17 +75,20 @@ function init() {
 // ---------------------------------------------------------------------------
 
 function gameLoop(timestamp) {
-  const dt = Math.min((timestamp - lastTimestamp) / 1000, 0.1); // cap at 100 ms
+  const realDt = Math.min((timestamp - lastTimestamp) / 1000, 0.1); // cap at 100 ms
   lastTimestamp = timestamp;
 
-  const now = timestamp; // rAF timestamp in ms
+  // Scale time by game speed — game logic uses gameDt and gameTime
+  const gameDt = realDt * (gameState.gameSpeed || 1);
+  gameState.gameTime += gameDt * 1000;
+  const now = gameState.gameTime; // virtual game clock for all game logic
 
   inputHandler.update(gameState);
 
   // Pause game logic when viewing Leaderboard/Comments tabs (still render)
   if (window.gameTabActive !== false) {
-    if      (gameState.phase === 'build')   updateBuild(dt, now);
-    else if (gameState.phase === 'defend')  updateDefend(dt, now);
+    if      (gameState.phase === 'build')   updateBuild(gameDt, now);
+    else if (gameState.phase === 'defend')  updateDefend(gameDt, now);
     else if (gameState.phase === 'between') updateBetween();
   }
 
@@ -362,6 +365,13 @@ function updateBuild(dt, now) {
         clearState();
         location.reload();
         break;
+
+      case 'toggleSpeed': {
+        const speeds = [1, 2, 4];
+        const idx = speeds.indexOf(gameState.gameSpeed);
+        gameState.gameSpeed = speeds[(idx + 1) % speeds.length];
+        break;
+      }
 
       // selectGem is purely a UI selection — no game-state change needed here
       case 'selectGem':
@@ -769,6 +779,11 @@ function updateDefend(dt, now) {
   if (action?.type === 'downgrade') { _handleDowngrade(); }
   if (action?.type === 'combineSpecial')  { _handleCombineSpecial(action.selectedGemId, 'defend'); }
   if (action?.type === 'upgradeSpecial')  { _handleUpgradeSpecial(action.gemId); }
+  if (action?.type === 'toggleSpeed') {
+    const speeds = [1, 2, 4];
+    const idx = speeds.indexOf(gameState.gameSpeed);
+    gameState.gameSpeed = speeds[(idx + 1) % speeds.length];
+  }
 
   // Clear last frame's projectiles; expire old crit numbers
   gameState.projectiles = [];
@@ -1036,7 +1051,7 @@ function findTarget(gem) {
     for (const e of gameState.enemies) {
       if (e.dead || e.exited) continue;
       if (!isInRange(gem, e)) continue;
-      if (e.poisonDps === 0 || e.poisonUntil <= performance.now()) {
+      if (e.poisonDps === 0 || e.poisonUntil <= gameState.gameTime) {
         if (!unpoisoned || e.hp < unpoisoned.hp) unpoisoned = e;
       } else if (e.poisonDps < gemDps) {
         if (!weakPoison || e.hp < weakPoison.hp) weakPoison = e;

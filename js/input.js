@@ -4,7 +4,7 @@
 import { CELL_SIZE, GRID_COLS, GRID_ROWS } from './grid.js';
 import { BTN_COMBINE, BTN_COMBINE4, BTN_KEEP, BTN_UPGRADE, BTN_RESTART, BTN_REMOVE,
          BTN_COMBINE_SPECIAL, BTN_UPGRADE_GEM, BTN_BUY_LIFE, BTN_REPICK, BTN_DOWNGRADE,
-         BTN_FORFEIT, PANEL_Y } from './ui.js';
+         BTN_FORFEIT, BTN_SPEED, PANEL_Y } from './ui.js';
 import { findAvailableRecipes } from './specialgem.js';
 
 // ---------------------------------------------------------------------------
@@ -245,6 +245,10 @@ export class InputHandler {
         if (this.selectedGemId !== null) {
           this.pendingAction = { type: 'upgradeSpecial', gemId: this.selectedGemId };
         }
+        return;
+      }
+      if (hitTest(BTN_SPEED, x, y)) {
+        this.pendingAction = { type: 'toggleSpeed' };
         return;
       }
     } else {

@@ -28,6 +28,7 @@ export const BTN_UPGRADE   = { x: 324, y: R1Y, w: 88,  h: BH };
 export const BTN_REMOVE    = { x: 418, y: R1Y, w: 68,  h: BH };
 export const BTN_FORFEIT   = { x: 492, y: R1Y, w: 62,  h: BH };
 export const BTN_DOWNGRADE = { x: 8,   y: R1Y, w: 150, h: BH }; // defend phase only
+export const BTN_SPEED     = { x: 560, y: R1Y, w: 48,  h: BH };
 
 // Action buttons — row 2
 export const BTN_COMBINE_SPECIAL = { x: 232, y: R2Y, w: 108, h: BH };
@@ -537,7 +538,7 @@ function _enemySpeedHTML(enemy, now) {
 }
 
 function _buildEnemyHTML(enemy, state) {
-  const now    = performance.now();
+  const now    = state.gameTime || performance.now();
   const pct    = enemy.maxHp > 0 ? Math.max(0, Math.min(100, (enemy.hp / enemy.maxHp) * 100)) : 0;
   const hpColor = pct > 50 ? '#00ff44' : pct > 25 ? '#ffcc00' : '#ff4444';
   const auraReduction = (now < (enemy.armorAuraDebuffUntil ?? 0)) ? (enemy.armorAuraDebuff ?? 0) : 0;
@@ -1032,6 +1033,11 @@ export function drawUI(ctx, state, inputState) {
   const forfeitLabel = forfeitPending ? 'Forfeit?' : 'Forfeit';
   const forfeitColor = forfeitPending ? '#8a2a00' : '#6a1a1a';
   drawButton(ctx, BTN_FORFEIT, forfeitLabel, true, forfeitColor);
+
+  // Speed toggle — always visible
+  const speedLabel = `${state.gameSpeed || 1}x`;
+  const speedColor = (state.gameSpeed || 1) > 1 ? '#4a6a2a' : '#3a3a4a';
+  drawButton(ctx, BTN_SPEED, speedLabel, true, speedColor);
 
   // Downgrade — available during defend phase for the just-kept gem
   if (state.phase === 'defend' && state.downgradeAvailableId) {

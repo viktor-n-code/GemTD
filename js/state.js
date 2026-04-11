@@ -30,6 +30,8 @@ export function createInitialState() {
     opalAttunementDone: false,
     gameOver: false,
     gameWon: false,
+    gameSpeed: 1,
+    gameTime: 0,
   };
 }
 
@@ -62,6 +64,8 @@ export function loadState() {
       if (gem.roundDotDamage    === undefined) gem.roundDotDamage = 0;
       if (gem.roundAuraDamage   === undefined) gem.roundAuraDamage = 0;
     }
+    if (s.gameSpeed === undefined) s.gameSpeed = 1;
+    if (s.gameTime === undefined) s.gameTime = 0;
     if (s.opalAttunement === undefined) s.opalAttunement = 0;
     if (s.opalAttunementDone === undefined) {
       const hasGreatOpal = Object.values(s.gems || {}).some(
