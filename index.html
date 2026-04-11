@@ -201,6 +201,20 @@
             border-top: 1px solid #1e3a5f;
         }
 
+        .wave-dmg-bar-track {
+            background: #1a1a2e;
+            border-radius: 3px;
+            height: 6px;
+            margin: 4px 0 2px;
+            width: 100%;
+        }
+        .wave-dmg-bar-fill {
+            background: linear-gradient(90deg, #e8a000, #ffcc33);
+            border-radius: 3px;
+            height: 6px;
+            transition: width 0.15s ease;
+        }
+
         .hp-bar-track {
             background: #2a0000;
             border-radius: 3px;
@@ -528,7 +542,8 @@
                 Maze length: <span id="score-maze">0</span> tiles<br>
                 Board fill: <span id="score-fill">0</span><br>
                 Leaks: <span id="score-leaks">0</span><br>
-                MVP Gem: <span id="score-mvp">&mdash;</span>
+                MVP Gem: <span id="score-mvp">&mdash;</span><br>
+                Final wave dmg: <span id="score-wavedmg">0%</span>
             </div>
             <div class="modal-buttons">
                 <button id="score-submit">Submit</button>

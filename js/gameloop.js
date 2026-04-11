@@ -11,8 +11,8 @@ import { initFirebase } from './firebase.js';
 import { initTabs, initCommentForm, showScoreModal } from './social.js';
 import { rollGem, getStats, getLeveledStats, getVisual, GEM_CHANCE_LEVELS, QUALITY_LEVELS } from './gem.js';
 import { SPECIAL_GEM_DEFS, getSpecialGemLeveledStats, getSpecialVisual, findAvailableRecipes } from './specialgem.js';
-import { moveEnemy, getWaveGold } from './enemy.js';
-import { WaveSpawner } from './wave.js';
+import { moveEnemy, getWaveGold, getWaveStats as _getWaveStats } from './enemy.js';
+import { WaveSpawner, getWaveDef } from './wave.js';
 import { attackEnemy, canAttack, isInRange, tickPoison, getGemStats, getGemAttackType, applyEffect } from './combat.js';
 import { render } from './renderer.js';
 import { InputHandler } from './input.js';
@@ -112,7 +112,14 @@ function gameLoop(timestamp) {
       }
     }
 
-    showScoreModal(gameState, mazeLen, fillPct, gameState.endReason || 'lose', mvpGem, mvpGemKills);
+    // Final wave damage dealt %
+    let aliveDmg = 0;
+    for (const e of gameState.enemies) aliveDmg += Math.max(0, e.maxHp - e.hp);
+    const finalWaveDmgPct = gameState.waveTotalHp > 0
+      ? Math.min(100, ((gameState.waveDamageDealt + aliveDmg) / gameState.waveTotalHp) * 100)
+      : 0;
+
+    showScoreModal(gameState, mazeLen, fillPct, gameState.endReason || 'lose', mvpGem, mvpGemKills, finalWaveDmgPct);
   }
 }
 
@@ -645,9 +652,13 @@ function startDefendPhase() {
     gameState.opalAttunement = Math.min(gameState.opalAttunement + 0.001, 0.10);
   }
 
-  // Reset per-wave kill counter for leaderboard tracking
+  // Reset per-wave counters
   gameState.finalWaveKills = 0;
   gameState.waveEnemiesGone = 0;
+  const waveStats = _getWaveStats(gameState.wave);
+  const waveDef   = getWaveDef(gameState.wave);
+  gameState.waveTotalHp     = waveDef.count * waveStats.hp;
+  gameState.waveDamageDealt = 0;
 
   // Apply all aura bonuses (attack speed + damage) before wave begins
   applyAllAuraBuffs(gameState);
@@ -951,6 +962,10 @@ function updateDefend(dt, now) {
     if (e.dead) {
       gameState.gold += killGold;
       gameState.finalWaveKills += 1;
+      gameState.waveDamageDealt += e.maxHp;
+    } else if (e.exited) {
+      // Leaked: only count damage actually dealt (maxHp - remaining hp)
+      gameState.waveDamageDealt += Math.max(0, e.maxHp - e.hp);
     }
     if (e.dead || e.exited) gameState.waveEnemiesGone += 1;
   }

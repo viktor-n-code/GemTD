@@ -47,7 +47,7 @@ async function refreshLeaderboard() {
 
   let html = `<table class="leaderboard-table">
     <thead><tr>
-      <th>#</th><th>Name</th><th>Wave</th><th>Result</th><th>Kills (Final wave)</th><th>Leaks</th><th>MVP Gem</th><th>Time</th><th>Maze</th><th>Fill%</th><th>Ver</th><th>Date</th><th>At</th>
+      <th>#</th><th>Name</th><th>Wave</th><th>Result</th><th>Kills (Final wave)</th><th>Dmg%</th><th>Leaks</th><th>MVP Gem</th><th>Time</th><th>Maze</th><th>Fill%</th><th>Ver</th><th>Date</th><th>At</th>
     </tr></thead><tbody>`;
 
   const resultLabels = { win: 'Win', lose: 'Lose', forfeit: 'Forfeit' };
@@ -60,6 +60,7 @@ async function refreshLeaderboard() {
       <td>${s.wave}</td>
       <td>${result}</td>
       <td>${s.finalWaveKills ?? 0}</td>
+      <td>${s.finalWaveDmgPct != null ? s.finalWaveDmgPct.toFixed(1) + '%' : '\u2014'}</td>
       <td>${s.livesLost ?? '\u2014'}</td>
       <td>${s.mvpGem ? `${escapeHtml(s.mvpGem)} (${s.mvpGemKills ?? 0})` : '\u2014'}</td>
       <td>${time}</td>
@@ -134,7 +135,7 @@ export function initCommentForm() {
 // Score submission modal
 // ---------------------------------------------------------------------------
 
-export function showScoreModal(gameState, mazeLength, boardFillPct, endReason = 'lose', mvpGem = '', mvpGemKills = 0) {
+export function showScoreModal(gameState, mazeLength, boardFillPct, endReason = 'lose', mvpGem = '', mvpGemKills = 0, finalWaveDmgPct = 0) {
   const modal = document.getElementById('score-modal');
   if (!modal) return;
 
@@ -147,6 +148,7 @@ export function showScoreModal(gameState, mazeLength, boardFillPct, endReason = 
   document.getElementById('score-fill').textContent = boardFillPct.toFixed(1) + '%';
   document.getElementById('score-leaks').textContent = gameState.livesLost ?? 0;
   document.getElementById('score-mvp').textContent = mvpGem ? `${mvpGem} (${mvpGemKills} kills)` : '\u2014';
+  document.getElementById('score-wavedmg').textContent = finalWaveDmgPct.toFixed(1) + '%';
 
   const nameInput = document.getElementById('score-name');
   nameInput.value = lastPlayerName;
@@ -182,6 +184,7 @@ export function showScoreModal(gameState, mazeLength, boardFillPct, endReason = 
       livesLost: gameState.livesLost ?? 0,
       mvpGem: mvpGem || '',
       mvpGemKills: mvpGemKills || 0,
+      finalWaveDmgPct: Math.round(finalWaveDmgPct * 10) / 10,
     });
 
     cleanup();

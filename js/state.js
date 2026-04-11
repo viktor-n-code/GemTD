@@ -24,6 +24,8 @@ export function createInitialState() {
     defendTime: 0,
     finalWaveKills: 0,
     waveEnemiesGone: 0,
+    waveTotalHp: 0,          // total HP pool for current wave (count × maxHp)
+    waveDamageDealt: 0,      // accumulated damage to removed enemies (dead + leaked)
     opalAttunement: 0,
     opalAttunementDone: false,
     gameOver: false,
