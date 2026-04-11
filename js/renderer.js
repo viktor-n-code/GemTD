@@ -17,14 +17,14 @@ const COLOR_GRASS      = '#1e3020'; // dark green — buildable empty tiles
 const COLOR_GRASS_EDGE = '#182818';
 const COLOR_LANE       = '#3a2a1a'; // brown/muddy — fixed corridor road
 const COLOR_LANE_EDGE  = '#2e2015';
-const COLOR_PATH       = '#4a3520'; // warm tan — contrasts against green grass
-const COLOR_PATH_EDGE  = '#3a2815';
+const COLOR_PATH       = '#5a4a28'; // olive-gold — distinct from brown lanes
+const COLOR_PATH_EDGE  = '#4a3a1e';
 const COLOR_BLOCKED    = '#0f1f2f'; // non-lane blocked zones
 const COLOR_ROCK_A     = '#555566'; // rock shade A (checkerboard)
 const COLOR_ROCK_B     = '#4a4a5a'; // rock shade B (checkerboard)
 const COLOR_ROCK_LIGHT = '#666677'; // bevel highlight
 const COLOR_ROCK_DARK  = '#444455'; // bevel shadow
-const COLOR_GRID_LINE  = '#1a2535'; // softer, near-invisible
+const COLOR_GRID_LINE  = '#1c2838'; // subtle but slightly more visible
 
 // ---------------------------------------------------------------------------
 // Lane regions — fixed two-tile-wide corridors connecting checkpoints
@@ -128,13 +128,18 @@ function drawGrid(ctx, state) {
       const inLane = laneCells.has((y << 8) | x);
 
       if (cell.type === 'rock') {
-        // Beveled rock with checkerboard shade for visual separation
+        // Beveled rock with checkerboard shade and stone speckle
         ctx.fillStyle = (x + y) % 2 === 0 ? COLOR_ROCK_A : COLOR_ROCK_B;
         ctx.fillRect(fx, fy, cs, cs);
-        ctx.fillStyle = COLOR_ROCK_LIGHT;
+        // Stone speckle texture
+        ctx.fillStyle = 'rgba(255,255,255,0.08)';
+        if ((x * 7 + y * 13) % 3 === 0) ctx.fillRect(fx + 4, fy + 3, 2, 1);
+        if ((x * 11 + y * 5) % 4 === 0) ctx.fillRect(fx + 8, fy + 9, 1, 2);
+        // Stronger bevel
+        ctx.fillStyle = '#777788';
         ctx.fillRect(fx, fy, cs, 1);        // top highlight
         ctx.fillRect(fx, fy, 1, cs);        // left highlight
-        ctx.fillStyle = COLOR_ROCK_DARK;
+        ctx.fillStyle = '#3a3a4a';
         ctx.fillRect(fx, fy + cs - 1, cs, 1); // bottom shadow
         ctx.fillRect(fx + cs - 1, fy, 1, cs); // right shadow
       } else if (cell.type === 'blocked') {
@@ -148,26 +153,41 @@ function drawGrid(ctx, state) {
           ctx.fillRect(fx, fy, 1, cs);
         }
       } else if (cell.type === 'gem' && cell.gemId !== null) {
-        // Dark neutral base — gem sprite renders on top
-        ctx.fillStyle = '#111a24';
+        // Dark neutral base with socket border — gem sprite renders on top
+        ctx.fillStyle = '#0e1620';
         ctx.fillRect(fx, fy, cs, cs);
+        ctx.fillStyle = 'rgba(60, 80, 100, 0.15)';
+        ctx.fillRect(fx, fy, cs, 1);
+        ctx.fillRect(fx, fy, 1, cs);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        ctx.fillRect(fx, fy + cs - 1, cs, 1);
+        ctx.fillRect(fx + cs - 1, fy, 1, cs);
       } else if (inLane) {
-        // Fixed corridor — muddy road
+        // Fixed corridor — muddy road with groove marks
         ctx.fillStyle = COLOR_LANE;
         ctx.fillRect(fx, fy, cs, cs);
         ctx.fillStyle = COLOR_LANE_EDGE;
         ctx.fillRect(fx, fy, cs, 1);
         ctx.fillRect(fx, fy, 1, cs);
+        // Center groove for worn road feel
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
+        ctx.fillRect(fx + Math.floor(cs / 2), fy, 1, cs);
+        ctx.fillRect(fx, fy + Math.floor(cs / 2), cs, 1);
       } else if (pathCells.has(`${x},${y}`)) {
-        // Dynamic A* path — visible against grass
+        // Dynamic A* path — olive-gold, distinct from brown lanes
         ctx.fillStyle = COLOR_PATH;
         ctx.fillRect(fx, fy, cs, cs);
         ctx.fillStyle = COLOR_PATH_EDGE;
         ctx.fillRect(fx, fy, cs, 1);
         ctx.fillRect(fx, fy, 1, cs);
+        // Subtle dot overlay for additional path distinction
+        if ((x + y) % 2 === 0) {
+          ctx.fillStyle = 'rgba(180, 150, 90, 0.25)';
+          ctx.fillRect(fx + Math.floor(cs / 2) - 1, fy + 1, 2, cs - 2);
+        }
       } else {
-        // Empty buildable — grass
-        ctx.fillStyle = COLOR_GRASS;
+        // Empty buildable — grass with subtle checker texture
+        ctx.fillStyle = (x + y) % 2 === 0 ? COLOR_GRASS : '#1d2e1e';
         ctx.fillRect(fx, fy, cs, cs);
         ctx.fillStyle = COLOR_GRASS_EDGE;
         ctx.fillRect(fx, fy, cs, 1);
