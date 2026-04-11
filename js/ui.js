@@ -356,7 +356,7 @@ function _attackToggleHTML(gem) {
   const disabled = gem.attackDisabled || false;
   const label = disabled ? 'Attacks: OFF' : 'Attacks: ON';
   const cls = disabled ? 'attack-toggle off' : 'attack-toggle on';
-  return `<button class="${cls}" onclick="window._toggleGemAttack('${gem.id}')">${label}</button>`;
+  return `<button class="${cls}" data-toggle-gem="${gem.id}">${label}</button>`;
 }
 
 function _buildSpecialGemHTML(gem, state) {
@@ -665,13 +665,17 @@ function _buildLeaderboardHTML(state) {
  * Updates the DOM info panel to the right of the canvas.
  * Called every frame from gameloop.js.
  */
-// Global toggle handler for attack on/off button in info panel
+// Attack toggle — event delegation on the panel (avoids inline onclick)
 let _uiState = null;
-window._toggleGemAttack = (gemId) => {
-  if (!_uiState) return;
-  const gem = _uiState.gems[gemId];
-  if (gem) gem.attackDisabled = !gem.attackDisabled;
-};
+const _selPanel = document.getElementById('panel-selection');
+if (_selPanel) {
+  _selPanel.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-toggle-gem]');
+    if (!btn || !_uiState) return;
+    const gem = _uiState.gems[btn.dataset.toggleGem];
+    if (gem) gem.attackDisabled = !gem.attackDisabled;
+  });
+}
 
 export function updateInfoPanel(state, inputState) {
   _uiState = state;
