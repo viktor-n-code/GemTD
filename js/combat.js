@@ -6,6 +6,7 @@
 import { CELL_SIZE } from './grid.js';
 import { getLeveledStats, getStats } from './gem.js';
 import { getSpecialGemLeveledStats, SPECIAL_GEM_DEFS } from './specialgem.js';
+import { getEnemyResistance } from './enemy.js';
 
 // ---------------------------------------------------------------------------
 // getGemStats — unified stat lookup for regular and special gems
@@ -265,6 +266,12 @@ export function attackEnemy(gem, enemy, enemies, now, wave) {
   const effectiveArmor = Math.max(0, enemy.armor - auraReduction - hitReduction);
   damage = Math.round(damage * Math.max(0, 1 - effectiveArmor * 0.03));
 
+  // 2b. Apply distance-based damage resistance (ground enemies wave 100+)
+  const { dmgResist, stunResist } = getEnemyResistance(enemy);
+  if (dmgResist > 0) {
+    damage = Math.round(damage * (1 - dmgResist));
+  }
+
   // 3. Apply type advantage: Amethyst vs flying enemies
   if (enemy.flying && gem.type === 'Amethyst') {
     damage = Math.round(damage * TYPE_ADVANTAGE);
@@ -334,7 +341,7 @@ export function attackEnemy(gem, enemy, enemies, now, wave) {
   // 8. Lucky Asian Jade procs — stun and gold (rolled after damage applied)
   let goldAmount = 0;
   if (stats.effect?.type === 'lucky_jade' && !enemy.dead) {
-    if (!enemy.stunImmune && Math.random() < stats.effect.stunChance) {
+    if (!enemy.stunImmune && Math.random() >= stunResist && Math.random() < stats.effect.stunChance) {
       const newStun = now + stats.effect.stunDuration * 1000;
       if (newStun > (enemy.stunUntil ?? 0)) enemy.stunUntil = newStun;
     }
@@ -350,7 +357,7 @@ export function attackEnemy(gem, enemy, enemies, now, wave) {
   }
 
   // 8c. Dark Emerald: stun proc
-  if (stats.effect?.type === 'stun_chance' && !enemy.dead && !enemy.stunImmune) {
+  if (stats.effect?.type === 'stun_chance' && !enemy.dead && !enemy.stunImmune && Math.random() >= stunResist) {
     if (Math.random() < stats.effect.chance) {
       const newStun = now + stats.effect.stunDuration * 1000;
       if (newStun > (enemy.stunUntil ?? 0)) enemy.stunUntil = newStun;

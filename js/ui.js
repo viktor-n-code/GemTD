@@ -4,7 +4,7 @@
 import { getVisual, getStats, getLeveledStats, GEM_CHANCE_LEVELS, GEM_TYPES, QUALITY_LEVELS } from './gem.js';
 import { getGemAttackType } from './combat.js';
 import { GRID_ROWS, CELL_SIZE } from './grid.js';
-import { getWaveStats } from './enemy.js';
+import { getWaveStats, getEnemyResistance } from './enemy.js';
 import { SPECIAL_GEM_DEFS, getSpecialGemLeveledStats, getSpecialVisual, findAvailableRecipes } from './specialgem.js';
 
 // ---------------------------------------------------------------------------
@@ -519,6 +519,16 @@ function _buildEnemyHTML(enemy, state) {
       <span class="info-label"></span>
       <span class="info-value"><span class="info-level-note">+75% ${enemy.weakness} dmg, −10% other</span></span>
     </div>`;
+
+  // Distance-based resistance display
+  const resist = getEnemyResistance(enemy);
+  if (resist.dmgResist > 0.001 || resist.stunResist > 0.001) {
+    html += `
+    <div class="info-row">
+      <span class="info-label">Resist</span>
+      <span class="info-value">${Math.round(resist.dmgResist * 100)}% dmg / ${Math.round(resist.stunResist * 100)}% stun</span>
+    </div>`;
+  }
 
   const tags = [];
   if (now < (enemy.stunUntil ?? 0)) tags.push(`<span class="info-status-tag tag-stunned">Stunned</span>`);
