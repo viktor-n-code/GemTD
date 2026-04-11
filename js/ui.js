@@ -14,21 +14,26 @@ import { SPECIAL_GEM_DEFS, getSpecialGemLeveledStats, getSpecialVisual, findAvai
 export const PANEL_H = 78;
 export const PANEL_Y = GRID_ROWS * CELL_SIZE; // 752 — directly below grid (HUD moved to left panel)
 
-// Action buttons — row 1 (full width, no gem slots)
-export const BTN_COMBINE  = { x: 8,   y: PANEL_Y + 9, w: 72,  h: 28 };
-export const BTN_COMBINE4 = { x: 84,  y: PANEL_Y + 9, w: 84,  h: 28 };
-export const BTN_KEEP     = { x: 172, y: PANEL_Y + 9, w: 56,  h: 28 };
-export const BTN_REPICK   = { x: 232, y: PANEL_Y + 9, w: 90,  h: 28 };
-export const BTN_UPGRADE  = { x: 326, y: PANEL_Y + 9, w: 90,  h: 28 };
-export const BTN_REMOVE   = { x: 420, y: PANEL_Y + 9, w: 72,  h: 28 };
-export const BTN_DOWNGRADE = { x: 8,  y: PANEL_Y + 9, w: 100, h: 28 }; // defend phase only, row 1
+// Action buttons — row 1 (build: action buttons; defend: downgrade + always-visible)
+const R1Y = PANEL_Y + 8;
+const R2Y = PANEL_Y + 42;
+const BH  = 26;
+const GAP = 6;
 
-// Action buttons — row 2 (special gem actions + restart, separated from Remove)
-export const BTN_COMBINE_SPECIAL = { x: 232, y: PANEL_Y + 50, w: 108, h: 24 };
-export const BTN_UPGRADE_GEM     = { x: 344, y: PANEL_Y + 50, w: 120, h: 24 };
-export const BTN_RESTART         = { x: 476, y: PANEL_Y + 50, w: 84,  h: 24 };
-export const BTN_BUY_LIFE       = { x: 564, y: PANEL_Y + 50, w: 100, h: 24 };
-export const BTN_FORFEIT        = { x: 496, y: PANEL_Y + 9,  w: 64,  h: 28 };
+export const BTN_COMBINE   = { x: 8,   y: R1Y, w: 72,  h: BH };
+export const BTN_COMBINE4  = { x: 86,  y: R1Y, w: 80,  h: BH };
+export const BTN_KEEP      = { x: 172, y: R1Y, w: 52,  h: BH };
+export const BTN_REPICK    = { x: 230, y: R1Y, w: 88,  h: BH };
+export const BTN_UPGRADE   = { x: 324, y: R1Y, w: 88,  h: BH };
+export const BTN_REMOVE    = { x: 418, y: R1Y, w: 68,  h: BH };
+export const BTN_FORFEIT   = { x: 492, y: R1Y, w: 62,  h: BH };
+export const BTN_DOWNGRADE = { x: 8,   y: R1Y, w: 150, h: BH }; // defend phase only
+
+// Action buttons — row 2
+export const BTN_COMBINE_SPECIAL = { x: 232, y: R2Y, w: 108, h: BH };
+export const BTN_UPGRADE_GEM     = { x: 346, y: R2Y, w: 108, h: BH };
+export const BTN_RESTART         = { x: 460, y: R2Y, w: 76,  h: BH };
+export const BTN_BUY_LIFE        = { x: 542, y: R2Y, w: 96,  h: BH };
 
 // ---------------------------------------------------------------------------
 // Private shape helpers (draw gem shapes centred at cx, cy with radius r)
@@ -160,21 +165,43 @@ function drawShapeInSlot(ctx, shape, color, cx, cy, r) {
  * @param {string}  [activeColor='#3a6a3a'] — fill when active
  */
 function drawButton(ctx, rect, label, active, activeColor = '#3a6a3a') {
+  const r = 4; // corner radius
+  const x = rect.x, y = rect.y, w = rect.w, h = rect.h;
+
+  // Rounded rectangle path
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+
   // Background
   ctx.fillStyle = active ? activeColor : '#2a2a2a';
-  ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+  ctx.fill();
 
   // Border
   ctx.strokeStyle = active ? '#aaaaaa' : '#444444';
   ctx.lineWidth = 1;
-  ctx.strokeRect(rect.x + 0.5, rect.y + 0.5, rect.w - 1, rect.h - 1);
+  ctx.stroke();
 
-  // Label
+  // Label — auto-shrink if text doesn't fit
   ctx.fillStyle = active ? '#ffffff' : '#666666';
-  ctx.font = '11px Arial';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(label, rect.x + rect.w / 2, rect.y + rect.h / 2);
+  const pad = 8;
+  let fontSize = 11;
+  ctx.font = `${fontSize}px Arial`;
+  while (fontSize > 8 && ctx.measureText(label).width > w - pad * 2) {
+    fontSize--;
+    ctx.font = `${fontSize}px Arial`;
+  }
+  ctx.fillText(label, x + w / 2, y + h / 2);
 }
 
 // ---------------------------------------------------------------------------
