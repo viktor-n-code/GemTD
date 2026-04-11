@@ -512,6 +512,10 @@ function _buildEnemyHTML(enemy, state) {
       <span class="info-value">${_enemySpeedHTML(enemy, now)}</span>
     </div>
     <div class="info-row">
+      <span class="info-label">Distance</span>
+      <span class="info-value">${Math.floor(enemy.distanceTravelled / 16)} tiles</span>
+    </div>
+    <div class="info-row">
       <span class="info-label">Weakness</span>
       <span class="info-value">${enemy.weakness ?? '—'}</span>
     </div>
