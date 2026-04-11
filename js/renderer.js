@@ -162,19 +162,8 @@ function drawGrid(ctx, state) {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
         ctx.fillRect(fx, fy + cs - 1, cs, 1);
         ctx.fillRect(fx + cs - 1, fy, 1, cs);
-      } else if (inLane) {
-        // Fixed corridor — muddy road with groove marks
-        ctx.fillStyle = COLOR_LANE;
-        ctx.fillRect(fx, fy, cs, cs);
-        ctx.fillStyle = COLOR_LANE_EDGE;
-        ctx.fillRect(fx, fy, cs, 1);
-        ctx.fillRect(fx, fy, 1, cs);
-        // Center groove for worn road feel
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
-        ctx.fillRect(fx + Math.floor(cs / 2), fy, 1, cs);
-        ctx.fillRect(fx, fy + Math.floor(cs / 2), cs, 1);
       } else if (pathCells.has(`${x},${y}`)) {
-        // Dynamic A* path — olive-gold, distinct from brown lanes
+        // Dynamic A* path — rendered above lanes so it's always visible
         ctx.fillStyle = COLOR_PATH;
         ctx.fillRect(fx, fy, cs, cs);
         ctx.fillStyle = COLOR_PATH_EDGE;
@@ -185,6 +174,16 @@ function drawGrid(ctx, state) {
           ctx.fillStyle = 'rgba(180, 150, 90, 0.25)';
           ctx.fillRect(fx + Math.floor(cs / 2) - 1, fy + 1, 2, cs - 2);
         }
+      } else if (inLane) {
+        // Fixed corridor — muddy road with groove marks
+        ctx.fillStyle = COLOR_LANE;
+        ctx.fillRect(fx, fy, cs, cs);
+        ctx.fillStyle = COLOR_LANE_EDGE;
+        ctx.fillRect(fx, fy, cs, 1);
+        ctx.fillRect(fx, fy, 1, cs);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
+        ctx.fillRect(fx + Math.floor(cs / 2), fy, 1, cs);
+        ctx.fillRect(fx, fy + Math.floor(cs / 2), cs, 1);
       } else {
         // Empty buildable — grass with subtle checker texture
         ctx.fillStyle = (x + y) % 2 === 0 ? COLOR_GRASS : '#1d2e1e';
