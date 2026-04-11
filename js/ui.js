@@ -94,6 +94,17 @@ function drawShapeInSlot(ctx, shape, color, cx, cy, r) {
       ctx.strokeRect(cx - r, cy - r, r * 2, r * 2);
       break;
 
+    case 'triangle':
+      ctx.beginPath();
+      for (let i = 0; i < 3; i++) {
+        const a = -Math.PI / 2 + (2 * Math.PI * i) / 3;
+        ctx[i === 0 ? 'moveTo' : 'lineTo'](cx + r * Math.cos(a), cy + r * Math.sin(a));
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      break;
+
     case 'diamond':
       ctx.beginPath();
       ctx.moveTo(cx,     cy - r);

@@ -89,7 +89,7 @@ export const GEM_TYPES = {
     },
   },
   Opal: {
-    color: '#ffaa77',
+    color: '#f0dfc0',
     effect: 'aura',
     stats: {
       chipped:  { damageMin: 4,  damageMax: 5,  attackSpeed: 1.25, range: 86,  effect: { type: 'aura', bonus: 0.10, auraRange: 86  } },
@@ -118,7 +118,7 @@ export const GEM_CHANCE_LEVELS = [
 
 const SHAPES = {
   chipped:  'circle',
-  flawed:   'square',
+  flawed:   'triangle',
   standard: 'diamond',
   flawless: 'pentagon',
   perfect:  'star',

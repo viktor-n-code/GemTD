@@ -41,7 +41,7 @@ const GEM_COLORS = {
   Diamond:    { light: '#e8f4ff', dark: '#8ab8d6' },
   Topaz:      { light: '#ffd24d', dark: '#b87a00' },
   Aquamarine: { light: '#6bffd2', dark: '#1a8b6b' },
-  Opal:       { light: '#ffc88b', dark: '#c67a3a' },
+  Opal:       { light: '#fff5e6', dark: '#c9a87c' },
 };
 
 // ---------------------------------------------------------------------------
@@ -107,11 +107,12 @@ const SPRITE_SIZE = 32; // pixels per sprite canvas
 const R = 12;           // gem radius (matches current renderer)
 
 function drawChipped(ctx, cx, cy, r, light, dark, stroke) {
-  // Rough circle with uneven edges
+  // Rough, chunky stone with pronounced wobble
   ctx.beginPath();
-  for (let i = 0; i < 10; i++) {
-    const a = (2 * Math.PI * i) / 10;
-    const wobble = r * (0.85 + 0.15 * Math.sin(i * 3.7));
+  const verts = 8;
+  for (let i = 0; i < verts; i++) {
+    const a = (2 * Math.PI * i) / verts;
+    const wobble = r * (0.75 + 0.25 * Math.sin(i * 4.3 + 1.7));
     const method = i === 0 ? 'moveTo' : 'lineTo';
     ctx[method](cx + wobble * Math.cos(a), cy + wobble * Math.sin(a));
   }
@@ -121,30 +122,41 @@ function drawChipped(ctx, cx, cy, r, light, dark, stroke) {
   ctx.strokeStyle = stroke;
   ctx.lineWidth = 1;
   ctx.stroke();
+  // Crack line for chipped feel
+  ctx.beginPath();
+  ctx.moveTo(cx - r * 0.15, cy - r * 0.4);
+  ctx.lineTo(cx + r * 0.05, cy + r * 0.1);
+  ctx.lineTo(cx - r * 0.1, cy + r * 0.35);
+  ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+  ctx.lineWidth = 0.5;
+  ctx.stroke();
 }
 
 function drawFlawed(ctx, cx, cy, r, light, dark, stroke) {
-  // Faceted square with beveled look
-  const s = r * 0.82;
+  // Equilateral triangle — first cut, minimal facets
+  const s = r * 0.95;
   ctx.beginPath();
-  ctx.moveTo(cx - s, cy - s * 0.9);
-  ctx.lineTo(cx + s * 0.9, cy - s);
-  ctx.lineTo(cx + s, cy + s * 0.9);
-  ctx.lineTo(cx - s * 0.9, cy + s);
+  for (let i = 0; i < 3; i++) {
+    const a = -Math.PI / 2 + (2 * Math.PI * i) / 3;
+    const method = i === 0 ? 'moveTo' : 'lineTo';
+    ctx[method](cx + s * Math.cos(a), cy + s * Math.sin(a));
+  }
   ctx.closePath();
   ctx.fillStyle = gemGradient(ctx, cx, cy, r, light, dark);
   ctx.fill();
   ctx.strokeStyle = stroke;
   ctx.lineWidth = 1;
   ctx.stroke();
-  // Inner bevel highlight
+  // Inner facet triangle rotated 60deg for cut look
+  const inner = s * 0.45;
   ctx.beginPath();
-  ctx.moveTo(cx - s * 0.5, cy - s * 0.5);
-  ctx.lineTo(cx + s * 0.5, cy - s * 0.5);
-  ctx.lineTo(cx + s * 0.5, cy + s * 0.5);
-  ctx.lineTo(cx - s * 0.5, cy + s * 0.5);
+  for (let i = 0; i < 3; i++) {
+    const a = Math.PI / 6 + (2 * Math.PI * i) / 3;
+    const method = i === 0 ? 'moveTo' : 'lineTo';
+    ctx[method](cx + inner * Math.cos(a), cy + inner * Math.sin(a));
+  }
   ctx.closePath();
-  ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+  ctx.strokeStyle = 'rgba(255,255,255,0.25)';
   ctx.lineWidth = 0.5;
   ctx.stroke();
 }
@@ -257,6 +269,22 @@ export function getGemSprite(type, quality) {
     const cy = size / 2;
     const stroke = contrastStroke(palette.light);
     draw(ctx, cx, cy, R, palette.light, palette.dark, stroke);
+    // Opal iridescent shimmer overlay
+    if (type === 'Opal') {
+      const shimmer = ctx.createRadialGradient(cx - R * 0.3, cy - R * 0.3, 0, cx, cy, R);
+      shimmer.addColorStop(0, 'rgba(255, 200, 220, 0.25)');
+      shimmer.addColorStop(0.5, 'rgba(200, 220, 255, 0.15)');
+      shimmer.addColorStop(1, 'rgba(255, 240, 200, 0.10)');
+      ctx.fillStyle = shimmer;
+      ctx.fill();
+    }
+    // Specular highlight for polished gems (all except chipped)
+    if (quality !== 'chipped') {
+      ctx.beginPath();
+      ctx.arc(cx - R * 0.25, cy - R * 0.25, R * 0.12, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      ctx.fill();
+    }
   });
 }
 
