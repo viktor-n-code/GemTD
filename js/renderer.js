@@ -13,15 +13,39 @@ import { getGemSprite, getSpecialGemSprite, getEnemySprite } from './sprites.js'
 // Color constants
 // ---------------------------------------------------------------------------
 
-const COLOR_EMPTY     = '#1a2a3a';
-const COLOR_EMPTY_EDGE = '#152535'; // darker edge for subtle gradient effect
-const COLOR_PATH      = '#2a3828'; // warmer earth tone
-const COLOR_PATH_EDGE = '#1e2e1c';
-const COLOR_BLOCKED   = '#0f1f2f';
-const COLOR_ROCK      = '#555566';
+const COLOR_GRASS      = '#1e3020'; // dark green — buildable empty tiles
+const COLOR_GRASS_EDGE = '#182818';
+const COLOR_LANE       = '#3a2a1a'; // brown/muddy — fixed corridor road
+const COLOR_LANE_EDGE  = '#2e2015';
+const COLOR_PATH       = '#2a3828'; // dynamic A* path overlay
+const COLOR_PATH_EDGE  = '#1e2e1c';
+const COLOR_BLOCKED    = '#0f1f2f'; // non-lane blocked zones
+const COLOR_ROCK_A     = '#555566'; // rock shade A (checkerboard)
+const COLOR_ROCK_B     = '#4a4a5a'; // rock shade B (checkerboard)
 const COLOR_ROCK_LIGHT = '#666677'; // bevel highlight
 const COLOR_ROCK_DARK  = '#444455'; // bevel shadow
-const COLOR_GRID_LINE = '#1a2535'; // softer, near-invisible
+const COLOR_GRID_LINE  = '#1a2535'; // softer, near-invisible
+
+// ---------------------------------------------------------------------------
+// Lane regions — fixed two-tile-wide corridors connecting checkpoints
+// ---------------------------------------------------------------------------
+
+const LANE_REGIONS = [
+  { x1: 1,  y1: 9,  x2: 12, y2: 10 }, // Entry → CP1 horizontal
+  { x1: 9,  y1: 11, x2: 10, y2: 29 }, // CP1 → CP2 vertical
+  { x1: 11, y1: 26, x2: 36, y2: 27 }, // CP2 → CP3 horizontal
+  { x1: 33, y1: 7,  x2: 34, y2: 25 }, // CP3 → CP4 vertical
+  { x1: 19, y1: 9,  x2: 32, y2: 10 }, // CP4 → CP5 horizontal
+  { x1: 21, y1: 11, x2: 22, y2: 41 }, // CP5 → CP6 vertical
+  { x1: 23, y1: 38, x2: 42, y2: 39 }, // CP6 → Exit horizontal
+];
+
+const laneCells = new Set();
+for (const r of LANE_REGIONS) {
+  for (let y = r.y1; y <= r.y2; y++)
+    for (let x = r.x1; x <= r.x2; x++)
+      laneCells.add((y << 8) | x); // pack into single int for fast lookup
+}
 
 const COLOR_CHECKPOINT = '#ffff00';
 const COLOR_ENTRY      = '#00ff00';
@@ -101,9 +125,11 @@ function drawGrid(ctx, state) {
       const fx = px + 1;
       const fy = py + 1;
 
+      const inLane = laneCells.has((y << 8) | x);
+
       if (cell.type === 'rock') {
-        // Beveled rock: light top-left edge, dark bottom-right
-        ctx.fillStyle = COLOR_ROCK;
+        // Beveled rock with checkerboard shade for visual separation
+        ctx.fillStyle = (x + y) % 2 === 0 ? COLOR_ROCK_A : COLOR_ROCK_B;
         ctx.fillRect(fx, fy, cs, cs);
         ctx.fillStyle = COLOR_ROCK_LIGHT;
         ctx.fillRect(fx, fy, cs, 1);        // top highlight
@@ -112,24 +138,38 @@ function drawGrid(ctx, state) {
         ctx.fillRect(fx, fy + cs - 1, cs, 1); // bottom shadow
         ctx.fillRect(fx + cs - 1, fy, 1, cs); // right shadow
       } else if (cell.type === 'blocked') {
-        ctx.fillStyle = COLOR_BLOCKED;
+        // Lane blocked zones (checkpoint structures) = muddy road
+        // Non-lane blocked zones keep dark color
+        ctx.fillStyle = inLane ? COLOR_LANE : COLOR_BLOCKED;
         ctx.fillRect(fx, fy, cs, cs);
+        if (inLane) {
+          ctx.fillStyle = COLOR_LANE_EDGE;
+          ctx.fillRect(fx, fy, cs, 1);
+          ctx.fillRect(fx, fy, 1, cs);
+        }
       } else if (cell.type === 'gem' && cell.gemId !== null) {
         // Dark neutral base — gem sprite renders on top
         ctx.fillStyle = '#111a24';
         ctx.fillRect(fx, fy, cs, cs);
+      } else if (inLane) {
+        // Fixed corridor — muddy road
+        ctx.fillStyle = COLOR_LANE;
+        ctx.fillRect(fx, fy, cs, cs);
+        ctx.fillStyle = COLOR_LANE_EDGE;
+        ctx.fillRect(fx, fy, cs, 1);
+        ctx.fillRect(fx, fy, 1, cs);
       } else if (pathCells.has(`${x},${y}`)) {
-        // Path with subtle edge darkening
+        // Dynamic A* path — visible against grass
         ctx.fillStyle = COLOR_PATH;
         ctx.fillRect(fx, fy, cs, cs);
         ctx.fillStyle = COLOR_PATH_EDGE;
         ctx.fillRect(fx, fy, cs, 1);
         ctx.fillRect(fx, fy, 1, cs);
       } else {
-        // Empty with subtle edge darkening
-        ctx.fillStyle = COLOR_EMPTY;
+        // Empty buildable — grass
+        ctx.fillStyle = COLOR_GRASS;
         ctx.fillRect(fx, fy, cs, cs);
-        ctx.fillStyle = COLOR_EMPTY_EDGE;
+        ctx.fillStyle = COLOR_GRASS_EDGE;
         ctx.fillRect(fx, fy, cs, 1);
         ctx.fillRect(fx, fy, 1, cs);
       }
