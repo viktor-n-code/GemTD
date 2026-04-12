@@ -671,18 +671,24 @@ function _buildLeaderboardHTML(state) {
  */
 // Attack toggle — event delegation on the panel (avoids inline onclick)
 let _uiState = null;
-const _selPanel = document.getElementById('panel-selection');
-if (_selPanel) {
-  _selPanel.addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-toggle-gem]');
-    if (!btn || !_uiState) return;
-    const gem = _uiState.gems[btn.dataset.toggleGem];
-    if (gem) gem.attackDisabled = !gem.attackDisabled;
-  });
-}
+let _toggleListenerAttached = false;
 
 export function updateInfoPanel(state, inputState) {
   _uiState = state;
+
+  // Attach toggle listener lazily on first call (guarantees DOM exists)
+  if (!_toggleListenerAttached) {
+    const panel = document.getElementById('panel-selection');
+    if (panel) {
+      panel.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-toggle-gem]');
+        if (!btn || !_uiState) return;
+        const gem = _uiState.gems[btn.dataset.toggleGem];
+        if (gem) gem.attackDisabled = !gem.attackDisabled;
+      });
+      _toggleListenerAttached = true;
+    }
+  }
   const selEl     = document.getElementById('panel-selection');
   const chancesEl = document.getElementById('panel-chances');
   if (!selEl || !chancesEl) return;
@@ -1117,11 +1123,12 @@ export function drawUI(ctx, state, inputState) {
   }
   drawButton(ctx, BTN_COMBINE4, '4-Combine', combine4Active, '#2a5a2a');
 
-  // Keep — active if a gem is selected and no gem has been kept yet
+  // Keep — active only for gems placed this round, and no gem has been kept yet
   const keepActive = (
     inputState !== null &&
     inputState.selectedGemId !== null &&
-    state.keptGemId === null
+    state.keptGemId === null &&
+    state.placedThisRound.includes(inputState.selectedGemId)
   );
   drawButton(ctx, BTN_KEEP, 'Keep', keepActive, '#3a6a3a');
 

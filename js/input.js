@@ -185,7 +185,7 @@ export class InputHandler {
         return;
       }
       if (hitTest(BTN_KEEP, x, y)) {
-        if (this.selectedGemId !== null) {
+        if (this.selectedGemId !== null && this._placedThisRound.includes(this.selectedGemId)) {
           this.pendingAction = { type: 'keep', gemId: this.selectedGemId };
         }
         return;
