@@ -262,9 +262,9 @@ function _buildEffectHTML(effect, baseEffect) {
         _row('Effect', 'Poison + Slow') +
         _row('DoT', `${effect.dps} dps${_lvlNote(effect.dps, b.dps, d => d)} for ${effect.duration}s`) +
         _row('Slow', `-${Math.round(effect.slow * 100)}% for ${effect.duration}s`) +
-        _row(`${(effect.critChance * 100).toFixed(1)}% Crit`, `×${effect.critMult.toFixed(1)} damage${_lvlNote(effect.critMult, b.critMult, d => d.toFixed(1) + '×')}`) +
-        _row(`${(effect.stunChance * 100).toFixed(1)}% Stun`, `${effect.stunDuration}s`) +
-        _row(`${(effect.goldChance * 100).toFixed(1)}% Gold`, `+floor(wave/2) gold`)
+        _row('Crit', `${(effect.critChance * 100).toFixed(1)}%${_lvlNote(effect.critChance, b?.critChance, d => (d * 100).toFixed(1) + '%')} · ×${effect.critMult.toFixed(1)}${_lvlNote(effect.critMult, b?.critMult, d => d.toFixed(1) + '×')}`) +
+        _row('Stun', `${(effect.stunChance * 100).toFixed(1)}%${_lvlNote(effect.stunChance, b?.stunChance, d => (d * 100).toFixed(1) + '%')} · ${effect.stunDuration}s`) +
+        _row('Gold', `${(effect.goldChance * 100).toFixed(1)}%${_lvlNote(effect.goldChance, b?.goldChance, d => (d * 100).toFixed(1) + '%')} · +floor(wave/2)`)
       );
     case 'splash_slow':
       return wrap(
