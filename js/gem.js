@@ -205,7 +205,6 @@ export function getLeveledStats(type, quality, level) {
   let range       = base.range;
 
   if (type === 'Aquamarine') {
-    attackSpeed = base.attackSpeed + bonus * 0.025;
     range       = base.range       + bonus * 1.5; // 0.1 tile × 15 units/tile
   }
   if (type === 'Amethyst') {

@@ -569,7 +569,7 @@ export function getSpecialGemLeveledStats(specialType, level) {
         effect.dmgMod += bonus * 0.01;  // +1% splash damage per level
         break;
       case 'burn_aura':
-        effect.auraDps   = effect.auraDps   + bonus * 2;
+        effect.auraDps   = effect.auraDps * (1 + bonus * 0.03);
         effect.auraRange = effect.auraRange + bonus * 1.5;
         break;
       case 'air_crystal':
@@ -617,7 +617,7 @@ export function getSpecialGemLeveledStats(specialType, level) {
         effect.splashDmgMod += bonus * 0.01;   // +1% splash damage per level
         break;
       case 'uranium':
-        effect.auraDps   = effect.auraDps   + bonus * 2;
+        effect.auraDps   = effect.auraDps * (1 + bonus * 0.03);
         effect.auraRange = effect.auraRange + bonus * 1.5;
         break;
     }
@@ -626,10 +626,7 @@ export function getSpecialGemLeveledStats(specialType, level) {
   // All special gems gain +0.1 tile range per level; air_crystal gets +0.5t/lvl
   const rangePerLvl = effect?.type === 'air_crystal' ? 7.5 : 1.5;
   const range = base.range + bonus * rangePerLvl;
-  // Malachite chain gains attack speed per level
-  const attackSpeed = effect?.type === 'multi'
-    ? base.attackSpeed + bonus * 0.02
-    : base.attackSpeed;
+  const attackSpeed = base.attackSpeed;
 
   return {
     damageMin:   Math.round(base.damageMin * dmgMult),
