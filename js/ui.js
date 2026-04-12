@@ -480,7 +480,7 @@ function _buildGemHTML(gem, state) {
 
   let html = `
     <div class="info-section-title">Selected Gem</div>
-    <div class="info-gem-name">${gem.name || gem.quality + ' ' + gem.type}${levelLabel}</div>
+    <div class="info-gem-name">${gem.name || (gem.quality[0].toUpperCase() + gem.quality.slice(1)) + ' ' + gem.type}${levelLabel}</div>
     ${_attackToggleHTML(gem)}
     <div class="info-row">
       <span class="info-label">Attack</span>
@@ -1076,7 +1076,7 @@ export function drawUI(ctx, state, inputState) {
       const qi = QUALITY_LEVELS.indexOf(dgGem.quality);
       const canDowngrade = qi > 0;
       const targetQ = canDowngrade ? QUALITY_LEVELS[qi - 1] : dgGem.quality;
-      drawButton(ctx, BTN_DOWNGRADE, `Downgrade → ${targetQ}`, canDowngrade, '#6a4a2a');
+      drawButton(ctx, BTN_DOWNGRADE, `Downgrade → ${targetQ[0].toUpperCase() + targetQ.slice(1)}`, canDowngrade, '#6a4a2a');
     }
   }
 
