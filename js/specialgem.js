@@ -275,7 +275,7 @@ export const SPECIAL_GEM_DEFS = [
     ],
     stats: {
       damageMin: 149, damageMax: 175, attackSpeed: 1.0, range: 114,
-      effect: { type: 'crit_ground', critChance: 0.15, critMult: 6 },
+      effect: { type: 'crit_ground', critChance: 0.15, critMult: 5 },
     },
     upgradeTo: 'great_pink_diamond',
     upgradeCost: 175,
@@ -287,7 +287,7 @@ export const SPECIAL_GEM_DEFS = [
     color: '#ff55aa',
     stats: {
       damageMin: 174, damageMax: 195, attackSpeed: 1.538, range: 122,
-      effect: { type: 'crit_ground', critChance: 0.15, critMult: 10 },
+      effect: { type: 'crit_ground', critChance: 0.15, critMult: 8 },
     },
     upgradeTo: null,
     upgradeCost: null,
@@ -306,7 +306,7 @@ export const SPECIAL_GEM_DEFS = [
     ],
     stats: {
       damageMin: 159, damageMax: 190, attackSpeed: 1.0, range: 114,
-      effect: { type: 'armor_debuff', critChance: 0.25, critMult: 3, armorDebuff: 5, debuffDuration: 3 },
+      effect: { type: 'armor_debuff', critChance: 0.20, critMult: 3, armorDebuff: 5, debuffDuration: 3 },
     },
     upgradeTo: 'egyptian_gold',
     upgradeCost: 210,
@@ -318,7 +318,7 @@ export const SPECIAL_GEM_DEFS = [
     color: '#e6a800',
     stats: {
       damageMin: 159, damageMax: 200, attackSpeed: 1.429, range: 114,
-      effect: { type: 'armor_debuff', critChance: 0.30, critMult: 3, armorDebuff: 8, debuffDuration: 3 },
+      effect: { type: 'armor_debuff', critChance: 0.25, critMult: 3, armorDebuff: 8, debuffDuration: 3 },
     },
     upgradeTo: null,
     upgradeCost: null,
@@ -475,7 +475,7 @@ export const SPECIAL_GEM_DEFS = [
     color: '#880000',
     stats: {
       damageMin: 159, damageMax: 240, attackSpeed: 1.333, range: 100,
-      effect: { type: 'ancient_blood_stone', critChance: 0.15, critMult: 4,
+      effect: { type: 'ancient_blood_stone', critChance: 0.15, critMult: 3,
                 splashRadius: 40, splashDmgMod: 0.75, auraDps: 150, auraRange: 100 },
     },
     upgradeTo: null,
@@ -556,7 +556,7 @@ export function getSpecialGemLeveledStats(specialType, level) {
         break;
       case 'lucky_jade':
         effect.dps        = effect.dps        + bonus;
-        effect.critMult   = effect.critMult   + bonus * 0.1;
+        effect.critMult   = effect.critMult   + bonus * 0.05;
         effect.critChance += bonus * 0.001;  // +0.1% crit chance per level
         effect.stunChance = effect.stunChance + bonus * 0.001;
         effect.goldChance = effect.goldChance + bonus * 0.001;
@@ -569,7 +569,7 @@ export function getSpecialGemLeveledStats(specialType, level) {
         effect.dmgMod += bonus * 0.01;  // +1% splash damage per level
         break;
       case 'burn_aura':
-        effect.auraDps   = effect.auraDps   + bonus * 2;
+        effect.auraDps   = effect.auraDps * (1 + bonus * 0.03);
         effect.auraRange = effect.auraRange + bonus * 1.5;
         break;
       case 'air_crystal':
@@ -577,11 +577,11 @@ export function getSpecialGemLeveledStats(specialType, level) {
         effect.auraRange = effect.auraRange + bonus * 7.5; // 0.5 tiles/lvl
         break;
       case 'crit_ground':
-        effect.critMult   = effect.critMult   + bonus * 0.1;
+        effect.critMult   = effect.critMult   + bonus * 0.05;
         effect.critChance += bonus * 0.001; // +0.1% crit chance per level
         break;
       case 'armor_debuff':
-        effect.critMult    = effect.critMult    + bonus * 0.1;
+        effect.critMult    = effect.critMult    + bonus * 0.05;
         effect.critChance += bonus * 0.001; // +0.1% crit chance per level
         effect.armorDebuff = effect.armorDebuff + bonus * 0.2;
         break;
@@ -609,7 +609,7 @@ export function getSpecialGemLeveledStats(specialType, level) {
         effect.auraRange = effect.auraRange + bonus * 1.5;
         break;
       case 'ancient_blood_stone':
-        effect.critMult      = effect.critMult      + bonus * 0.1;
+        effect.critMult      = effect.critMult      + bonus * 0.05;
         effect.critChance   += bonus * 0.001;  // +0.1% crit chance per level
         effect.auraDps       = effect.auraDps       + bonus * 2;
         effect.auraRange     = effect.auraRange     + bonus * 1.5;
@@ -617,7 +617,7 @@ export function getSpecialGemLeveledStats(specialType, level) {
         effect.splashDmgMod += bonus * 0.01;   // +1% splash damage per level
         break;
       case 'uranium':
-        effect.auraDps   = effect.auraDps   + bonus * 2;
+        effect.auraDps   = effect.auraDps * (1 + bonus * 0.03);
         effect.auraRange = effect.auraRange + bonus * 1.5;
         break;
     }
@@ -626,10 +626,7 @@ export function getSpecialGemLeveledStats(specialType, level) {
   // All special gems gain +0.1 tile range per level; air_crystal gets +0.5t/lvl
   const rangePerLvl = effect?.type === 'air_crystal' ? 7.5 : 1.5;
   const range = base.range + bonus * rangePerLvl;
-  // Malachite chain gains attack speed per level
-  const attackSpeed = effect?.type === 'multi'
-    ? base.attackSpeed + bonus * 0.02
-    : base.attackSpeed;
+  const attackSpeed = base.attackSpeed;
 
   return {
     damageMin:   Math.round(base.damageMin * dmgMult),

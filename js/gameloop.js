@@ -429,7 +429,7 @@ function _handleDowngrade() {
   // Regenerate name with new quality
   const nameKey = `${gem.quality}_${gem.type}`;
   gameState.gemCounters[nameKey] = (gameState.gemCounters[nameKey] || 0) + 1;
-  gem.name = `${gem.quality} ${gem.type} ${gameState.gemCounters[nameKey]}`;
+  gem.name = `${gem.quality[0].toUpperCase() + gem.quality.slice(1)} ${gem.type} ${gameState.gemCounters[nameKey]}`;
 
   applyAllAuraBuffs(gameState);
   saveState(gameState);
@@ -703,7 +703,7 @@ function startDefendPhase() {
   if (keptGem && keptGem.type !== 'special') {
     const k = `${keptGem.quality}_${keptGem.type}`;
     gameState.gemCounters[k] = (gameState.gemCounters[k] || 0) + 1;
-    keptGem.name = `${keptGem.quality} ${keptGem.type} ${gameState.gemCounters[k]}`;
+    keptGem.name = `${keptGem.quality[0].toUpperCase() + keptGem.quality.slice(1)} ${keptGem.type} ${gameState.gemCounters[k]}`;
   }
 
   // The just-kept gem can be downgraded during this defend phase

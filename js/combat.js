@@ -186,7 +186,7 @@ export function applySplash(gem, primaryEnemy, enemies, primaryDamage, now) {
 
     if (dist <= radius) {
       // Splash deals a fraction of primary damage; no status effects applied to splash targets.
-      const splash = primaryDamage * (stats.effect.dmgMod ?? 1);
+      const splash = primaryDamage * Math.min(stats.effect.dmgMod ?? 1, 1);
       enemy.hp -= splash;
       splashDamage += splash;
       if (enemy.hp <= 0) {
@@ -297,7 +297,7 @@ export function attackEnemy(gem, enemy, enemies, now, wave) {
     // Apply slow to primary target
     applyEffect(enemy, { type: 'slow', amount: stats.effect.slow, duration: stats.effect.duration }, now, gem.id);
     // Splash + slow to all enemies in radius; dmgMod scales splash damage (0.5 = 50%, 1.0 = 100%)
-    const splashAmt = damage * (stats.effect.dmgMod ?? 1.0);
+    const splashAmt = damage * Math.min(stats.effect.dmgMod ?? 1.0, 1.0);
     for (const e of enemies) {
       if (e === enemy || e.dead || e.exited) continue;
       const dx = e.x - enemy.x;
@@ -313,7 +313,7 @@ export function attackEnemy(gem, enemy, enemies, now, wave) {
       }
     }
   } else if (stats.effect?.type === 'ancient_blood_stone') {
-    const absSplash = damage * (stats.effect.splashDmgMod ?? 1.0);
+    const absSplash = damage * Math.min(stats.effect.splashDmgMod ?? 1.0, 1.0);
     for (const e of enemies) {
       if (e === enemy || e.dead || e.exited) continue;
       const dx = e.x - enemy.x;
@@ -325,7 +325,7 @@ export function attackEnemy(gem, enemy, enemies, now, wave) {
       }
     }
   } else if (stats.effect?.type === 'paraiba_nova' && Math.random() < stats.effect.novaChance) {
-    const novaSplash = damage * (stats.effect.novaDmgMod ?? 1.0);
+    const novaSplash = damage * Math.min(stats.effect.novaDmgMod ?? 1.0, 1.0);
     for (const e of enemies) {
       if (e === enemy || e.dead || e.exited) continue;
       const dx = e.x - enemy.x;

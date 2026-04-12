@@ -269,13 +269,13 @@ function _buildEffectHTML(effect, baseEffect) {
     case 'splash_slow':
       return wrap(
         _row('Effect', 'Splash + Slow') +
-        _row('Radius', `${(effect.radius / CELL_SIZE).toFixed(1)} tiles${_lvlNote(effect.radius, b.radius, d => (d / CELL_SIZE).toFixed(1) + 't')} · ${Math.round((effect.dmgMod ?? 1) * 100)}% dmg`) +
+        _row('Radius', `${(effect.radius / CELL_SIZE).toFixed(1)} tiles${_lvlNote(effect.radius, b.radius, d => (d / CELL_SIZE).toFixed(1) + 't')} · ${Math.round((effect.dmgMod ?? 1) * 100)}%${_lvlNote(effect.dmgMod, b?.dmgMod, d => Math.round(d * 100) + '%')} dmg`) +
         _row('Slow', `-${Math.round(effect.slow * 100)}% for ${effect.duration}s`)
       );
     case 'splash_slow_dmg_aura':
       return wrap(
         _row('Effect', 'Splash + Slow') +
-        _row('Radius', `${(effect.radius / CELL_SIZE).toFixed(1)} tiles${_lvlNote(effect.radius, b.radius, d => (d / CELL_SIZE).toFixed(1) + 't')} · ${Math.round((effect.dmgMod ?? 1) * 100)}% dmg`) +
+        _row('Radius', `${(effect.radius / CELL_SIZE).toFixed(1)} tiles${_lvlNote(effect.radius, b.radius, d => (d / CELL_SIZE).toFixed(1) + 't')} · ${Math.round((effect.dmgMod ?? 1) * 100)}%${_lvlNote(effect.dmgMod, b?.dmgMod, d => Math.round(d * 100) + '%')} dmg`) +
         _row('Slow', `-${Math.round(effect.slow * 100)}% for ${effect.duration}s`) +
         _row('Dmg Aura', `+${effect.dmgBonus}%${_lvlNote(effect.dmgBonus, b.dmgBonus, d => d + '%')} to gems in ${(effect.dmgAuraRange / 15).toFixed(1)} tiles`)
       );
@@ -288,7 +288,7 @@ function _buildEffectHTML(effect, baseEffect) {
     case 'ancient_blood_stone':
       return wrap(
         _row('Crit', `${Math.round(effect.critChance * 100)}%${_lvlNote(effect.critChance, b.critChance, d => Math.round(d * 100) + '%')} · ×${effect.critMult.toFixed(1)}${_lvlNote(effect.critMult, b.critMult, d => d.toFixed(1) + '×')}`) +
-        _row('Splash', `${Math.round((effect.splashDmgMod ?? 1) * 100)}% dmg ${(effect.splashRadius / CELL_SIZE).toFixed(1)} tiles${_lvlNote(effect.splashRadius, b.splashRadius, d => (d / CELL_SIZE).toFixed(1) + 't')}`) +
+        _row('Splash', `${Math.round((effect.splashDmgMod ?? 1) * 100)}%${_lvlNote(effect.splashDmgMod, b?.splashDmgMod, d => Math.round(d * 100) + '%')} dmg ${(effect.splashRadius / CELL_SIZE).toFixed(1)} tiles${_lvlNote(effect.splashRadius, b.splashRadius, d => (d / CELL_SIZE).toFixed(1) + 't')}`) +
         _row('Burn Aura', `${effect.auraDps} DPS${_lvlNote(effect.auraDps, b.auraDps, d => d)}`) +
         _row('Aura Range', `${(effect.auraRange / 15).toFixed(1)} tiles${_lvlNote(effect.auraRange, b.auraRange, d => (d / 15).toFixed(1) + 't')}`)
       );
@@ -326,7 +326,7 @@ function _buildEffectHTML(effect, baseEffect) {
       return wrap(
         _row('Armor Aura', `−${Math.round(effect.groundArmorAura * 3)}% damage reduction${_lvlNote(effect.groundArmorAura, b.groundArmorAura, d => Math.round(d * 3) + '%')} to ground`) +
         _row('Aura Range', `${(effect.auraRange / 15).toFixed(1)} tiles${_lvlNote(effect.auraRange, b.auraRange, d => (d / 15).toFixed(1) + 't')}`) +
-        _row('Nova', `${Math.round(effect.novaChance * 100)}% on hit: ${Math.round((effect.novaDmgMod ?? 1) * 100)}% dmg splash`) +
+        _row('Nova', `${Math.round(effect.novaChance * 100)}% on hit: ${Math.round((effect.novaDmgMod ?? 1) * 100)}%${_lvlNote(effect.novaDmgMod, b?.novaDmgMod, d => Math.round(d * 100) + '%')} dmg splash`) +
         _row('Nova Radius', `${(effect.novaRadius / CELL_SIZE).toFixed(1)} tiles${_lvlNote(effect.novaRadius, b.novaRadius, d => (d / CELL_SIZE).toFixed(1) + 't')}`)
       );
     case 'dmg_aura':
@@ -480,7 +480,7 @@ function _buildGemHTML(gem, state) {
 
   let html = `
     <div class="info-section-title">Selected Gem</div>
-    <div class="info-gem-name">${gem.name || gem.quality + ' ' + gem.type}${levelLabel}</div>
+    <div class="info-gem-name">${gem.name || (gem.quality[0].toUpperCase() + gem.quality.slice(1)) + ' ' + gem.type}${levelLabel}</div>
     ${_attackToggleHTML(gem)}
     <div class="info-row">
       <span class="info-label">Attack</span>
@@ -619,10 +619,14 @@ function _buildChancesHTML(state) {
     ['Flawless', c.flawless],
     ['Perfect',  c.perfect],
   ];
-  return `<div class="info-section-title">Gem Chances — Lvl ${state.gemChanceLevel}</div>`
+  let html = `<div class="info-section-title">Gem Chances — Lvl ${state.gemChanceLevel}</div>`
     + qualities.map(([name, val]) =>
         `<div class="chance-row"><span class="chance-label">${name}</span><span class="chance-value">${val}%</span></div>`
       ).join('');
+  if ((state.opalAttunement ?? 0) > 0 && !state.opalAttunementDone) {
+    html += `<div class="chance-row" style="margin-top:4px;color:#f0dfc0"><span class="chance-label">Opal Attunement</span><span class="chance-value">+${(state.opalAttunement * 100).toFixed(1)}% Perfect Opal</span></div>`;
+  }
+  return html;
 }
 
 function _buildWaveHTML(state) {
@@ -1072,7 +1076,7 @@ export function drawUI(ctx, state, inputState) {
       const qi = QUALITY_LEVELS.indexOf(dgGem.quality);
       const canDowngrade = qi > 0;
       const targetQ = canDowngrade ? QUALITY_LEVELS[qi - 1] : dgGem.quality;
-      drawButton(ctx, BTN_DOWNGRADE, `Downgrade → ${targetQ}`, canDowngrade, '#6a4a2a');
+      drawButton(ctx, BTN_DOWNGRADE, `Downgrade → ${targetQ[0].toUpperCase() + targetQ.slice(1)}`, canDowngrade, '#6a4a2a');
     }
   }
 

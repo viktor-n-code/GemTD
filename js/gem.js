@@ -10,7 +10,7 @@ export const GEM_TYPES = {
       standard: { damageMin: 14,  damageMax: 25,  attackSpeed: 1.0,  range: 86,  effect: { type: 'poison', dps: 5,  slow: 0.20, duration: 5 } },
       flawless: { damageMin: 29,  damageMax: 38,  attackSpeed: 1.0,  range: 100, effect: { type: 'poison', dps: 8,  slow: 0.25, duration: 6 } },
       perfect:  { damageMin: 79,  damageMax: 90,  attackSpeed: 1.0,  range: 114, effect: { type: 'poison', dps: 16, slow: 0.30, duration: 8 } },
-      great:    { damageMin: 199, damageMax: 240, attackSpeed: 1.0,  range: 129, effect: { type: 'poison', dps: 40, slow: 0.35, duration: 300 } },
+      great:    { damageMin: 199, damageMax: 240, attackSpeed: 1.0,  range: 129, effect: { type: 'poison', dps: 32, slow: 0.35, duration: 100 } },
     },
   },
   Ruby: {
@@ -34,7 +34,7 @@ export const GEM_TYPES = {
       standard: { damageMin: 15,  damageMax: 21,  attackSpeed: 1.0, range: 114, effect: { type: 'slow', amount: 0.30, duration: 5 } },
       flawless: { damageMin: 29,  damageMax: 40,  attackSpeed: 1.0, range: 122, effect: { type: 'slow', amount: 0.35, duration: 5 } },
       perfect:  { damageMin: 59,  damageMax: 75,  attackSpeed: 1.0, range: 180, effect: { type: 'slow', amount: 0.40, duration: 5 } },
-      great:    { damageMin: 199, damageMax: 200, attackSpeed: 1.0, range: 286, effect: { type: 'slow', amount: 0.50, duration: 5 } },
+      great:    { damageMin: 199, damageMax: 200, attackSpeed: 1.0, range: 300, effect: { type: 'slow', amount: 0.50, duration: 5 } },
     },
   },
   Amethyst: {
@@ -57,10 +57,10 @@ export const GEM_TYPES = {
     stats: {
       chipped:  { damageMin: 7,   damageMax: 12,  attackSpeed: 1.25, range: 72,  effect: { type: 'crit', chance: 0.25, multiplier: 2.0 } },
       flawed:   { damageMin: 15,  damageMax: 18,  attackSpeed: 1.0,  range: 79,  effect: { type: 'crit', chance: 0.25, multiplier: 2.5 } },
-      standard: { damageMin: 29,  damageMax: 37,  attackSpeed: 1.0,  range: 86,  effect: { type: 'crit', chance: 0.25, multiplier: 3.0 } },
-      flawless: { damageMin: 57,  damageMax: 65,  attackSpeed: 1.0,  range: 93,  effect: { type: 'crit', chance: 0.30, multiplier: 3.0 } },
-      perfect:  { damageMin: 115, damageMax: 138, attackSpeed: 1.0,  range: 107, effect: { type: 'crit', chance: 0.33, multiplier: 3.5 } },
-      great:    { damageMin: 299, damageMax: 350, attackSpeed: 1.0,  range: 122, effect: { type: 'crit', chance: 0.40, multiplier: 5.0 } },
+      standard: { damageMin: 29,  damageMax: 37,  attackSpeed: 1.0,  range: 86,  effect: { type: 'crit', chance: 0.25, multiplier: 2.75 } },
+      flawless: { damageMin: 57,  damageMax: 65,  attackSpeed: 1.0,  range: 93,  effect: { type: 'crit', chance: 0.25, multiplier: 3.0 } },
+      perfect:  { damageMin: 115, damageMax: 138, attackSpeed: 1.0,  range: 107, effect: { type: 'crit', chance: 0.25, multiplier: 3.5 } },
+      great:    { damageMin: 299, damageMax: 350, attackSpeed: 1.0,  range: 122, effect: { type: 'crit', chance: 0.25, multiplier: 5.0 } },
     },
   },
   Topaz: {
@@ -92,12 +92,12 @@ export const GEM_TYPES = {
     color: '#f0dfc0',
     effect: 'aura',
     stats: {
-      chipped:  { damageMin: 4,  damageMax: 5,  attackSpeed: 1.25, range: 86,  effect: { type: 'aura', bonus: 0.10, auraRange: 86  } },
-      flawed:   { damageMin: 9,  damageMax: 10, attackSpeed: 1.0,  range: 100, effect: { type: 'aura', bonus: 0.15, auraRange: 100 } },
-      standard: { damageMin: 19, damageMax: 20, attackSpeed: 1.0,  range: 114, effect: { type: 'aura', bonus: 0.20, auraRange: 115 } },
-      flawless: { damageMin: 39, damageMax: 40, attackSpeed: 1.0,  range: 129, effect: { type: 'aura', bonus: 0.25, auraRange: 129 } },
-      perfect:  { damageMin: 84,  damageMax: 85,  attackSpeed: 1.0, range: 143, effect: { type: 'aura', bonus: 0.35, auraRange: 143 } },
-      great:    { damageMin: 179, damageMax: 180, attackSpeed: 1.0, range: 215, effect: { type: 'aura', bonus: 0.50, auraRange: 215 } },
+      chipped:  { damageMin: 4,  damageMax: 5,  attackSpeed: 1.25, range: 86,  effect: { type: 'aura', bonus: 0.15, auraRange: 86  } },
+      flawed:   { damageMin: 9,  damageMax: 10, attackSpeed: 1.0,  range: 100, effect: { type: 'aura', bonus: 0.20, auraRange: 100 } },
+      standard: { damageMin: 19, damageMax: 20, attackSpeed: 1.0,  range: 114, effect: { type: 'aura', bonus: 0.25, auraRange: 115 } },
+      flawless: { damageMin: 39, damageMax: 40, attackSpeed: 1.0,  range: 129, effect: { type: 'aura', bonus: 0.30, auraRange: 129 } },
+      perfect:  { damageMin: 84,  damageMax: 85,  attackSpeed: 1.0, range: 143, effect: { type: 'aura', bonus: 0.40, auraRange: 143 } },
+      great:    { damageMin: 179, damageMax: 180, attackSpeed: 1.0, range: 215, effect: { type: 'aura', bonus: 0.60, auraRange: 215 } },
     },
   },
 };
@@ -190,7 +190,7 @@ export function getLeveledStats(type, quality, level) {
       case 'Sapphire':
         break;
       case 'Diamond':
-        effect.multiplier = effect.multiplier + bonus * 0.1;
+        effect.multiplier = effect.multiplier + bonus * 0.05;
         effect.chance += bonus * 0.001; // +0.1% crit chance per level
         break;
       case 'Topaz':
@@ -205,7 +205,6 @@ export function getLeveledStats(type, quality, level) {
   let range       = base.range;
 
   if (type === 'Aquamarine') {
-    attackSpeed = base.attackSpeed + bonus * 0.025;
     range       = base.range       + bonus * 1.5; // 0.1 tile × 15 units/tile
   }
   if (type === 'Amethyst') {
