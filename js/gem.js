@@ -57,10 +57,10 @@ export const GEM_TYPES = {
     stats: {
       chipped:  { damageMin: 7,   damageMax: 12,  attackSpeed: 1.25, range: 72,  effect: { type: 'crit', chance: 0.25, multiplier: 2.0 } },
       flawed:   { damageMin: 15,  damageMax: 18,  attackSpeed: 1.0,  range: 79,  effect: { type: 'crit', chance: 0.25, multiplier: 2.5 } },
-      standard: { damageMin: 29,  damageMax: 37,  attackSpeed: 1.0,  range: 86,  effect: { type: 'crit', chance: 0.25, multiplier: 3.0 } },
-      flawless: { damageMin: 57,  damageMax: 65,  attackSpeed: 1.0,  range: 93,  effect: { type: 'crit', chance: 0.30, multiplier: 3.0 } },
-      perfect:  { damageMin: 115, damageMax: 138, attackSpeed: 1.0,  range: 107, effect: { type: 'crit', chance: 0.33, multiplier: 3.5 } },
-      great:    { damageMin: 299, damageMax: 350, attackSpeed: 1.0,  range: 122, effect: { type: 'crit', chance: 0.40, multiplier: 5.0 } },
+      standard: { damageMin: 29,  damageMax: 37,  attackSpeed: 1.0,  range: 86,  effect: { type: 'crit', chance: 0.25, multiplier: 2.75 } },
+      flawless: { damageMin: 57,  damageMax: 65,  attackSpeed: 1.0,  range: 93,  effect: { type: 'crit', chance: 0.25, multiplier: 3.0 } },
+      perfect:  { damageMin: 115, damageMax: 138, attackSpeed: 1.0,  range: 107, effect: { type: 'crit', chance: 0.25, multiplier: 3.5 } },
+      great:    { damageMin: 299, damageMax: 350, attackSpeed: 1.0,  range: 122, effect: { type: 'crit', chance: 0.25, multiplier: 5.0 } },
     },
   },
   Topaz: {
@@ -190,7 +190,7 @@ export function getLeveledStats(type, quality, level) {
       case 'Sapphire':
         break;
       case 'Diamond':
-        effect.multiplier = effect.multiplier + bonus * 0.1;
+        effect.multiplier = effect.multiplier + bonus * 0.05;
         effect.chance += bonus * 0.001; // +0.1% crit chance per level
         break;
       case 'Topaz':
