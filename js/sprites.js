@@ -36,12 +36,12 @@ function getOrCreate(key, size, drawFn) {
 const GEM_COLORS = {
   Emerald:    { light: '#5dde82', dark: '#1a6b32' },
   Ruby:       { light: '#ff6b6b', dark: '#8b1a1a' },
-  Sapphire:   { light: '#6bb5ff', dark: '#1a4a8b' },
+  Sapphire:   { light: '#4477cc', dark: '#0a1a3a' },
   Amethyst:   { light: '#c86bff', dark: '#5a1a8b' },
   Diamond:    { light: '#e8f4ff', dark: '#8ab8d6' },
-  Topaz:      { light: '#ffd24d', dark: '#b87a00' },
+  Topaz:      { light: '#ffee55', dark: '#ccaa00' },
   Aquamarine: { light: '#5ce0ee', dark: '#1a6b8b' },
-  Opal:       { light: '#fff5e6', dark: '#c9a87c' },
+  Opal:       { light: '#ffaa55', dark: '#8a5a1a' },
 };
 
 // ---------------------------------------------------------------------------
