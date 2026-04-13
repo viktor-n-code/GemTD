@@ -670,25 +670,22 @@ function _buildLeaderboardHTML(state) {
  * Updates the DOM info panel to the right of the canvas.
  * Called every frame from gameloop.js.
  */
-// Attack toggle — event delegation on the panel (avoids inline onclick)
+// Attack toggle — document-level click delegation
 let _uiState = null;
 let _toggleListenerAttached = false;
 
 export function updateInfoPanel(state, inputState) {
   _uiState = state;
 
-  // Attach toggle listener lazily on first call (guarantees DOM exists)
+  // Attach toggle listener on document (catches clicks regardless of DOM structure)
   if (!_toggleListenerAttached) {
-    const panel = document.getElementById('panel-selection');
-    if (panel) {
-      panel.addEventListener('click', (e) => {
-        const btn = e.target.closest('[data-toggle-gem]');
-        if (!btn || !_uiState) return;
-        const gem = _uiState.gems[btn.dataset.toggleGem];
-        if (gem) gem.attackDisabled = !gem.attackDisabled;
-      });
-      _toggleListenerAttached = true;
-    }
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-toggle-gem]');
+      if (!btn || !_uiState) return;
+      const gem = _uiState.gems[btn.dataset.toggleGem];
+      if (gem) gem.attackDisabled = !gem.attackDisabled;
+    });
+    _toggleListenerAttached = true;
   }
   const selEl     = document.getElementById('panel-selection');
   const chancesEl = document.getElementById('panel-chances');
