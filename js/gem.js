@@ -26,7 +26,7 @@ export const GEM_TYPES = {
     },
   },
   Sapphire: {
-    color: '#2980b9',
+    color: '#1a3366',
     effect: 'slow',
     stats: {
       chipped:  { damageMin: 4,   damageMax: 8,   attackSpeed: 1.0, range: 72,  effect: { type: 'slow', amount: 0.20, duration: 5 } },
@@ -64,7 +64,7 @@ export const GEM_TYPES = {
     },
   },
   Topaz: {
-    color: '#e8a000',
+    color: '#eedd22',
     effect: 'multi',
     stats: {
       chipped:  { damageMin: 3,  damageMax: 4,  attackSpeed: 1.25, range: 72, effect: { type: 'multi', targets: 2 } },
@@ -89,7 +89,7 @@ export const GEM_TYPES = {
     },
   },
   Opal: {
-    color: '#f0dfc0',
+    color: '#cc7722',
     effect: 'aura',
     stats: {
       chipped:  { damageMin: 4,  damageMax: 5,  attackSpeed: 1.25, range: 86,  effect: { type: 'aura', bonus: 0.15, auraRange: 86  } },

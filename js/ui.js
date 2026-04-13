@@ -28,7 +28,7 @@ export const BTN_UPGRADE   = { x: 324, y: R1Y, w: 88,  h: BH };
 export const BTN_REMOVE    = { x: 418, y: R1Y, w: 68,  h: BH };
 export const BTN_FORFEIT   = { x: 492, y: R1Y, w: 62,  h: BH };
 export const BTN_DOWNGRADE = { x: 8,   y: R1Y, w: 150, h: BH }; // defend phase only
-export const BTN_SPEED     = { x: 560, y: R1Y, w: 48,  h: BH };
+export const BTN_SPEED     = { x: 560, y: R1Y, w: 72,  h: BH };
 
 // Action buttons — row 2
 export const BTN_COMBINE_SPECIAL = { x: 232, y: R2Y, w: 108, h: BH };
@@ -599,7 +599,8 @@ function _buildEnemyHTML(enemy, state) {
   }
 
   const tags = [];
-  if (now < (enemy.stunUntil ?? 0)) tags.push(`<span class="info-status-tag tag-stunned">Stunned</span>`);
+  if (enemy.stunImmune) tags.push(`<span class="info-status-tag tag-stunned">Stun Immune</span>`);
+  else if (now < (enemy.stunUntil ?? 0)) tags.push(`<span class="info-status-tag tag-stunned">Stunned</span>`);
   if (now < enemy.slowUntil)   tags.push(`<span class="info-status-tag tag-slowed">Slowed</span>`);
   if (now < enemy.poisonUntil) tags.push(`<span class="info-status-tag tag-poison">Poison ${enemy.poisonDps}dps</span>`);
   if (isDebuffed) tags.push(`<span class="info-status-tag tag-armor-debuff">−${auraReduction + hitReduction} Armor</span>`);
@@ -624,7 +625,7 @@ function _buildChancesHTML(state) {
         `<div class="chance-row"><span class="chance-label">${name}</span><span class="chance-value">${val}%</span></div>`
       ).join('');
   if ((state.opalAttunement ?? 0) > 0 && !state.opalAttunementDone) {
-    html += `<div class="chance-row" style="margin-top:4px;color:#f0dfc0"><span class="chance-label">Opal Attunement</span><span class="chance-value">+${(state.opalAttunement * 100).toFixed(1)}% Perfect Opal</span></div>`;
+    html += `<div class="chance-row" style="margin-top:4px;color:#f0dfc0"><span class="chance-label">Opal Attunement</span><span class="chance-value">+${(state.opalAttunement * 100).toFixed(1)}% 2nd Perfect Opal</span></div>`;
   }
   return html;
 }
@@ -1071,7 +1072,7 @@ export function drawUI(ctx, state, inputState) {
   drawButton(ctx, BTN_FORFEIT, forfeitLabel, true, forfeitColor);
 
   // Speed toggle — always visible
-  const speedLabel = `${state.gameSpeed || 1}x`;
+  const speedLabel = `Speed ${state.gameSpeed || 1}x`;
   const speedColor = (state.gameSpeed || 1) > 1 ? '#4a6a2a' : '#3a3a4a';
   drawButton(ctx, BTN_SPEED, speedLabel, true, speedColor);
 
