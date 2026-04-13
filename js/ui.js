@@ -682,7 +682,7 @@ export function updateInfoPanel(state, inputState) {
     // Attach attack toggle directly to the button after rendering
     const toggleBtn = selEl.querySelector('[data-toggle-gem]');
     if (toggleBtn) {
-      toggleBtn.onclick = () => {
+      toggleBtn.onmousedown = () => {
         const gem = state.gems[toggleBtn.dataset.toggleGem];
         if (gem) gem.attackDisabled = !gem.attackDisabled;
       };
