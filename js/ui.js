@@ -670,23 +670,7 @@ function _buildLeaderboardHTML(state) {
  * Updates the DOM info panel to the right of the canvas.
  * Called every frame from gameloop.js.
  */
-// Attack toggle — document-level click delegation
-let _uiState = null;
-let _toggleListenerAttached = false;
-
 export function updateInfoPanel(state, inputState) {
-  _uiState = state;
-
-  // Attach toggle listener on document (catches clicks regardless of DOM structure)
-  if (!_toggleListenerAttached) {
-    document.addEventListener('click', (e) => {
-      const btn = e.target.closest('[data-toggle-gem]');
-      if (!btn || !_uiState) return;
-      const gem = _uiState.gems[btn.dataset.toggleGem];
-      if (gem) gem.attackDisabled = !gem.attackDisabled;
-    });
-    _toggleListenerAttached = true;
-  }
   const selEl     = document.getElementById('panel-selection');
   const chancesEl = document.getElementById('panel-chances');
   if (!selEl || !chancesEl) return;
@@ -695,6 +679,14 @@ export function updateInfoPanel(state, inputState) {
   const gemId = inputState?.selectedGemId;
   if (gemId && state.gems[gemId]) {
     selEl.innerHTML = _buildGemHTML(state.gems[gemId], state) + _buildLeaderboardHTML(state);
+    // Attach attack toggle directly to the button after rendering
+    const toggleBtn = selEl.querySelector('[data-toggle-gem]');
+    if (toggleBtn) {
+      toggleBtn.onclick = () => {
+        const gem = state.gems[toggleBtn.dataset.toggleGem];
+        if (gem) gem.attackDisabled = !gem.attackDisabled;
+      };
+    }
   } else {
     const enemyId = inputState?.selectedEnemyId;
     const enemy = enemyId && state.phase === 'defend'
