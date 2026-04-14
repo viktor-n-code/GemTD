@@ -24,7 +24,14 @@ function getOrCreate(key, size, drawFn) {
   c.width = size;
   c.height = size;
   const ctx = c.getContext('2d');
-  drawFn(ctx, size);
+  // Guard against browser canvas context limit — if context is null or
+  // non-functional, return null so the caller falls back to simple rendering.
+  if (!ctx) return null;
+  try {
+    drawFn(ctx, size);
+  } catch {
+    return null;
+  }
   cache.set(key, c);
   return c;
 }
