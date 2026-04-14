@@ -112,8 +112,9 @@ export function initCommentForm() {
   btn.addEventListener('click', async () => {
     const nameEl = document.getElementById('comment-name');
     const textEl = document.getElementById('comment-text');
-    const name = (nameEl.value || '').trim().slice(0, 15) || 'Anonymous';
-    const text = (textEl.value || '').trim().slice(0, 200);
+    const name = (nameEl.value || '').trim().slice(0, 15);
+    const text = (textEl.value || '').trim().slice(0, 500);
+    if (!name) { nameEl.focus(); return; }
     if (!text) return;
 
     btn.disabled = true;

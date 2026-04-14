@@ -52,7 +52,6 @@ export function loadState() {
     for (const e of (s.enemies || [])) {
       if (e.distanceTravelled === undefined) e.distanceTravelled = 0;
       if (e.stunResist === undefined) e.stunResist = 0;
-      if (e.dmgResist === undefined) e.dmgResist = 0;
     }
     for (const gem of Object.values(s.gems || {})) {
       if (gem.directDamage === undefined) gem.directDamage = 0;
