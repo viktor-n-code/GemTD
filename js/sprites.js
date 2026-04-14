@@ -24,11 +24,14 @@ function getOrCreate(key, size, drawFn) {
   c.width = size;
   c.height = size;
   const ctx = c.getContext('2d');
-  // Guard against browser canvas context limit — if context is null or
-  // non-functional, return null so the caller falls back to simple rendering.
   if (!ctx) return null;
   try {
     drawFn(ctx, size);
+    // Verify pixels were actually drawn — a degraded canvas context silently
+    // draws nothing, producing blank sprites (black squares / invisible enemies).
+    // Check center pixel alpha; all gem/enemy sprites have opaque centers.
+    const pixel = ctx.getImageData(Math.floor(size / 2), Math.floor(size / 2), 1, 1).data;
+    if (pixel[3] === 0) return null;
   } catch {
     return null;
   }
