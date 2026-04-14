@@ -115,19 +115,29 @@ export function getWaveStats(wave) {
 
   const flying      = wave % 4 === 0;
   const armor       = wave < 52 ? Math.min(10 + Math.floor((wave - 1) / 4), 18) : 20;
+  const flyingSpeedCap = wave >= 200 ? 1.75 : 1.5; // 7 t/s from wave 200+
   const speed       = flying
-    ? Math.min(0.75 + (wave - 36) * 0.02, 1.5)   // flying: gradual ramp, caps ~wave 74
-    : Math.min(0.75 + (wave - 25) * 0.04, 1.5);   // ground: unchanged
+    ? Math.min(0.75 + (wave - 36) * 0.02, flyingSpeedCap)
+    : Math.min(0.75 + (wave - 25) * 0.04, 1.5);
   const minSpeed    = speed * 0.5;
   const baseHp      = 45000 * (1 + (wave - 30) * 0.10);
   const hp          = Math.round(flying ? baseHp / 3 : baseHp);
   const stunImmune  = wave % 50 === 0;
   const weakness    = getWeakness(wave, flying);
 
-  // Resistance: ground enemies gain stun/damage resistance from wave 100,
-  // capped at wave 200. Degrades over distance travelled (rewards long mazes).
-  const stunResist = !flying && wave >= 100 ? Math.min(1.0, (wave - 100) * 0.01) : 0;
-  const dmgResist  = !flying && wave >= 100 ? Math.min(0.5, (wave - 100) * 0.005) : 0;
+  // Resistance: ground enemies gain stun/damage resistance from wave 100.
+  // Flying enemies gain stun resistance from wave 204 (+2% per flying wave, caps 30%).
+  let stunResist, dmgResist;
+  if (flying && wave > 200) {
+    stunResist = Math.min(0.30, ((wave - 200) / 4) * 0.02);
+    dmgResist  = 0;
+  } else if (!flying && wave >= 100) {
+    stunResist = Math.min(1.0, (wave - 100) * 0.01);
+    dmgResist  = Math.min(0.5, (wave - 100) * 0.005);
+  } else {
+    stunResist = 0;
+    dmgResist  = 0;
+  }
 
   return { hp, armor, speed, minSpeed, flying, stunImmune, weakness, stunResist, dmgResist };
 }
