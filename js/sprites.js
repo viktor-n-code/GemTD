@@ -269,8 +269,11 @@ export function getGemSprite(type, quality) {
     const cy = size / 2;
     const stroke = contrastStroke(palette.light);
     draw(ctx, cx, cy, R, palette.light, palette.dark, stroke);
-    // Opal iridescent shimmer overlay
+    // Opal iridescent shimmer overlay — rebuild the gem shape path first
     if (type === 'Opal') {
+      // Re-create the outer shape path (the drawer left a different path active)
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, 0, Math.PI * 2);
       const shimmer = ctx.createRadialGradient(cx - R * 0.3, cy - R * 0.3, 0, cx, cy, R);
       shimmer.addColorStop(0, 'rgba(255, 200, 220, 0.25)');
       shimmer.addColorStop(0.5, 'rgba(200, 220, 255, 0.15)');
