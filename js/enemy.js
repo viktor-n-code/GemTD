@@ -116,30 +116,33 @@ export function getWaveStats(wave) {
   const flying      = wave % 4 === 0;
   const armor       = wave < 52 ? Math.min(10 + Math.floor((wave - 1) / 4), 18) : 20;
   const flyingSpeedCap = wave >= 200 ? 1.75 : 1.5; // 7 t/s from wave 200+
-  const speed       = flying
-    ? Math.min(0.75 + (wave - 36) * 0.02, flyingSpeedCap)
-    : Math.min(0.75 + (wave - 25) * 0.04, 1.5);
+  let speed;
+  if (flying) {
+    speed = Math.min(0.75 + (wave - 36) * 0.02, flyingSpeedCap);
+  } else if (wave >= 101) {
+    speed = Math.min(1.5 + (wave - 100) / 60, 2.0); // 6→8 t/s by wave 130
+  } else {
+    speed = Math.min(0.75 + (wave - 25) * 0.04, 1.5);
+  }
   const minSpeed    = speed * 0.5;
   const baseHp      = 45000 * (1 + (wave - 30) * 0.10);
   const hp          = Math.round(flying ? baseHp / 3 : baseHp);
   const stunImmune  = wave % 50 === 0;
   const weakness    = getWeakness(wave, flying);
 
-  // Resistance: ground enemies gain stun/damage resistance from wave 100.
-  // Flying enemies gain stun resistance from wave 204 (+2% per flying wave, caps 30%).
-  let stunResist, dmgResist;
+  // Stun resistance only (no damage resistance).
+  // Ground: +1%/wave from 101, caps 30% at wave 130.
+  // Flying: +2% per flying wave from 204, caps 30% at wave 260.
+  let stunResist;
   if (flying && wave > 200) {
     stunResist = Math.min(0.30, ((wave - 200) / 4) * 0.02);
-    dmgResist  = 0;
-  } else if (!flying && wave >= 100) {
-    stunResist = Math.min(1.0, (wave - 100) * 0.01);
-    dmgResist  = Math.min(0.5, (wave - 100) * 0.005);
+  } else if (!flying && wave >= 101) {
+    stunResist = Math.min(0.30, (wave - 100) * 0.01);
   } else {
     stunResist = 0;
-    dmgResist  = 0;
   }
 
-  return { hp, armor, speed, minSpeed, flying, stunImmune, weakness, stunResist, dmgResist };
+  return { hp, armor, speed, minSpeed, flying, stunImmune, weakness, stunResist };
 }
 
 /**
@@ -195,9 +198,8 @@ export function spawnEnemy(waveNumber, path) {
     armorDebuffUntil: 0,   // timestamp (ms) when on-hit debuff expires
     armorAuraDebuff: 0,    // aura-based armor reduction (Red Crystal, Paraiba Tourmaline)
     armorAuraDebuffUntil: 0, // timestamp (ms) when aura debuff expires (refreshed each frame)
-    stunResist: stats.stunResist || 0,  // 0.0–1.0; chance to resist stun
-    dmgResist:  stats.dmgResist  || 0,  // 0.0–0.5; flat damage reduction
-    distanceTravelled: 0,               // pixels moved; resistance degrades over distance
+    stunResist: stats.stunResist || 0,  // 0.0–0.3; chance to resist stun
+    distanceTravelled: 0,               // pixels moved (displayed in enemy info panel)
     dead: false,
     exited: false,
   };
@@ -267,19 +269,14 @@ export function moveEnemy(enemy, dt, now) {
 }
 
 // ---------------------------------------------------------------------------
-// Resistance helper — returns current resistance after distance degradation
+// Resistance helper
 // ---------------------------------------------------------------------------
 
-const DEGRADE_DISTANCE = 800 * CELL_SIZE; // 800 tiles = 12800px for full degradation
-
 /**
- * Returns current stun/damage resistance after distance-based degradation.
- * Resistance degrades linearly: fully gone after DEGRADE_DISTANCE pixels.
+ * Returns current stun resistance for an enemy.
  */
 export function getEnemyResistance(enemy) {
-  const factor = Math.max(0, 1 - enemy.distanceTravelled / DEGRADE_DISTANCE);
   return {
-    stunResist: (enemy.stunResist || 0) * factor,
-    dmgResist:  (enemy.dmgResist  || 0) * factor,
+    stunResist: enemy.stunResist || 0,
   };
 }

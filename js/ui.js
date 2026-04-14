@@ -588,13 +588,13 @@ function _buildEnemyHTML(enemy, state) {
       <span class="info-value"><span class="info-level-note">+75% ${enemy.weakness} dmg, −10% other</span></span>
     </div>`;
 
-  // Distance-based resistance display
+  // Stun resistance display
   const resist = getEnemyResistance(enemy);
-  if (resist.dmgResist > 0.001 || resist.stunResist > 0.001) {
+  if (resist.stunResist > 0.001) {
     html += `
     <div class="info-row">
-      <span class="info-label">Resist</span>
-      <span class="info-value">${Math.round(resist.dmgResist * 100)}% dmg / ${Math.round(resist.stunResist * 100)}% stun</span>
+      <span class="info-label">Stun Resist</span>
+      <span class="info-value">${Math.round(resist.stunResist * 100)}%</span>
     </div>`;
   }
 

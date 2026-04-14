@@ -266,11 +266,7 @@ export function attackEnemy(gem, enemy, enemies, now, wave) {
   const effectiveArmor = Math.max(0, enemy.armor - auraReduction - hitReduction);
   damage = Math.round(damage * Math.max(0, 1 - effectiveArmor * 0.03));
 
-  // 2b. Apply distance-based damage resistance (ground enemies wave 100+)
-  const { dmgResist, stunResist } = getEnemyResistance(enemy);
-  if (dmgResist > 0) {
-    damage = Math.round(damage * (1 - dmgResist));
-  }
+  const { stunResist } = getEnemyResistance(enemy);
 
   // 3. Apply type advantage: Amethyst vs flying enemies
   if (enemy.flying && gem.type === 'Amethyst') {
