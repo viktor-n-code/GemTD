@@ -41,7 +41,7 @@ export const ENEMY_STATS = [
   { hp:  6250, armor: 16, speed: 0.75, minSpeed: 0.38, flying: false }, // wave 25
   { hp:  7750, armor: 16, speed: 0.83, minSpeed: 0.42, flying: false }, // wave 26
   { hp:  9500, armor: 16, speed: 0.91, minSpeed: 0.46, flying: false }, // wave 27
-  { hp:  5000, armor: 16, speed: 0.83, minSpeed: 0.42, flying: true  }, // wave 28
+  { hp:  5000, armor: 16, speed: 0.75, minSpeed: 0.38, flying: true  }, // wave 28
   { hp: 10500, armor: 17, speed: 1.06, minSpeed: 0.53, flying: false }, // wave 29
   { hp: 13000, armor: 17, speed: 1.13, minSpeed: 0.57, flying: false }, // wave 30
   { hp: 16000, armor: 17, speed: 1.17, minSpeed: 0.59, flying: false }, // wave 31
@@ -114,8 +114,10 @@ export function getWaveStats(wave) {
   }
 
   const flying      = wave % 4 === 0;
-  const armor       = Math.min(10 + Math.floor((wave - 1) / 4), 20);
-  const speed       = Math.min(0.75 + (wave - 25) * 0.04, 1.5);
+  const armor       = wave < 52 ? Math.min(10 + Math.floor((wave - 1) / 4), 18) : 20;
+  const speed       = flying
+    ? Math.min(0.75 + (wave - 36) * 0.02, 1.5)   // flying: gradual ramp, caps ~wave 74
+    : Math.min(0.75 + (wave - 25) * 0.04, 1.5);   // ground: unchanged
   const minSpeed    = speed * 0.5;
   const baseHp      = 45000 * (1 + (wave - 30) * 0.10);
   const hp          = Math.round(flying ? baseHp / 3 : baseHp);

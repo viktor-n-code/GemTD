@@ -24,7 +24,17 @@ function getOrCreate(key, size, drawFn) {
   c.width = size;
   c.height = size;
   const ctx = c.getContext('2d');
-  drawFn(ctx, size);
+  if (!ctx) return null;
+  try {
+    drawFn(ctx, size);
+    // Verify pixels were actually drawn — a degraded canvas context silently
+    // draws nothing, producing blank sprites (black squares / invisible enemies).
+    // Check center pixel alpha; all gem/enemy sprites have opaque centers.
+    const pixel = ctx.getImageData(Math.floor(size / 2), Math.floor(size / 2), 1, 1).data;
+    if (pixel[3] === 0) return null;
+  } catch {
+    return null;
+  }
   cache.set(key, c);
   return c;
 }
@@ -269,8 +279,11 @@ export function getGemSprite(type, quality) {
     const cy = size / 2;
     const stroke = contrastStroke(palette.light);
     draw(ctx, cx, cy, R, palette.light, palette.dark, stroke);
-    // Opal iridescent shimmer overlay
+    // Opal iridescent shimmer overlay — rebuild the gem shape path first
     if (type === 'Opal') {
+      // Re-create the outer shape path (the drawer left a different path active)
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, 0, Math.PI * 2);
       const shimmer = ctx.createRadialGradient(cx - R * 0.3, cy - R * 0.3, 0, cx, cy, R);
       shimmer.addColorStop(0, 'rgba(255, 200, 220, 0.25)');
       shimmer.addColorStop(0.5, 'rgba(200, 220, 255, 0.15)');

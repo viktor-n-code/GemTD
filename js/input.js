@@ -107,6 +107,12 @@ export class InputHandler {
     this._grid            = state.grid || null;
     this._gems            = state.gems || {};
     this.hoveredGemId = null;
+    // Clear hover state when game tab is not active (canvas is hidden)
+    if (window.gameTabActive === false) {
+      this.hoveredCell      = null;
+      this.pendingPlacement = null;
+      this.pendingAction    = null;
+    }
   }
 
   /** Called by the gameloop when a new build phase begins. */
@@ -131,6 +137,8 @@ export class InputHandler {
   /** Convert a MouseEvent to canvas-local pixel coordinates. */
   _canvasPos(e) {
     const rect    = this.canvas.getBoundingClientRect();
+    // Guard against hidden canvas (display:none → zero dimensions → Infinity scale)
+    if (rect.width === 0 || rect.height === 0) return { x: -1, y: -1 };
     const scaleX  = this.canvas.width  / rect.width;
     const scaleY  = this.canvas.height / rect.height;
     return {
