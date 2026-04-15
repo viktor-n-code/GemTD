@@ -1,15 +1,20 @@
-// input.js — Mouse input handling for Gem TD
-// Tracks mouse position, derives hover state, and queues pending actions.
+// input.js — Mouse & touch input handling for Gem TD
+// Tracks cursor/finger position, derives hover state, and queues pending actions.
 
 import { CELL_SIZE, GRID_COLS, GRID_ROWS } from './grid.js';
 import { BTN_COMBINE, BTN_COMBINE4, BTN_KEEP, BTN_UPGRADE, BTN_RESTART, BTN_REMOVE,
          BTN_COMBINE_SPECIAL, BTN_UPGRADE_GEM, BTN_BUY_LIFE, BTN_REPICK, BTN_DOWNGRADE,
-         BTN_FORFEIT, BTN_SPEED, PANEL_Y } from './ui.js';
+         BTN_FORFEIT, BTN_SPEED, BTN_SAVE_LOAD, PANEL_Y } from './ui.js';
 import { findAvailableRecipes } from './specialgem.js';
 
 // ---------------------------------------------------------------------------
 // Private helper
 // ---------------------------------------------------------------------------
+
+let touchActive = false;
+
+/** Returns true once a touch event has been detected this session. */
+export function isTouchDevice() { return touchActive; }
 
 /**
  * Returns true if pixel (px, py) is inside the given rect.
@@ -132,6 +137,12 @@ export class InputHandler {
   _attachListeners() {
     this.canvas.addEventListener('mousemove', (e) => this._onMouseMove(e));
     this.canvas.addEventListener('click',     (e) => this._onClick(e));
+
+    // Touch support — passive:false so we can preventDefault to suppress
+    // the browser's delayed synthetic click and prevent scroll/zoom on canvas
+    this.canvas.addEventListener('touchstart', (e) => this._onTouchStart(e), { passive: false });
+    this.canvas.addEventListener('touchmove',  (e) => this._onTouchMove(e),  { passive: false });
+    this.canvas.addEventListener('touchend',   (e) => this._onTouchEnd(e),   { passive: false });
   }
 
   /** Convert a MouseEvent to canvas-local pixel coordinates. */
@@ -151,8 +162,11 @@ export class InputHandler {
     const { x, y } = this._canvasPos(e);
     this.mouseX = x;
     this.mouseY = y;
+    this._updateHoveredCell(x, y);
+  }
 
-    // Derive grid cell hover (above the panel only)
+  /** Derive the grid cell under the given canvas-pixel position. */
+  _updateHoveredCell(x, y) {
     if (y < PANEL_Y) {
       const gx = Math.floor(x / CELL_SIZE) + 1;
       const gy = Math.floor(y / CELL_SIZE) + 1;
@@ -166,11 +180,75 @@ export class InputHandler {
     }
   }
 
+  // -------------------------------------------------------------------------
+  // Touch handlers
+  // -------------------------------------------------------------------------
+
+  _onTouchStart(e) {
+    e.preventDefault();
+    touchActive = true;
+    if (e.touches.length === 0) return;
+    const touch = e.touches[0];
+    const { x, y } = this._canvasPos(touch);
+    this.mouseX = x;
+    this.mouseY = y;
+    this._updateHoveredCell(x, y);
+
+    // Record start for tap-vs-drag detection
+    this._touchStartX    = x;
+    this._touchStartY    = y;
+    this._touchStartTime = Date.now();
+  }
+
+  _onTouchMove(e) {
+    e.preventDefault();
+    if (e.touches.length === 0) return;
+    const touch = e.touches[0];
+    const { x, y } = this._canvasPos(touch);
+    this.mouseX = x;
+    this.mouseY = y;
+    this._updateHoveredCell(x, y);
+  }
+
+  _onTouchEnd(e) {
+    e.preventDefault();
+    const touch = e.changedTouches[0];
+    if (!touch) return;
+    const { x, y } = this._canvasPos(touch);
+
+    // Treat as a tap if short duration and small movement
+    const dx       = x - (this._touchStartX ?? x);
+    const dy       = y - (this._touchStartY ?? y);
+    const dist     = Math.sqrt(dx * dx + dy * dy);
+    const duration = Date.now() - (this._touchStartTime ?? 0);
+
+    if (duration < 400 && dist < 15) {
+      // Simulate a click at the touch-end position
+      this.mouseX = x;
+      this.mouseY = y;
+      this._updateHoveredCell(x, y);
+      this._processClick(x, y);
+    }
+
+    // Clear hover after finger lifts
+    this.hoveredCell = null;
+  }
+
+  // -------------------------------------------------------------------------
+  // Click / tap processing
+  // -------------------------------------------------------------------------
+
   _onClick(e) {
+    // On touch devices the touchend handler drives clicks; skip the synthetic one
+    if (touchActive) return;
     const { x, y } = this._canvasPos(e);
     this.mouseX = x;
     this.mouseY = y;
+    this._processClick(x, y);
+  }
 
+  /** Shared click/tap logic used by both mouse and touch paths. */
+  _processClick(x, y) {
     if (y >= PANEL_Y) {
       // -----------------------------------------------------------------------
       // Click inside the build panel
@@ -257,6 +335,10 @@ export class InputHandler {
       }
       if (hitTest(BTN_SPEED, x, y)) {
         this.pendingAction = { type: 'toggleSpeed' };
+        return;
+      }
+      if (hitTest(BTN_SAVE_LOAD, x, y)) {
+        this.pendingAction = { type: 'openSaveLoad' };
         return;
       }
     } else {
