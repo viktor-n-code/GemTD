@@ -31,6 +31,7 @@ export const BTN_DOWNGRADE = { x: 8,   y: R1Y, w: 150, h: BH }; // defend phase 
 export const BTN_SPEED     = { x: 560, y: R1Y, w: 72,  h: BH };
 
 // Action buttons — row 2
+export const BTN_SAVE_LOAD       = { x: 8,   y: R2Y, w: 88,  h: BH };
 export const BTN_COMBINE_SPECIAL = { x: 232, y: R2Y, w: 108, h: BH };
 export const BTN_UPGRADE_GEM     = { x: 346, y: R2Y, w: 108, h: BH };
 export const BTN_RESTART         = { x: 460, y: R2Y, w: 76,  h: BH };
@@ -1064,6 +1065,9 @@ export function drawUI(ctx, state, inputState) {
   const speedLabel = `Speed ${state.gameSpeed || 1}x`;
   const speedColor = (state.gameSpeed || 1) > 1 ? '#4a6a2a' : '#3a3a4a';
   drawButton(ctx, BTN_SPEED, speedLabel, true, speedColor);
+
+  // Save/Load — always visible, opens modal
+  drawButton(ctx, BTN_SAVE_LOAD, 'Save/Load', true, '#2a4a6a');
 
   // Downgrade — available during defend phase for the just-kept gem
   if (state.phase === 'defend' && state.downgradeAvailableId) {

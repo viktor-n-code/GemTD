@@ -3,7 +3,8 @@
  * Orchestrates all game systems and coordinates the game lifecycle.
  */
 
-import { createInitialState, saveState, loadState, clearState } from './state.js';
+import { createInitialState, saveToSlot, loadFromSlot, clearSlot,
+         getAllSlotMetas, migrateLegacySave } from './state.js';
 import { createGrid, validatePlacement, placeGem, placeRock, removeRock, findPath,
          GRID_COLS, GRID_ROWS, CELL_SIZE, ENTRY, CHECKPOINTS, EXIT, computeBoardFillPct,
          hasValidPlacement } from './grid.js';
@@ -32,6 +33,158 @@ let waveSpawner  = null;   // active WaveSpawner during defend phase
 let groundPath   = null;   // cached A* path for current wave
 
 // ---------------------------------------------------------------------------
+// Save/Load modal
+// ---------------------------------------------------------------------------
+
+function openSaveLoadModal() {
+  renderSaveLoadModal();
+  document.getElementById('saveload-modal').classList.remove('hidden');
+}
+
+function closeSaveLoadModal() {
+  document.getElementById('saveload-modal').classList.add('hidden');
+}
+
+function renderSaveLoadModal() {
+  const slotsEl = document.getElementById('saveload-slots');
+  if (!slotsEl) return;
+
+  const metas   = getAllSlotMetas();
+  const isBuild = gameState.phase === 'build';
+  let html = '';
+
+  for (let i = 0; i < 3; i++) {
+    const slot = i + 1;
+    const meta = metas[i];
+
+    if (meta) {
+      const date    = new Date(meta.timestamp);
+      const dateStr = date.toLocaleDateString() + ' ' +
+                      date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      html += `<div class="save-slot">
+        <div class="save-slot-info">
+          <div class="save-slot-label">Slot ${slot}</div>
+          <div class="save-slot-meta">
+            Wave ${meta.wave} | ${meta.gold}g | ${meta.lives} lives | ${meta.gemCount} gems<br>
+            ${dateStr}
+          </div>
+        </div>
+        <div class="save-slot-actions">
+          <button class="slot-btn-save" data-slot="${slot}" ${isBuild ? '' : 'disabled'}>Save</button>
+          <button class="slot-btn-load" data-slot="${slot}" ${isBuild ? '' : 'disabled'}>Load</button>
+          <button class="slot-btn-delete" data-slot="${slot}">Delete</button>
+        </div>
+      </div>`;
+    } else {
+      html += `<div class="save-slot">
+        <div class="save-slot-info">
+          <div class="save-slot-label">Slot ${slot}</div>
+          <div class="save-slot-empty">Empty</div>
+        </div>
+        <div class="save-slot-actions">
+          <button class="slot-btn-save" data-slot="${slot}" ${isBuild ? '' : 'disabled'}>Save</button>
+        </div>
+      </div>`;
+    }
+  }
+
+  slotsEl.innerHTML = html;
+  attachSaveLoadListeners();
+}
+
+function attachSaveLoadListeners() {
+  const modal = document.getElementById('saveload-modal');
+
+  document.getElementById('saveload-close').onclick = closeSaveLoadModal;
+  modal.onclick = (e) => { if (e.target === modal) closeSaveLoadModal(); };
+
+  for (const btn of modal.querySelectorAll('.slot-btn-save')) {
+    btn.onclick = () => {
+      const slot = parseInt(btn.dataset.slot);
+      saveToSlot(slot, gameState);
+      renderSaveLoadModal();
+    };
+  }
+
+  for (const btn of modal.querySelectorAll('.slot-btn-load')) {
+    btn.onclick = () => {
+      const slot = parseInt(btn.dataset.slot);
+      loadGameFromSlot(slot);
+      closeSaveLoadModal();
+    };
+  }
+
+  for (const btn of modal.querySelectorAll('.slot-btn-delete')) {
+    btn.onclick = () => {
+      const slot = parseInt(btn.dataset.slot);
+      clearSlot(slot);
+      renderSaveLoadModal();
+    };
+  }
+}
+
+function loadGameFromSlot(slot) {
+  const loaded = loadFromSlot(slot);
+  if (!loaded) return;
+
+  // Replace game state
+  gameState = loaded;
+
+  // Rebuild grid (not serialised) and re-place gems
+  gameState.grid = createGrid();
+  for (const gem of Object.values(gameState.gems)) {
+    placeGem(gameState.grid, gem.x, gem.y, gem.id);
+  }
+
+  // Recompute derived state
+  gameState.groundPath = computeFullPath(gameState.grid);
+  groundPath = gameState.groundPath;
+  applyAllAuraBuffs(gameState);
+
+  // Clear transient combat state (should be empty in build-phase saves)
+  gameState.enemies     = [];
+  gameState.projectiles = [];
+  gameState.critNumbers = [];
+  waveSpawner = null;
+
+  // Ensure build phase
+  gameState.phase = 'build';
+
+  // Reset input handler
+  inputHandler.resetBuildState();
+
+  // If loading from a game-over state, restart the loop
+  if (loaded.gameOver || loaded.gameWon) {
+    gameState.gameOver = false;
+    gameState.gameWon  = false;
+    requestAnimationFrame(gameLoop);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Responsive resize
+// ---------------------------------------------------------------------------
+
+function onResize() {
+  if (!canvas) return;
+  const isMobile = window.innerWidth <= 768;
+
+  if (isMobile) {
+    // On mobile, let the canvas fill the viewport width; CSS handles aspect ratio
+    canvas.style.width  = window.innerWidth + 'px';
+    canvas.style.height = 'auto';
+  } else {
+    // Desktop — clear any mobile overrides and sync panel heights to canvas
+    canvas.style.width  = '';
+    canvas.style.height = '';
+    const infoPanel = document.getElementById('info-panel');
+    if (infoPanel) infoPanel.style.height = canvas.height + 'px';
+    const leftPanel = document.getElementById('left-panel');
+    if (leftPanel) leftPanel.style.height = canvas.height + 'px';
+  }
+}
+
+// ---------------------------------------------------------------------------
 // init
 // ---------------------------------------------------------------------------
 
@@ -42,19 +195,17 @@ function init() {
   canvas.width  = GRID_COLS * CELL_SIZE;                         // 672
   canvas.height = GRID_ROWS * CELL_SIZE + PANEL_H; // 752 + 78 = 830 (HUD moved to left panel)
 
-  // Sync info panel height to canvas
-  const infoPanel = document.getElementById('info-panel');
-  if (infoPanel) infoPanel.style.height = canvas.height + 'px';
-  const leftPanel = document.getElementById('left-panel');
-  if (leftPanel) leftPanel.style.height = canvas.height + 'px';
+  // Sync panel heights on desktop; on mobile CSS handles layout
+  onResize();
+  window.addEventListener('resize', onResize);
 
   document.getElementById('loading').classList.add('hidden');
 
-  // Always start a fresh game (save/load disabled for now)
-  clearState();
-  gameState = createInitialState();
+  // Migrate any pre-v1.9 single-save key into slot 1
+  migrateLegacySave();
 
-  // Grid is not serialisable (circular-ish structure), rebuild it each time
+  // Always start a fresh game — player loads manually via Save/Load modal
+  gameState = createInitialState();
   gameState.grid = createGrid();
 
   // Compute initial path so the build-phase highlight is visible from the start
@@ -362,7 +513,6 @@ function updateBuild(dt, now) {
         return;
 
       case 'restart':
-        clearState();
         location.reload();
         break;
 
@@ -372,6 +522,10 @@ function updateBuild(dt, now) {
         gameState.gameSpeed = speeds[(idx + 1) % speeds.length];
         break;
       }
+
+      case 'openSaveLoad':
+        openSaveLoadModal();
+        break;
 
       // selectGem is purely a UI selection — no game-state change needed here
       case 'selectGem':
@@ -386,7 +540,7 @@ function _handleBuyLife() {
     gameState.gold -= cost;
     gameState.lives += 1;
     gameState.extraLivesPurchased += 1;
-    saveState(gameState);
+
   }
 }
 
@@ -411,7 +565,6 @@ function _handleRepick() {
   gameState.repickCount += 1;
   applyAllAuraBuffs(gameState);
   gameState.groundPath = computeFullPath(gameState.grid);
-  saveState(gameState);
 }
 
 function _handleDowngrade() {
@@ -432,7 +585,6 @@ function _handleDowngrade() {
   gem.name = `${gem.quality[0].toUpperCase() + gem.quality.slice(1)} ${gem.type} ${gameState.gemCounters[nameKey]}`;
 
   applyAllAuraBuffs(gameState);
-  saveState(gameState);
 }
 
 // ---------------------------------------------------------------------------
@@ -626,7 +778,7 @@ function _handleCombineSpecial(selectedGemId, phase) {
     startDefendPhase();
   } else {
     applyAllAuraBuffs(gameState);
-    saveState(gameState);
+
   }
 }
 
@@ -663,7 +815,6 @@ function _handleUpgradeSpecial(gemId) {
   gem.attackCooldown = Math.round(1000 / sStats.attackSpeed);
 
   applyAllAuraBuffs(gameState);
-  saveState(gameState);
 }
 
 // ---------------------------------------------------------------------------
@@ -773,7 +924,7 @@ function updateDefend(dt, now) {
 
   // Check for actions (restart, upgrade, forfeit, special gem combine/upgrade)
   const action = inputHandler.consumeAction();
-  if (action?.type === 'restart') { clearState(); location.reload(); return; }
+  if (action?.type === 'restart') { location.reload(); return; }
   if (action?.type === 'forfeit') { gameState.endReason = 'forfeit'; gameState.gameOver = true; return; }
   if (action?.type === 'upgrade') { handleUpgrade(); }
   if (action?.type === 'buyLife') { _handleBuyLife(); }
@@ -785,6 +936,7 @@ function updateDefend(dt, now) {
     const idx = speeds.indexOf(gameState.gameSpeed);
     gameState.gameSpeed = speeds[(idx + 1) % speeds.length];
   }
+  if (action?.type === 'openSaveLoad') { openSaveLoadModal(); }
 
   // Clear last frame's projectiles; expire old crit numbers
   gameState.projectiles = [];
@@ -1100,7 +1252,6 @@ function updateBetween() {
   }
 
   gameState.downgradeAvailableId = null; // lock gem — no more downgrading
-  saveState(gameState);
   gameState.phase = 'build';
 }
 

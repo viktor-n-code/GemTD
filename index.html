@@ -440,6 +440,78 @@
         #score-submit:hover { background: #2a8a4a; }
         #score-skip { background: #3a3a3a; color: #aaaaaa; }
         #score-skip:hover { background: #4a4a4a; }
+
+        /* ── Save/Load modal ── */
+        #saveload-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); display: flex; align-items: center;
+            justify-content: center; z-index: 1000;
+        }
+        #saveload-modal .modal-box {
+            background: #0d1b2a; border: 2px solid #0f3460; padding: 24px;
+            border-radius: 8px; width: 440px; max-width: 90vw;
+        }
+        #saveload-modal h2 { color: #ffffff; margin-bottom: 16px; text-align: center; }
+        .save-slot {
+            background: #1a2a3a; border: 1px solid #2a3a4a; border-radius: 4px;
+            padding: 10px 14px; margin-bottom: 8px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .save-slot-info { flex: 1; }
+        .save-slot-label { color: #00d4ff; font-size: 12px; font-weight: bold; margin-bottom: 4px; }
+        .save-slot-meta { color: #8899aa; font-size: 11px; line-height: 1.5; }
+        .save-slot-empty { color: #556677; font-style: italic; font-size: 11px; }
+        .save-slot-actions { display: flex; gap: 6px; margin-left: 12px; }
+        .save-slot-actions button {
+            padding: 4px 12px; font-size: 11px; cursor: pointer;
+            border-radius: 3px; border: none; color: #fff;
+        }
+        .slot-btn-save { background: #1a6a3a; }
+        .slot-btn-save:hover { background: #2a8a4a; }
+        .slot-btn-save:disabled { background: #2a2a2a; color: #555; cursor: default; }
+        .slot-btn-load { background: #1a4a6a; }
+        .slot-btn-load:hover { background: #2a5a7a; }
+        .slot-btn-load:disabled { background: #2a2a2a; color: #555; cursor: default; }
+        .slot-btn-delete { background: #5a1a1a; }
+        .slot-btn-delete:hover { background: #7a2a2a; }
+
+        /* ── Mobile / touch ── */
+        #game { touch-action: none; }
+
+        @media (max-width: 768px) {
+            body {
+                overflow: auto;
+                height: auto;
+                min-height: 100vh;
+            }
+            #game-wrapper {
+                flex-direction: column;
+                align-items: center;
+            }
+            #left-panel {
+                display: none;
+            }
+            #game {
+                max-width: 100vw;
+                max-height: none;
+                width: 100vw;
+            }
+            #info-panel {
+                width: 100vw;
+                max-width: 672px;
+                height: auto !important;
+                max-height: 40vh;
+                overflow-y: auto;
+                border-left: 2px solid #0f3460;
+            }
+            #tab-bar {
+                flex-wrap: wrap;
+            }
+            #tab-bar .tab {
+                font-size: 11px;
+                padding: 6px 8px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -455,7 +527,7 @@
             <div id="left-panel">
                 <div id="panel-header">
                     <div id="panel-title">GEM TD</div>
-                    <div id="panel-version">v1.8.0</div>
+                    <div id="panel-version">v1.9.0</div>
                     <div style="color:#556677;font-size:9px;margin-top:2px">by viktor-n</div>
                 </div>
                 <hr class="left-divider">
@@ -489,6 +561,14 @@
         </div>
         <div id="patchnotes-view" class="tab-content hidden">
             <h2>Patch Notes</h2>
+            <div class="patch-version">
+                <h3>v1.9 &mdash; Save/Load &amp; Mobile</h3>
+                <ul>
+                    <li>Manual save/load: 3 save slots accessible via the Save/Load button; saves capture full game state during build phase</li>
+                    <li>Mobile support: touch input for phones and tablets &mdash; tap to place/select, drag to preview placement</li>
+                    <li>Responsive layout: on narrow screens the left panel hides and the info panel stacks below the canvas</li>
+                </ul>
+            </div>
             <div class="patch-version">
                 <h3>v1.8 &mdash; Balance &amp; Scaling</h3>
                 <ul>
@@ -642,6 +722,16 @@
             <div class="modal-buttons">
                 <button id="score-submit">Submit</button>
                 <button id="score-skip">Skip</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="saveload-modal" class="hidden">
+        <div class="modal-box">
+            <h2>Save / Load Game</h2>
+            <div id="saveload-slots"></div>
+            <div class="modal-buttons" style="margin-top:16px">
+                <button id="saveload-close" style="background:#3a3a3a;color:#aaa;padding:8px 20px;font-size:14px;cursor:pointer;border-radius:4px;border:none;">Close</button>
             </div>
         </div>
     </div>
