@@ -64,6 +64,19 @@ export class InputHandler {
     this._placedThisRound = [];
     this._grid           = null;
 
+    // Pinch-to-zoom state (mobile only)
+    this._zoom       = 1;       // current zoom level (1 = no zoom)
+    this._panX       = 0;       // CSS px offset (in zoomed space)
+    this._panY       = 0;
+    this._pinching   = false;   // true while 2+ fingers are down
+    this._pinchDist0 = 0;       // initial distance between fingers
+    this._pinchZoom0 = 1;       // zoom level when pinch started
+    this._pinchMidX0 = 0;      // initial midpoint (screen px)
+    this._pinchMidY0 = 0;
+    this._pinchPanX0 = 0;      // pan when pinch started
+    this._pinchPanY0 = 0;
+    this._lastTapTime = 0;      // for double-tap-to-reset detection
+
     this._attachListeners();
   }
 
@@ -188,22 +201,104 @@ export class InputHandler {
     e.preventDefault();
     touchActive = true;
     if (e.touches.length === 0) return;
+
+    if (e.touches.length >= 2) {
+      // Start a pinch gesture
+      this._pinching   = true;
+      this._pinchDist0 = this._touchDist(e.touches[0], e.touches[1]);
+      this._pinchZoom0 = this._zoom;
+      const mid = this._touchMid(e.touches[0], e.touches[1]);
+      this._pinchMidX0 = mid.x;
+      this._pinchMidY0 = mid.y;
+      this._pinchPanX0 = this._panX;
+      this._pinchPanY0 = this._panY;
+      return;
+    }
+
+    // Single finger — normal interaction
     const touch = e.touches[0];
     const { x, y } = this._canvasPos(touch);
     this.mouseX = x;
     this.mouseY = y;
     this._updateHoveredCell(x, y);
 
-    // Record start for tap-vs-drag detection
-    this._touchStartX    = x;
-    this._touchStartY    = y;
-    this._touchStartTime = Date.now();
+    // Record start for tap-vs-drag and single-finger-pan detection
+    this._touchStartX     = x;
+    this._touchStartY     = y;
+    this._touchStartTime  = Date.now();
+    this._touchScreenX0   = touch.clientX;  // screen px for panning
+    this._touchScreenY0   = touch.clientY;
+    this._panStartX       = this._panX;
+    this._panStartY       = this._panY;
+    this._isDraggingPan   = false;
   }
 
   _onTouchMove(e) {
     e.preventDefault();
     if (e.touches.length === 0) return;
+
+    if (e.touches.length >= 2) {
+      // Pinch in progress — update zoom and pan
+      this._pinching = true;
+      const dist = this._touchDist(e.touches[0], e.touches[1]);
+      const mid  = this._touchMid(e.touches[0], e.touches[1]);
+
+      // Zoom: proportional to finger distance change
+      let newZoom = this._pinchZoom0 * (dist / this._pinchDist0);
+      newZoom = Math.max(1, Math.min(4, newZoom));  // clamp 1x–4x
+
+      // Pan: follow the midpoint shift so the content under the fingers stays put
+      const midDx = mid.x - this._pinchMidX0;
+      const midDy = mid.y - this._pinchMidY0;
+      let newPanX = this._pinchPanX0 + midDx;
+      let newPanY = this._pinchPanY0 + midDy;
+
+      // Clamp pan so the canvas doesn't slide off-screen
+      const rect = this.canvas.getBoundingClientRect();
+      const displayW = rect.width / this._zoom; // un-zoomed display width
+      const displayH = rect.height / this._zoom;
+      const maxPanX = displayW * (newZoom - 1);
+      const maxPanY = displayH * (newZoom - 1);
+      newPanX = Math.max(-maxPanX, Math.min(0, newPanX));
+      newPanY = Math.max(-maxPanY, Math.min(0, newPanY));
+
+      this._zoom = newZoom;
+      this._panX = newPanX;
+      this._panY = newPanY;
+      this._applyZoomTransform();
+      return;
+    }
+
+    // Single finger — skip if we were just pinching
+    if (this._pinching) return;
     const touch = e.touches[0];
+
+    // When zoomed in, single-finger drag pans the view
+    if (this._zoom > 1) {
+      const screenDx = touch.clientX - (this._touchScreenX0 ?? touch.clientX);
+      const screenDy = touch.clientY - (this._touchScreenY0 ?? touch.clientY);
+      if (!this._isDraggingPan && Math.abs(screenDx) + Math.abs(screenDy) > 8) {
+        this._isDraggingPan = true;
+      }
+      if (this._isDraggingPan) {
+        let newPanX = this._panStartX + screenDx;
+        let newPanY = this._panStartY + screenDy;
+        // Clamp so canvas stays on-screen
+        const rect = this.canvas.getBoundingClientRect();
+        const displayW = rect.width / this._zoom;
+        const displayH = rect.height / this._zoom;
+        const maxPanX = displayW * (this._zoom - 1);
+        const maxPanY = displayH * (this._zoom - 1);
+        newPanX = Math.max(-maxPanX, Math.min(0, newPanX));
+        newPanY = Math.max(-maxPanY, Math.min(0, newPanY));
+        this._panX = newPanX;
+        this._panY = newPanY;
+        this._applyZoomTransform();
+        return;
+      }
+    }
+
+    // Normal hover update (zoom=1 or small movement)
     const { x, y } = this._canvasPos(touch);
     this.mouseX = x;
     this.mouseY = y;
@@ -212,6 +307,22 @@ export class InputHandler {
 
   _onTouchEnd(e) {
     e.preventDefault();
+
+    // If fingers drop from 2 to 1, stay in pinch mode until all fingers are up
+    if (e.touches.length >= 1 && this._pinching) return;
+
+    if (this._pinching) {
+      this._pinching = false;
+      return; // Don't fire a tap after a pinch
+    }
+
+    // Don't fire a tap if the user was panning while zoomed
+    if (this._isDraggingPan) {
+      this._isDraggingPan = false;
+      this.hoveredCell = null;
+      return;
+    }
+
     const touch = e.changedTouches[0];
     if (!touch) return;
     const { x, y } = this._canvasPos(touch);
@@ -223,7 +334,20 @@ export class InputHandler {
     const duration = Date.now() - (this._touchStartTime ?? 0);
 
     if (duration < 400 && dist < 15) {
-      // Simulate a click at the touch-end position
+      // Double-tap detection: reset zoom if tapped twice quickly
+      const now = Date.now();
+      if (now - this._lastTapTime < 350 && this._zoom > 1) {
+        this._zoom = 1;
+        this._panX = 0;
+        this._panY = 0;
+        this._applyZoomTransform();
+        this._lastTapTime = 0;
+        this.hoveredCell = null;
+        return;
+      }
+      this._lastTapTime = now;
+
+      // Normal tap — simulate a click
       this.mouseX = x;
       this.mouseY = y;
       this._updateHoveredCell(x, y);
@@ -232,6 +356,37 @@ export class InputHandler {
 
     // Clear hover after finger lifts
     this.hoveredCell = null;
+  }
+
+  // -------------------------------------------------------------------------
+  // Zoom helpers
+  // -------------------------------------------------------------------------
+
+  /** Distance between two Touch objects in screen pixels. */
+  _touchDist(t1, t2) {
+    const dx = t1.clientX - t2.clientX;
+    const dy = t1.clientY - t2.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  /** Midpoint between two Touch objects in screen pixels. */
+  _touchMid(t1, t2) {
+    return {
+      x: (t1.clientX + t2.clientX) / 2,
+      y: (t1.clientY + t2.clientY) / 2,
+    };
+  }
+
+  /** Apply the current zoom/pan as a CSS transform on the canvas. */
+  _applyZoomTransform() {
+    if (this._zoom <= 1) {
+      this.canvas.style.transformOrigin = '';
+      this.canvas.style.transform = '';
+    } else {
+      this.canvas.style.transformOrigin = '0 0';
+      this.canvas.style.transform =
+        `translate(${this._panX}px, ${this._panY}px) scale(${this._zoom})`;
+    }
   }
 
   // -------------------------------------------------------------------------
