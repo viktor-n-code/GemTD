@@ -27,6 +27,28 @@ export function initFirebase() {
 export async function submitScore(scoreData) {
   if (!db) { console.warn('submitScore: db is null'); return null; }
   try {
+    const { gameId } = scoreData;
+
+    // Deduplicate: only keep the highest-wave entry per gameId
+    if (gameId) {
+      const existing = await db.ref('scores')
+        .orderByChild('gameId').equalTo(gameId)
+        .once('value');
+
+      if (existing.exists()) {
+        let bestKey = null, bestWave = -1;
+        existing.forEach(child => {
+          const val = child.val();
+          if (val.wave > bestWave) { bestWave = val.wave; bestKey = child.key; }
+        });
+        if (scoreData.wave <= bestWave) {
+          console.log('submitScore: existing entry has equal/higher wave, skipping');
+          return bestKey;
+        }
+        if (bestKey) await db.ref('scores/' + bestKey).remove();
+      }
+    }
+
     const ref = db.ref('scores').push();
     console.log('submitScore: writing to', ref.key, scoreData);
     await ref.set({ ...scoreData, timestamp: Date.now() });

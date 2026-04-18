@@ -130,10 +130,13 @@ function loadGameFromSlot(slot) {
   // Replace game state
   gameState = loaded;
 
-  // Rebuild grid (not serialised) and re-place gems
+  // Rebuild grid (not serialised) and re-place gems + rocks
   gameState.grid = createGrid();
   for (const gem of Object.values(gameState.gems)) {
     placeGem(gameState.grid, gem.x, gem.y, gem.id);
+  }
+  for (const rock of (gameState.rocks || [])) {
+    placeRock(gameState.grid, rock.x, rock.y);
   }
 
   // Recompute derived state
@@ -403,6 +406,7 @@ function updateBuild(dt, now) {
           if (g1.type === 'Opal' && g1.quality === 'great' && !gameState.opalAttunementDone) {
             gameState.opalAttunementDone = true;
             gameState.opalAttunement = 0;
+            if (gameState.greatOpalWave == null) gameState.greatOpalWave = gameState.wave;
           }
           // Removed gem's position becomes a permanent rock
           placeRock(gameState.grid, g2.x, g2.y);
@@ -449,6 +453,7 @@ function updateBuild(dt, now) {
         if (s4.type === 'Opal' && s4.quality === 'great' && !gameState.opalAttunementDone) {
           gameState.opalAttunementDone = true;
           gameState.opalAttunement = 0;
+          if (gameState.greatOpalWave == null) gameState.greatOpalWave = gameState.wave;
         }
         // Convert partners to rocks
         for (const id of partners4) {
