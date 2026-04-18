@@ -201,8 +201,8 @@ Stun extends effective time in range (iterative calculation).
 
 | Gem                  | Avg dmg | Spd | Range | Slow | Splash | Time  | Hits | Direct | +Splash | Total |
 |----------------------|---------|-----|-------|------|--------|-------|------|--------|---------|-------|
-| Yellow Sapphire      | 99.5    | 1.0 | 122   | 30%  | 50%    | 7.2s  | 7    | 697    | 348     | 1045  |
-| Star Yellow Sapphire | 99.5    | 1.0 | 122   | 40%  | 100%   | 8.4s  | 8    | 796    | 796     | 1592  |
+| Yellow Sapphire      | 114.5   | 1.1 | 122   | 30%  | 50%    | 7.2s  | 7    | 802    | 401     | 1203  |
+| Star Yellow Sapphire | 114.5   | 1.1 | 122   | 40%  | 100%   | 8.4s  | 9    | 1031   | 1031    | 2062  |
 
 Star Yellow Sapphire also provides +5% damage aura to nearby gems.
 
@@ -231,16 +231,16 @@ Star Yellow Sapphire also provides +5% damage aura to nearby gems.
 | Uranium 238              | 3923  | Slow aura + burn aura         |
 | Great Pink Diamond       | 3469  | Ground crit                   |
 | Ancient Blood Stone      | 3198  | Crit + splash + burn          |
+| Star Yellow Sapphire     | 2062  | Splash + slow + dmg aura      |
 | Egyptian Gold            | 2010  | Crit + armor debuff           |
 | Paraiba Tourmaline Facet | 1847  | Nova + armor aura             |
 | Lucky Asian Jade         | 1657  | Poison + slow + crit + gold   |
-| Star Yellow Sapphire     | 1592  | Splash + slow + dmg aura      |
 | Silver Knight            | 1570  | Splash + slow                 |
 | Enchanted Emerald        | 1490  | Stun                          |
 | Pink Diamond             | 1418  | Ground crit                   |
 | Gold                     | 1309  | Crit + armor debuff           |
 | Rose Quartz Crystal      | 1232  | Air only + armor aura         |
-| Yellow Sapphire          | 1045  | Splash + slow                 |
+| Yellow Sapphire          | 1203  | Splash + slow                 |
 | Red Crystal Facet        | 957   | Air only + armor aura         |
 | Asian Jade               | 765   | Poison + slow                 |
 | Red Crystal              | 620   | Air only + armor aura         |
@@ -313,7 +313,7 @@ All special gems scale +10% damage and +0.1 tile range per level. Additional per
 | Jade chain | poison dps +1 |
 | Lucky Asian Jade | poison dps +1, crit chance +0.5%, crit mult +0.1, stun chance +0.1% |
 | Malachite | attack speed +0.02 |
-| Silver | splash radius +0.1t |
+| Silver | splash radius +0.1t, splash dmg% +1% (uncapped) |
 | Star Ruby / Blood Stone / ABS / Uranium | burn DPS +2, aura range +0.1t |
 | Red Crystal | armor aura +0.6% reduction, aura range +0.1t |
 | Pink Diamond | crit chance +1%, crit mult +0.1 |
@@ -321,8 +321,8 @@ All special gems scale +10% damage and +0.1 tile range per level. Additional per
 | Paraiba | ground armor +0.6% reduction, aura range +0.1t, nova radius +0.1t |
 | Black Opal | dmg aura +1%, aura range +0.1t |
 | Dark Emerald | stun chance +0.2% |
-| Yellow Sapphire | splash radius +0.1t |
-| Star Yellow Sapphire | splash radius +0.1t, dmg aura +1%, dmg aura range +0.1t |
+| Yellow Sapphire | splash radius +0.1t, splash dmg% +1% (uncapped) |
+| Star Yellow Sapphire | splash radius +0.1t, splash dmg% +1% (uncapped), dmg aura +1%, dmg aura range +0.1t |
 | Ancient Blood Stone | crit chance +1%, crit mult +0.1, splash radius +0.1t, burn DPS +2, aura range +0.1t |
 
 ### Level 10 Summary (sorted by L10 total)
@@ -335,9 +335,9 @@ All special gems scale +10% damage and +0.1 tile range per level. Additional per
 | Uranium 238              | 3,922    | 6,748     | 1.72×  | Burn DPS barely scales vs base |
 | Egyptian Gold            | 2,010    | 5,814     | 2.89×  | Crit double-stack + armor debuff |
 | Lucky Asian Jade         | 1,657    | 4,688     | 2.83×  | Poison + crit + stun compound |
+| Star Yellow Sapphire     | 2,062    | 4,548     | 2.21×  | Uncapped splash scales past 100% |
 | Paraiba Tourmaline Facet | 1,847    | 3,900     | 2.11×  | Nova + range scaling |
 | Silver Knight            | 1,570    | 3,408     | 2.17×  | Extra hit from range × splash |
-| Star Yellow Sapphire     | 1,592    | 3,402     | 2.14×  | Extra hit from range × 100% splash |
 | Enchanted Emerald        | 1,490    | 3,397     | 2.28×  | Stun feedback loop grows |
 | Rose Quartz Crystal      | 1,232    | 2,554     | 2.07×  | Air only; 23% armor aura at L10 |
 | Grand Star Ruby          | 452      | 855       | 1.89×  | Short range limits scaling |

@@ -430,7 +430,7 @@ export const SPECIAL_GEM_DEFS = [
       { type: 'Ruby',     quality: 'flawless' },
     ],
     stats: {
-      damageMin: 99, damageMax: 100, attackSpeed: 1.0, range: 114,
+      damageMin: 114, damageMax: 115, attackSpeed: 1.1, range: 114,
       effect: { type: 'splash_slow', radius: 40, dmgMod: 0.50, slow: 0.30, duration: 4 },
     },
     upgradeTo: 'star_yellow_sapphire',
@@ -442,7 +442,7 @@ export const SPECIAL_GEM_DEFS = [
     attackType: 'Sapphire',
     color: '#ffd700',
     stats: {
-      damageMin: 99, damageMax: 100, attackSpeed: 1.0, range: 114,
+      damageMin: 114, damageMax: 115, attackSpeed: 1.1, range: 114,
       effect: { type: 'splash_slow_dmg_aura', radius: 60, dmgMod: 1.0, slow: 0.40, duration: 5,
                 dmgBonus: 5, dmgAuraRange: 171 },
     },
