@@ -48,7 +48,7 @@ async function refreshLeaderboard() {
 
   let html = `<table class="leaderboard-table">
     <thead><tr>
-      <th>#</th><th>Name</th><th>Wave</th><th>Result</th><th>Kills (Final wave)</th><th>Dmg%</th><th>Leaks</th><th>MVP Gem</th><th>Time</th><th>Maze</th><th>Fill%</th><th>Ver</th><th>Date</th><th>At</th>
+      <th>#</th><th>Name</th><th>Wave</th><th>Result</th><th>Kills (Final wave)</th><th>Dmg%</th><th>Leaks</th><th>MVP Gem</th><th>GOpal</th><th>Time</th><th>Maze</th><th>Fill%</th><th>Ver</th><th>Date</th><th>At</th>
     </tr></thead><tbody>`;
 
   const resultLabels = { win: 'Win', lose: 'Lose', forfeit: 'Forfeit' };
@@ -64,6 +64,7 @@ async function refreshLeaderboard() {
       <td>${s.finalWaveDmgPct != null ? s.finalWaveDmgPct.toFixed(1) + '%' : '\u2014'}</td>
       <td>${s.livesLost ?? '\u2014'}</td>
       <td>${s.mvpGem ? `${escapeHtml(s.mvpGem)} (${s.mvpGemKills ?? 0})` : '\u2014'}</td>
+      <td>${s.greatOpalWave != null ? s.greatOpalWave : '\u2014'}</td>
       <td>${time}</td>
       <td>${s.mazeLength ?? 0}</td>
       <td>${(s.boardFillPct ?? 0).toFixed(1)}%</td>
@@ -188,6 +189,7 @@ export function showScoreModal(gameState, mazeLength, boardFillPct, endReason = 
       mvpGemKills: mvpGemKills || 0,
       finalWaveDmgPct: Math.round(finalWaveDmgPct * 10) / 10,
       gameId: gameState.gameId,
+      greatOpalWave: gameState.greatOpalWave,
     });
 
     cleanup();

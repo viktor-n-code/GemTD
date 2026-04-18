@@ -406,6 +406,7 @@ function updateBuild(dt, now) {
           if (g1.type === 'Opal' && g1.quality === 'great' && !gameState.opalAttunementDone) {
             gameState.opalAttunementDone = true;
             gameState.opalAttunement = 0;
+            if (gameState.greatOpalWave == null) gameState.greatOpalWave = gameState.wave;
           }
           // Removed gem's position becomes a permanent rock
           placeRock(gameState.grid, g2.x, g2.y);
@@ -452,6 +453,7 @@ function updateBuild(dt, now) {
         if (s4.type === 'Opal' && s4.quality === 'great' && !gameState.opalAttunementDone) {
           gameState.opalAttunementDone = true;
           gameState.opalAttunement = 0;
+          if (gameState.greatOpalWave == null) gameState.greatOpalWave = gameState.wave;
         }
         // Convert partners to rocks
         for (const id of partners4) {

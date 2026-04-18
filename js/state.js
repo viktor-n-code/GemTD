@@ -30,6 +30,7 @@ export function createInitialState() {
     waveDamageDealt: 0,      // accumulated damage to removed enemies (dead + leaked)
     opalAttunement: 0,
     opalAttunementDone: false,
+    greatOpalWave: null,
     gameOver: false,
     gameWon: false,
     gameSpeed: 1,
@@ -190,6 +191,7 @@ function migrateState(s) {
     );
     s.opalAttunementDone = hasGreatOpal;
   }
+  if (s.greatOpalWave === undefined) s.greatOpalWave = null;
   if (s.saveVersion === undefined) s.saveVersion = 0;
   if (s.rocks === undefined) s.rocks = [];
   if (!s.gameId) s.gameId = crypto.randomUUID();
