@@ -114,7 +114,19 @@ export function getWaveStats(wave) {
   }
 
   const flying      = wave % 4 === 0;
-  const armor       = wave < 52 ? Math.min(10 + Math.floor((wave - 1) / 4), 18) : 20;
+
+  // Armor. Ground steps up +2 every 100 waves past W100, capped at 30.
+  // Flying stays at 20 from W52 onwards.
+  let armor;
+  if (wave < 52) {
+    armor = Math.min(10 + Math.floor((wave - 1) / 4), 18);
+  } else if (flying) {
+    armor = 20;
+  } else {
+    const band = Math.max(0, Math.min(5, Math.ceil((wave - 100) / 100)));
+    armor = 20 + 2 * band;
+  }
+
   const flyingSpeedCap = wave >= 200 ? 1.75 : 1.5; // 7 t/s from wave 200+
   let speed;
   if (flying) {
@@ -125,21 +137,49 @@ export function getWaveStats(wave) {
     speed = Math.min(0.75 + (wave - 25) * 0.04, 1.5);
   }
   const minSpeed    = speed * 0.5;
-  const baseHp      = 45000 * (1 + (wave - 30) * 0.10);
-  const hp          = Math.round(flying ? baseHp / 3 : baseHp);
+
+  // HP growth accelerates by +2% per 100-wave band past W100 (indefinitely).
+  // W31–100: +10%/wave, W101–200: +12%/wave, W201–300: +14%/wave, …
+  let baseHp;
+  if (wave <= 100) {
+    baseHp = 45000 * (1 + (wave - 30) * 0.10);
+  } else {
+    baseHp = 360000; // HP at W100
+    const currentBand = Math.ceil((wave - 100) / 100);
+    for (let b = 1; b < currentBand; b++) {
+      baseHp += 100 * 45000 * (0.10 + b * 0.02);
+    }
+    const wavesInCurrentBand = wave - (100 + (currentBand - 1) * 100);
+    baseHp += wavesInCurrentBand * 45000 * (0.10 + currentBand * 0.02);
+  }
+  let hp = Math.round(flying ? baseHp / 3 : baseHp);
+  // Flying W40/W44 nerfs — smooth the post-table HP spike from 10k (W36) → 30k (W40).
+  if (flying && wave === 40) hp = 25000;
+  if (flying && wave === 44) hp = 32000;
+
   const stunImmune  = wave % 50 === 0;
   const weakness    = getWeakness(wave, flying);
 
-  // Stun resistance only (no damage resistance).
-  // Ground: +1%/wave from 101, caps 30% at wave 130.
-  // Flying: +2% per flying wave from 204, caps 30% at wave 260.
+  // Stun resistance — two-stage ramp per class.
+  // Ground: 0→30% over W101–130, plateau, 30→60% over W301–330 (cap 60%).
+  // Flying: 0→30% over W204–260, plateau, 30→60% over W304–360 (cap 60%).
   let stunResist;
-  if (flying && wave > 200) {
-    stunResist = Math.min(0.30, ((wave - 200) / 4) * 0.02);
-  } else if (!flying && wave >= 101) {
-    stunResist = Math.min(0.30, (wave - 100) * 0.01);
+  if (flying) {
+    if (wave <= 200) {
+      stunResist = 0;
+    } else if (wave <= 303) {
+      stunResist = Math.min(0.30, ((wave - 200) / 4) * 0.02);
+    } else {
+      stunResist = Math.min(0.60, 0.30 + ((wave - 300) / 4) * 0.02);
+    }
   } else {
-    stunResist = 0;
+    if (wave < 101) {
+      stunResist = 0;
+    } else if (wave < 301) {
+      stunResist = Math.min(0.30, (wave - 100) * 0.01);
+    } else {
+      stunResist = Math.min(0.60, 0.30 + (wave - 300) * 0.01);
+    }
   }
 
   return { hp, armor, speed, minSpeed, flying, stunImmune, weakness, stunResist };

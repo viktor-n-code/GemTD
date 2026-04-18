@@ -528,7 +528,7 @@
             <div id="left-panel">
                 <div id="panel-header">
                     <div id="panel-title">GEM TD</div>
-                    <div id="panel-version">v1.9.2</div>
+                    <div id="panel-version">v1.10</div>
                     <div style="color:#556677;font-size:9px;margin-top:2px">by viktor-n</div>
                 </div>
                 <hr class="left-divider">
@@ -562,6 +562,22 @@
         </div>
         <div id="patchnotes-view" class="tab-content hidden">
             <h2>Patch Notes</h2>
+            <div class="patch-version">
+                <h3>v1.10 &mdash; Late-game Scaling</h3>
+                <ul>
+                    <li>Ground HP growth accelerates past wave 100: +2% of base HP per wave added each 100-wave band (W101&ndash;200 +12%/wave, W201&ndash;300 +14%/wave, W301&ndash;400 +16%/wave, and so on indefinitely)</li>
+                    <li>Ground armor climbs +2 every 100 waves past W100, capped at 30 (90% damage reduction) from W501 onwards; flying armor stays at 20</li>
+                    <li>Ground stun resistance adds a second stage: W301&ndash;330 ramps from 30% to 60%, then caps</li>
+                    <li>Flying stun resistance adds a second stage: W304&ndash;360 ramps from 30% to 60%, then caps</li>
+                    <li>Wave 40 and 44 flying enemies softened (30k &rarr; 25k at W40; 36k &rarr; 32k at W44) to smooth the post-table HP spike</li>
+                    <li>Yellow Sapphire chain buffed: +15% base damage (99&ndash;100 &rarr; 114&ndash;115) and +10% attack speed (1.0 &rarr; 1.1); Star Yellow Sapphire gains an extra hit per pass</li>
+                    <li>Splash damage scaling uncapped past 100% of primary hit for Silver chain, Yellow Sapphire chain, and Ancient Blood Stone &mdash; more late-game scaling room</li>
+                    <li>Great Opal wave tracked and shown in the leaderboard as a new "GOpal" column (the wave the first Great Opal is built)</li>
+                    <li>Rocks (from discarded/combined gems) now persist in saves &mdash; maze pathing is fully intact after load</li>
+                    <li>Leaderboard deduplicates repeated submissions from the same game, keeping only the highest-wave result</li>
+                    <li>Mobile: pinch-to-zoom up to 4x and one-finger pan while zoomed; double-tap resets zoom</li>
+                </ul>
+            </div>
             <div class="patch-version">
                 <h3>v1.9 &mdash; Save/Load &amp; Mobile</h3>
                 <ul>
