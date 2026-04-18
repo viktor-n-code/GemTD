@@ -2,6 +2,7 @@
 
 const SLOT_KEY_PREFIX = 'gemtd_slot_';
 const OLD_STORAGE_KEY = 'gemtd_save';    // legacy single-save key (pre-v1.9)
+export const SAVE_VERSION = 1;
 
 export function createInitialState() {
   return {
@@ -33,6 +34,7 @@ export function createInitialState() {
     gameWon: false,
     gameSpeed: 1,
     gameTime: 0,
+    gameId: crypto.randomUUID(),
   };
 }
 
@@ -46,14 +48,37 @@ export function createInitialState() {
  */
 export function saveToSlot(slot, state) {
   const meta = {
-    wave:      state.wave,
-    gold:      state.gold,
-    lives:     state.lives,
-    gemCount:  Object.keys(state.gems || {}).length,
-    timestamp: Date.now(),
+    wave:        state.wave,
+    gold:        state.gold,
+    lives:       state.lives,
+    gemCount:    Object.keys(state.gems || {}).length,
+    timestamp:   Date.now(),
+    saveVersion: SAVE_VERSION,
   };
+
+  // Extract rock positions from the grid before stripping it
+  const rocks = [];
+  if (state.grid) {
+    const seen = new Set();
+    for (let y = 1; y < state.grid.length; y++) {
+      if (!state.grid[y]) continue;
+      for (let x = 1; x < state.grid[y].length; x++) {
+        const cell = state.grid[y][x];
+        if (cell?.type === 'rock' && cell.rockTopLeft) {
+          const key = `${cell.rockTopLeft.x},${cell.rockTopLeft.y}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            rocks.push({ x: cell.rockTopLeft.x, y: cell.rockTopLeft.y });
+          }
+        }
+      }
+    }
+  }
+
   // Grid is not serialisable (circular-ish refs), strip it before saving
   const { grid, ...serialisable } = state;
+  serialisable.rocks = rocks;
+  serialisable.saveVersion = SAVE_VERSION;
   localStorage.setItem(
     SLOT_KEY_PREFIX + slot,
     JSON.stringify({ meta, data: serialisable }),
@@ -165,5 +190,8 @@ function migrateState(s) {
     );
     s.opalAttunementDone = hasGreatOpal;
   }
+  if (s.saveVersion === undefined) s.saveVersion = 0;
+  if (s.rocks === undefined) s.rocks = [];
+  if (!s.gameId) s.gameId = crypto.randomUUID();
   return s;
 }

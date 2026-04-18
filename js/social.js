@@ -187,6 +187,7 @@ export function showScoreModal(gameState, mazeLength, boardFillPct, endReason = 
       mvpGem: mvpGem || '',
       mvpGemKills: mvpGemKills || 0,
       finalWaveDmgPct: Math.round(finalWaveDmgPct * 10) / 10,
+      gameId: gameState.gameId,
     });
 
     cleanup();
