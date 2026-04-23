@@ -346,10 +346,16 @@ export function attackEnemy(gem, enemy, enemies, now, wave) {
     }
   }
 
-  // 8b. Gold/Egyptian Gold: apply armor debuff to target
+  // 8b. Gold/Egyptian Gold: apply armor debuff to target.
+  // Stronger debuffs always win: a weaker tower cannot clobber a stronger
+  // active debuff (e.g. Gold's -5 overwriting Egyptian Gold's -8).
   if (stats.effect?.type === 'armor_debuff' && !enemy.dead) {
-    enemy.armorDebuff      = stats.effect.armorDebuff;
-    enemy.armorDebuffUntil = now + stats.effect.debuffDuration * 1000;
+    const active = now < (enemy.armorDebuffUntil ?? 0);
+    const currentAmount = active ? (enemy.armorDebuff ?? 0) : 0;
+    if (stats.effect.armorDebuff >= currentAmount) {
+      enemy.armorDebuff      = stats.effect.armorDebuff;
+      enemy.armorDebuffUntil = now + stats.effect.debuffDuration * 1000;
+    }
   }
 
   // 8c. Dark Emerald: stun proc
