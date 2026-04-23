@@ -6,6 +6,7 @@ import { getGemAttackType } from './combat.js';
 import { GRID_ROWS, CELL_SIZE } from './grid.js';
 import { getWaveStats, getEnemyResistance } from './enemy.js';
 import { SPECIAL_GEM_DEFS, getSpecialGemLeveledStats, getSpecialVisual, findAvailableRecipes } from './specialgem.js';
+import { saveCooldownRemaining } from './state.js';
 
 // ---------------------------------------------------------------------------
 // Layout constants (exported so input.js can do hit-testing)
@@ -1066,8 +1067,15 @@ export function drawUI(ctx, state, inputState) {
   const speedColor = (state.gameSpeed || 1) > 1 ? '#4a6a2a' : '#3a3a4a';
   drawButton(ctx, BTN_SPEED, speedLabel, true, speedColor);
 
-  // Save/Load — always visible, opens modal
-  drawButton(ctx, BTN_SAVE_LOAD, 'Save/Load', true, '#2a4a6a');
+  // Save/Load — greyed out and non-interactive while the save cooldown is active.
+  // Fully disabling (not just blocking Save inside the modal) is intentional: we
+  // don't want a 5-wave window where the player can peek at slots or load without
+  // also being able to save. The cooldown also surfaces the countdown in-line.
+  const saveCd = saveCooldownRemaining(state);
+  const saveLoadActive = saveCd === 0;
+  const saveLoadLabel  = saveLoadActive ? 'Save/Load' : `Save/Load (${saveCd}w)`;
+  const saveLoadColor  = saveLoadActive ? '#2a4a6a' : '#3a3a4a';
+  drawButton(ctx, BTN_SAVE_LOAD, saveLoadLabel, saveLoadActive, saveLoadColor);
 
   // Downgrade — available during defend phase for the just-kept gem
   if (state.phase === 'defend' && state.downgradeAvailableId) {

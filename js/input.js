@@ -6,6 +6,7 @@ import { BTN_COMBINE, BTN_COMBINE4, BTN_KEEP, BTN_UPGRADE, BTN_RESTART, BTN_REMO
          BTN_COMBINE_SPECIAL, BTN_UPGRADE_GEM, BTN_BUY_LIFE, BTN_REPICK, BTN_DOWNGRADE,
          BTN_FORFEIT, BTN_SPEED, BTN_SAVE_LOAD, PANEL_Y } from './ui.js';
 import { findAvailableRecipes } from './specialgem.js';
+import { saveCooldownRemaining } from './state.js';
 
 // ---------------------------------------------------------------------------
 // Private helper
@@ -124,6 +125,7 @@ export class InputHandler {
     this._placedThisRound = state.placedThisRound || [];
     this._grid            = state.grid || null;
     this._gems            = state.gems || {};
+    this._saveCooldownRemaining = saveCooldownRemaining(state);
     this.hoveredGemId = null;
     // Clear hover state when game tab is not active (canvas is hidden)
     if (window.gameTabActive === false) {
@@ -558,6 +560,9 @@ export class InputHandler {
         return;
       }
       if (hitTest(BTN_SAVE_LOAD, x, y)) {
+        // Button is drawn greyed out during cooldown; gate the click here too
+        // so the modal can't be opened at all while the save cooldown is active.
+        if (this._saveCooldownRemaining > 0) return;
         this.pendingAction = { type: 'openSaveLoad' };
         return;
       }
