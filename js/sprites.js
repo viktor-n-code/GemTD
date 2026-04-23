@@ -322,9 +322,10 @@ const SPECIAL_VISUALS = {
   // Blood Stone chain — flame, dark red→crimson
   blood_stone:     { shape: 'flame', light: '#ff4444', dark: '#660000', icon: 'skull', tier: 1 },
   ancient_blood_stone: { shape: 'flame', light: '#cc0000', dark: '#440000', icon: 'skull', tier: 2 },
-  // Rose Quartz chain — heart/gem, pink→rose
-  rose_quartz:     { shape: 'heart', light: '#ff88cc', dark: '#993366', icon: 'spiral', tier: 1 },
-  rose_quartz_crystal: { shape: 'heart', light: '#ff55aa', dark: '#882255', icon: 'spiral', tier: 2 },
+  // Red Crystal chain — heart, pink progression, spiral icon
+  red_crystal:         { shape: 'heart', light: '#ff88cc', dark: '#993366', icon: 'spiral', tier: 1 },
+  red_crystal_facet:   { shape: 'heart', light: '#ff55aa', dark: '#882255', icon: 'spiral', tier: 2 },
+  rose_quartz_crystal: { shape: 'heart', light: '#ffb3d9', dark: '#66224a', icon: 'spiral', tier: 3 },
   // Pink Diamond chain — cut diamond, pink→magenta
   pink_diamond:    { shape: 'cutdiamond', light: '#ff8099', dark: '#993355', icon: 'bolt', tier: 1 },
   great_pink_diamond: { shape: 'cutdiamond', light: '#ff55aa', dark: '#882244', icon: 'bolt', tier: 2 },
