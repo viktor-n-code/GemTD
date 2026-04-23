@@ -245,7 +245,7 @@ function _buildEffectHTML(effect, baseEffect) {
       return wrap(
         _row('Effect', 'Splash') +
         _row('Radius', `${(effect.radius / CELL_SIZE).toFixed(1)} tiles${_lvlNote(effect.radius, b.radius, d => (d / CELL_SIZE).toFixed(1) + 't')}`) +
-        _row('Damage', `${Math.round(Math.min(effect.dmgMod ?? 1, 1) * 100)}%${_lvlNote(effect.dmgMod, b.dmgMod, d => Math.round(d * 100) + '%')} to all in range`)
+        _row('Damage', `${Math.round((effect.dmgMod ?? 1) * 100)}%${_lvlNote(effect.dmgMod, b.dmgMod, d => Math.round(d * 100) + '%')} to all in range`)
       );
     case 'crit':
       return wrap(
@@ -270,13 +270,13 @@ function _buildEffectHTML(effect, baseEffect) {
     case 'splash_slow':
       return wrap(
         _row('Effect', 'Splash + Slow') +
-        _row('Radius', `${(effect.radius / CELL_SIZE).toFixed(1)} tiles${_lvlNote(effect.radius, b.radius, d => (d / CELL_SIZE).toFixed(1) + 't')} · ${Math.round(Math.min(effect.dmgMod ?? 1, 1) * 100)}%${_lvlNote(effect.dmgMod, b?.dmgMod, d => Math.round(d * 100) + '%')} dmg`) +
+        _row('Radius', `${(effect.radius / CELL_SIZE).toFixed(1)} tiles${_lvlNote(effect.radius, b.radius, d => (d / CELL_SIZE).toFixed(1) + 't')} · ${Math.round((effect.dmgMod ?? 1) * 100)}%${_lvlNote(effect.dmgMod, b?.dmgMod, d => Math.round(d * 100) + '%')} dmg`) +
         _row('Slow', `-${Math.round(effect.slow * 100)}% for ${effect.duration}s`)
       );
     case 'splash_slow_dmg_aura':
       return wrap(
         _row('Effect', 'Splash + Slow') +
-        _row('Radius', `${(effect.radius / CELL_SIZE).toFixed(1)} tiles${_lvlNote(effect.radius, b.radius, d => (d / CELL_SIZE).toFixed(1) + 't')} · ${Math.round(Math.min(effect.dmgMod ?? 1, 1) * 100)}%${_lvlNote(effect.dmgMod, b?.dmgMod, d => Math.round(d * 100) + '%')} dmg`) +
+        _row('Radius', `${(effect.radius / CELL_SIZE).toFixed(1)} tiles${_lvlNote(effect.radius, b.radius, d => (d / CELL_SIZE).toFixed(1) + 't')} · ${Math.round((effect.dmgMod ?? 1) * 100)}%${_lvlNote(effect.dmgMod, b?.dmgMod, d => Math.round(d * 100) + '%')} dmg`) +
         _row('Slow', `-${Math.round(effect.slow * 100)}% for ${effect.duration}s`) +
         _row('Dmg Aura', `+${Math.round(effect.dmgBonus)}%${_lvlNote(effect.dmgBonus, b.dmgBonus, d => Math.round(d) + '%')} to gems in ${(effect.dmgAuraRange / 15).toFixed(1)} tiles`)
       );
@@ -289,7 +289,7 @@ function _buildEffectHTML(effect, baseEffect) {
     case 'ancient_blood_stone':
       return wrap(
         _row('Crit', `${Math.round(effect.critChance * 100)}%${_lvlNote(effect.critChance, b.critChance, d => Math.round(d * 100) + '%')} · ×${effect.critMult.toFixed(1)}${_lvlNote(effect.critMult, b.critMult, d => d.toFixed(1) + '×')}`) +
-        _row('Splash', `${Math.round(Math.min(effect.splashDmgMod ?? 1, 1) * 100)}%${_lvlNote(effect.splashDmgMod, b?.splashDmgMod, d => Math.round(d * 100) + '%')} dmg ${(effect.splashRadius / CELL_SIZE).toFixed(1)} tiles${_lvlNote(effect.splashRadius, b.splashRadius, d => (d / CELL_SIZE).toFixed(1) + 't')}`) +
+        _row('Splash', `${Math.round((effect.splashDmgMod ?? 1) * 100)}%${_lvlNote(effect.splashDmgMod, b?.splashDmgMod, d => Math.round(d * 100) + '%')} dmg ${(effect.splashRadius / CELL_SIZE).toFixed(1)} tiles${_lvlNote(effect.splashRadius, b.splashRadius, d => (d / CELL_SIZE).toFixed(1) + 't')}`) +
         _row('Burn Aura', `${Math.round(effect.auraDps)} DPS${_lvlNote(effect.auraDps, b.auraDps, d => Math.round(d))}`) +
         _row('Aura Range', `${(effect.auraRange / 15).toFixed(1)} tiles${_lvlNote(effect.auraRange, b.auraRange, d => (d / 15).toFixed(1) + 't')}`)
       );
