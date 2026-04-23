@@ -113,8 +113,9 @@ export function applyEffect(enemy, effect, now, gemId) {
   if (!effect) return;
 
   if (effect.type === 'poison') {
-    // Poison: only upgrade if the new DPS is higher
-    if (effect.dps > enemy.poisonDps) {
+    // Poison: apply if new DPS is at least as high. Equal-strength hits from
+    // the same tower refresh the duration so uptime isn't lost mid-fight.
+    if (effect.dps >= enemy.poisonDps) {
       enemy.poisonDps   = effect.dps;
       enemy.poisonUntil = now + effect.duration * 1000;
       enemy.poisonGemId = gemId ?? null;
@@ -138,8 +139,8 @@ export function applyEffect(enemy, effect, now, gemId) {
   }
 
   if (effect.type === 'lucky_jade') {
-    // Poison part (same no-stack rule as regular poison)
-    if (effect.dps > enemy.poisonDps) {
+    // Poison part (same rule as regular poison: refresh on equal-or-stronger)
+    if (effect.dps >= enemy.poisonDps) {
       enemy.poisonDps   = effect.dps;
       enemy.poisonUntil = now + effect.duration * 1000;
       enemy.poisonGemId = gemId ?? null;
