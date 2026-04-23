@@ -351,6 +351,10 @@ const SPECIAL_VISUALS = {
   // Dark Emerald chain — spikehex, dark green, bolt icon (stun theme)
   dark_emerald:        { shape: 'spikehex', light: '#2a7a3a', dark: '#0a3a1a', icon: 'bolt', tier: 1 },
   enchanted_emerald:   { shape: 'spikehex', light: '#3a9a4a', dark: '#1a4a2a', icon: 'bolt', tier: 2 },
+  // Star Ruby chain — starburst, red→orange, burst icon (burn aura)
+  star_ruby:           { shape: 'starburst', light: '#ff4466', dark: '#8b1a2a', icon: 'burst', tier: 1 },
+  blazing_star_ruby:   { shape: 'starburst', light: '#ff6633', dark: '#883322', icon: 'burst', tier: 2 },
+  grand_star_ruby:     { shape: 'starburst', light: '#ff9922', dark: '#884400', icon: 'burst', tier: 3 },
 };
 
 // --- Shape drawers for special gems ---
