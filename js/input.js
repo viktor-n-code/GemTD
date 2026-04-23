@@ -156,6 +156,71 @@ export class InputHandler {
     this.canvas.addEventListener('touchstart', (e) => this._onTouchStart(e), { passive: false });
     this.canvas.addEventListener('touchmove',  (e) => this._onTouchMove(e),  { passive: false });
     this.canvas.addEventListener('touchend',   (e) => this._onTouchEnd(e),   { passive: false });
+
+    // Desktop hotkeys. Gated so typing in comment fields doesn't trigger game actions.
+    window.addEventListener('keydown', (e) => this._onKeyDown(e));
+  }
+
+  /**
+   * Keyboard shortcuts:
+   *   S   — toggle game speed (both phases)
+   *   R   — remove selected rock (build phase only)
+   *   K   — keep the selected placed gem (build phase only)
+   *   C   — combine matching placed gems (build phase only)
+   *   L   — buy extra life (both phases)
+   *   Esc — close Save/Load or Score modal if open
+   */
+  _onKeyDown(e) {
+    // Don't hijack typing in comment/name inputs or any text field.
+    const active = document.activeElement;
+    if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) return;
+
+    if (e.key === 'Escape') {
+      const saveload = document.getElementById('saveload-modal');
+      const score    = document.getElementById('score-modal');
+      if (saveload && !saveload.classList.contains('hidden')) {
+        saveload.classList.add('hidden');
+        return;
+      }
+      if (score && !score.classList.contains('hidden')) {
+        score.classList.add('hidden');
+        return;
+      }
+      return;
+    }
+
+    switch (e.key.toLowerCase()) {
+      case 's':
+        this.pendingAction = { type: 'toggleSpeed' };
+        break;
+      case 'r':
+        if (this._phase === 'build' && this.selectedRockPos) {
+          this.pendingAction = {
+            type: 'removeRock',
+            x: this.selectedRockPos.x,
+            y: this.selectedRockPos.y,
+          };
+          this.selectedRockPos = null;
+        }
+        break;
+      case 'k':
+        if (
+          this._phase === 'build' &&
+          this.selectedGemId !== null &&
+          this._placedThisRound.includes(this.selectedGemId)
+        ) {
+          this.pendingAction = { type: 'keep', gemId: this.selectedGemId };
+        }
+        break;
+      case 'c':
+        if (this._phase === 'build' && this.selectedGemId !== null) {
+          this.pendingAction = { type: 'combine', selectedGemId: this.selectedGemId };
+        }
+        break;
+      case 'l':
+        this.pendingAction = { type: 'buyLife' };
+        break;
+    }
   }
 
   /** Convert a MouseEvent to canvas-local pixel coordinates. */

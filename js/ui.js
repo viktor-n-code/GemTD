@@ -1053,7 +1053,7 @@ export function drawUI(ctx, state, inputState) {
   // Buy Life button — available in both build and defend phases
   const lifeCost = 10 + (state.extraLivesPurchased ?? 0) ** 2;
   const canBuyLife = state.gold >= lifeCost && state.lives < 20;
-  drawButton(ctx, BTN_BUY_LIFE, `+Life (${lifeCost}g)`, canBuyLife, '#2a5a6a');
+  drawButton(ctx, BTN_BUY_LIFE, `+(L)ife (${lifeCost}g)`, canBuyLife, '#2a5a6a');
 
   // Forfeit — double-click to confirm (same pattern as Restart)
   const forfeitPending = inputState?.forfeitConfirmUntil > performance.now();
@@ -1062,7 +1062,7 @@ export function drawUI(ctx, state, inputState) {
   drawButton(ctx, BTN_FORFEIT, forfeitLabel, true, forfeitColor);
 
   // Speed toggle — always visible
-  const speedLabel = `Speed ${state.gameSpeed || 1}x`;
+  const speedLabel = `(S)peed ${state.gameSpeed || 1}x`;
   const speedColor = (state.gameSpeed || 1) > 1 ? '#4a6a2a' : '#3a3a4a';
   drawButton(ctx, BTN_SPEED, speedLabel, true, speedColor);
 
@@ -1102,7 +1102,7 @@ export function drawUI(ctx, state, inputState) {
     }).length;
     combineActive = matchCount >= 1;
   }
-  drawButton(ctx, BTN_COMBINE, 'Combine', combineActive, '#3a6a3a');
+  drawButton(ctx, BTN_COMBINE, '(C)ombine', combineActive, '#3a6a3a');
 
   // 4-Combine — active when selected gem has 3+ matching partners and target quality+2 exists
   let combine4Active = false;
@@ -1124,7 +1124,7 @@ export function drawUI(ctx, state, inputState) {
     state.keptGemId === null &&
     state.placedThisRound.includes(inputState.selectedGemId)
   );
-  drawButton(ctx, BTN_KEEP, 'Keep', keepActive, '#3a6a3a');
+  drawButton(ctx, BTN_KEEP, '(K)eep', keepActive, '#3a6a3a');
 
   // Repick — active during build phase when gems are placed and player can afford it
   const repickCost = 25 * ((state.repickCount ?? 0) + 1);
@@ -1133,7 +1133,7 @@ export function drawUI(ctx, state, inputState) {
 
   // Remove — active when a rock is selected
   const removeActive = inputState?.selectedRockPos !== null && inputState?.selectedRockPos !== undefined;
-  drawButton(ctx, BTN_REMOVE, 'Remove', removeActive, '#6a1a1a');
+  drawButton(ctx, BTN_REMOVE, '(R)emove', removeActive, '#6a1a1a');
 
   // (Upgrade and Restart drawn in always-visible block above)
 
