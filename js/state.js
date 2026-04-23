@@ -4,6 +4,18 @@ const SLOT_KEY_PREFIX = 'gemtd_slot_';
 const OLD_STORAGE_KEY = 'gemtd_save';    // legacy single-save key (pre-v1.9)
 export const SAVE_VERSION = 2;
 
+/** Waves the player must survive between saves to prevent save-scumming. */
+export const SAVE_COOLDOWN_WAVES = 5;
+
+/**
+ * Waves remaining before the player can save again. 0 means save is available.
+ * Null lastSaveWave (fresh game / legacy save) counts as no cooldown.
+ */
+export function saveCooldownRemaining(state) {
+  if (!state || state.lastSaveWave == null) return 0;
+  return Math.max(0, SAVE_COOLDOWN_WAVES - (state.wave - state.lastSaveWave));
+}
+
 export function createInitialState() {
   return {
     phase: 'build',

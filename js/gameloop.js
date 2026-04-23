@@ -4,7 +4,7 @@
  */
 
 import { createInitialState, saveToSlot, loadFromSlot, clearSlot,
-         getAllSlotMetas, migrateLegacySave } from './state.js';
+         getAllSlotMetas, migrateLegacySave, saveCooldownRemaining } from './state.js';
 import { createGrid, validatePlacement, placeGem, placeRock, removeRock, findPath,
          GRID_COLS, GRID_ROWS, CELL_SIZE, ENTRY, CHECKPOINTS, EXIT, computeBoardFillPct,
          hasValidPlacement } from './grid.js';
@@ -52,13 +52,8 @@ function renderSaveLoadModal() {
   const metas   = getAllSlotMetas();
   const isBuild = gameState.phase === 'build';
 
-  // 5-wave survival cooldown: players must survive 5 defenses between saves,
-  // so reloading a save to then re-save at the same point is blocked.
-  const SAVE_COOLDOWN_WAVES = 5;
-  const wavesSinceSave = gameState.lastSaveWave == null
-    ? Infinity
-    : gameState.wave - gameState.lastSaveWave;
-  const cooldownRemaining = Math.max(0, SAVE_COOLDOWN_WAVES - wavesSinceSave);
+  // Save cooldown — same helper is used by the canvas button and the click gate.
+  const cooldownRemaining = saveCooldownRemaining(gameState);
   const saveDisabled = !isBuild || cooldownRemaining > 0;
   const saveDisabledAttr = saveDisabled ? 'disabled' : '';
 
