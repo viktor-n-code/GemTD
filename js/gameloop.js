@@ -51,7 +51,21 @@ function renderSaveLoadModal() {
 
   const metas   = getAllSlotMetas();
   const isBuild = gameState.phase === 'build';
+
+  // 5-wave survival cooldown: players must survive 5 defenses between saves,
+  // so reloading a save to then re-save at the same point is blocked.
+  const SAVE_COOLDOWN_WAVES = 5;
+  const wavesSinceSave = gameState.lastSaveWave == null
+    ? Infinity
+    : gameState.wave - gameState.lastSaveWave;
+  const cooldownRemaining = Math.max(0, SAVE_COOLDOWN_WAVES - wavesSinceSave);
+  const saveDisabled = !isBuild || cooldownRemaining > 0;
+  const saveDisabledAttr = saveDisabled ? 'disabled' : '';
+
   let html = '';
+  if (isBuild && cooldownRemaining > 0) {
+    html += `<div class="save-cooldown-notice">Save cooldown: ${cooldownRemaining} wave${cooldownRemaining === 1 ? '' : 's'} left</div>`;
+  }
 
   for (let i = 0; i < 3; i++) {
     const slot = i + 1;
@@ -70,7 +84,7 @@ function renderSaveLoadModal() {
           </div>
         </div>
         <div class="save-slot-actions">
-          <button class="slot-btn-save" data-slot="${slot}" ${isBuild ? '' : 'disabled'}>Save</button>
+          <button class="slot-btn-save" data-slot="${slot}" ${saveDisabledAttr}>Save</button>
           <button class="slot-btn-load" data-slot="${slot}" ${isBuild ? '' : 'disabled'}>Load</button>
           <button class="slot-btn-delete" data-slot="${slot}">Delete</button>
         </div>
@@ -82,7 +96,7 @@ function renderSaveLoadModal() {
           <div class="save-slot-empty">Empty</div>
         </div>
         <div class="save-slot-actions">
-          <button class="slot-btn-save" data-slot="${slot}" ${isBuild ? '' : 'disabled'}>Save</button>
+          <button class="slot-btn-save" data-slot="${slot}" ${saveDisabledAttr}>Save</button>
         </div>
       </div>`;
     }
@@ -126,6 +140,12 @@ function attachSaveLoadListeners() {
 function loadGameFromSlot(slot) {
   const loaded = loadFromSlot(slot);
   if (!loaded) return;
+
+  // Delete-on-load: a save can only be used once so players can't reload a
+  // single snapshot indefinitely to fish for better rolls. The cooldown stamp
+  // lives inside `loaded` (state.lastSaveWave) so the save's remaining
+  // cooldown survives the load.
+  clearSlot(slot);
 
   // Replace game state
   gameState = loaded;
