@@ -311,10 +311,10 @@ const SPECIAL_VISUALS = {
   jade:            { shape: 'octagon', light: '#3aaa5a', dark: '#1a5a2a', icon: 'clover', tier: 1 },
   asian_jade:      { shape: 'octagon', light: '#2a9a4a', dark: '#0a4a1a', icon: 'clover', tier: 2 },
   lucky_asian_jade:{ shape: 'octagon', light: '#1a8a3a', dark: '#005a0a', icon: 'clover', tier: 3 },
-  // Malachite chain — triangle, green→teal→blue
-  malachite:       { shape: 'triangle', light: '#4cae5c', dark: '#1a6a2a', icon: 'dots', tier: 1 },
-  chrysocolla:     { shape: 'triangle', light: '#5abe6c', dark: '#1a7a3a', icon: 'dots', tier: 2 },
-  azurite:         { shape: 'triangle', light: '#6ece7c', dark: '#1a8a4a', icon: 'dots', tier: 3 },
+  // Malachite chain — triangle, green progression
+  malachite:         { shape: 'triangle', light: '#4cae5c', dark: '#1a6a2a', icon: 'dots', tier: 1 },
+  vivid_malachite:   { shape: 'triangle', light: '#5abe6c', dark: '#1a7a3a', icon: 'dots', tier: 2 },
+  mighty_malachite:  { shape: 'triangle', light: '#6ece7c', dark: '#1a8a4a', icon: 'dots', tier: 3 },
   // Silver chain — shield, silver→steel blue
   silver:          { shape: 'shield', light: '#ccccee', dark: '#6666aa', icon: 'sword', tier: 1 },
   sterling_silver: { shape: 'shield', light: '#bbbbdd', dark: '#5555aa', icon: 'sword', tier: 2 },
@@ -347,6 +347,9 @@ const SPECIAL_VISUALS = {
   tanzanite:       { shape: 'spikehex', light: '#cc2222', dark: '#660000', icon: 'hammer', tier: 1 },
   // Air Crystal — wing, white→sky blue
   air_crystal:     { shape: 'wing', light: '#ccddff', dark: '#5577bb', icon: 'wind', tier: 1 },
+  // Dark Emerald chain — spikehex, dark green, bolt icon (stun theme)
+  dark_emerald:        { shape: 'spikehex', light: '#2a7a3a', dark: '#0a3a1a', icon: 'bolt', tier: 1 },
+  enchanted_emerald:   { shape: 'spikehex', light: '#3a9a4a', dark: '#1a4a2a', icon: 'bolt', tier: 2 },
 };
 
 // --- Shape drawers for special gems ---
