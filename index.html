@@ -399,6 +399,27 @@
         .patch-version h3 { color: #00d4ff; font-size: 14px; margin-bottom: 6px; }
         .patch-version ul { list-style: disc; padding-left: 20px; font-size: 12px; line-height: 1.8; }
 
+        /* ── Gem Formulas tab ── */
+        .gf-intro { color: #8899aa; font-size: 12px; margin-bottom: 14px; line-height: 1.5; }
+        .gf-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .gf-table th {
+            color: #00d4ff; text-align: left; padding: 8px 10px;
+            border-bottom: 1px solid #1e3a5f; font-size: 11px;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .gf-table td { padding: 10px; border-bottom: 1px solid #111a2a; vertical-align: middle; }
+        .gf-table tr:hover { background: rgba(0,212,255,0.04); }
+        .gf-gem-cell { display: flex; align-items: center; gap: 8px; min-width: 150px; }
+        .gf-gem-icon { width: 28px; height: 28px; flex-shrink: 0; image-rendering: pixelated; }
+        .gf-gem-name { color: #ffffff; font-weight: bold; font-size: 13px; }
+        .gf-gem-type { color: #667788; font-size: 10px; display: block; margin-top: 1px; }
+        .gf-recipe { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+        .gf-ingredient { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+        .gf-ing-icon { width: 20px; height: 20px; image-rendering: pixelated; }
+        .gf-ing-text { color: #cce0f0; font-size: 11px; }
+        .gf-plus { color: #4a5a6a; font-size: 12px; margin: 0 2px; }
+        .gf-effect { color: #aabbcc; font-size: 11px; line-height: 1.4; max-width: 260px; }
+
         .donate-button {
             display: inline-block;
             background: #ff5e5b;
@@ -522,6 +543,7 @@
             <button class="tab" data-tab="leaderboard">Leaderboard</button>
             <button class="tab" data-tab="comments">Comments</button>
             <button class="tab" data-tab="patchnotes">Patch Notes</button>
+            <button class="tab" data-tab="gemformulas">Gem Formulas</button>
             <button class="tab" data-tab="donate">Donate</button>
         </div>
         <div id="game-wrapper">
@@ -714,6 +736,11 @@
                     <li>Level bonus and MVP bonus are now additive</li>
                 </ul>
             </div>
+        </div>
+        <div id="gemformulas-view" class="tab-content hidden">
+            <h2>Gem Formulas</h2>
+            <p class="gf-intro">Combine specific base gems during build phase to create a special gem. Listed from easiest to hardest to assemble.</p>
+            <div id="gemformulas-list"></div>
         </div>
         <div id="donate-view" class="tab-content hidden">
             <h2>Support Gem TD</h2>
