@@ -399,6 +399,27 @@
         .patch-version h3 { color: #00d4ff; font-size: 14px; margin-bottom: 6px; }
         .patch-version ul { list-style: disc; padding-left: 20px; font-size: 12px; line-height: 1.8; }
 
+        /* ── Gem Formulas tab ── */
+        .gf-intro { color: #8899aa; font-size: 12px; margin-bottom: 14px; line-height: 1.5; }
+        .gf-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .gf-table th {
+            color: #00d4ff; text-align: left; padding: 8px 10px;
+            border-bottom: 1px solid #1e3a5f; font-size: 11px;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .gf-table td { padding: 10px; border-bottom: 1px solid #111a2a; vertical-align: middle; }
+        .gf-table tr:hover { background: rgba(0,212,255,0.04); }
+        .gf-gem-cell { display: flex; align-items: center; gap: 8px; min-width: 150px; }
+        .gf-gem-icon { width: 28px; height: 28px; flex-shrink: 0; image-rendering: pixelated; }
+        .gf-gem-name { color: #ffffff; font-weight: bold; font-size: 13px; }
+        .gf-gem-type { color: #667788; font-size: 10px; display: block; margin-top: 1px; }
+        .gf-recipe { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+        .gf-ingredient { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+        .gf-ing-icon { width: 20px; height: 20px; image-rendering: pixelated; }
+        .gf-ing-text { color: #cce0f0; font-size: 11px; }
+        .gf-plus { color: #4a5a6a; font-size: 12px; margin: 0 2px; }
+        .gf-effect { color: #aabbcc; font-size: 11px; line-height: 1.4; max-width: 260px; }
+
         .donate-button {
             display: inline-block;
             background: #ff5e5b;
@@ -461,6 +482,11 @@
         .save-slot-label { color: #00d4ff; font-size: 12px; font-weight: bold; margin-bottom: 4px; }
         .save-slot-meta { color: #8899aa; font-size: 11px; line-height: 1.5; }
         .save-slot-empty { color: #556677; font-style: italic; font-size: 11px; }
+        .save-cooldown-notice {
+            background: #3a2a1a; border: 1px solid #6a4a2a; border-radius: 4px;
+            color: #ffcc66; font-size: 11px; padding: 8px 12px; margin-bottom: 10px;
+            text-align: center;
+        }
         .save-slot-actions { display: flex; gap: 6px; margin-left: 12px; }
         .save-slot-actions button {
             padding: 4px 12px; font-size: 11px; cursor: pointer;
@@ -522,13 +548,14 @@
             <button class="tab" data-tab="leaderboard">Leaderboard</button>
             <button class="tab" data-tab="comments">Comments</button>
             <button class="tab" data-tab="patchnotes">Patch Notes</button>
+            <button class="tab" data-tab="gemformulas">Gem Formulas</button>
             <button class="tab" data-tab="donate">Donate</button>
         </div>
         <div id="game-wrapper">
             <div id="left-panel">
                 <div id="panel-header">
                     <div id="panel-title">GEM TD</div>
-                    <div id="panel-version">v1.10.1</div>
+                    <div id="panel-version">v1.11</div>
                     <div style="color:#556677;font-size:9px;margin-top:2px">by viktor-n</div>
                 </div>
                 <hr class="left-divider">
@@ -562,6 +589,19 @@
         </div>
         <div id="patchnotes-view" class="tab-content hidden">
             <h2>Patch Notes</h2>
+            <div class="patch-version">
+                <h3>v1.11 &mdash; Formulas, Hotkeys &amp; Save Hardening</h3>
+                <ul>
+                    <li>New Gem Formulas tab: all 13 base special gem recipes in one table, sorted from easiest to hardest to assemble, with ingredient icons and a one-line effect summary</li>
+                    <li>Desktop hotkeys: <b>S</b> toggle speed, <b>R</b> remove, <b>K</b> keep, <b>C</b> combine, <b>L</b> buy life, <b>Esc</b> close modal &mdash; button labels show the shortcut in parentheses</li>
+                    <li>Save-scum protection: loading a slot now wipes it (delete-on-load), and Save is locked for 5 survived waves after each save</li>
+                    <li>Save/Load button greys out with a wave countdown while the cooldown is active; modal cannot be opened at all during cooldown</li>
+                    <li>Egyptian Gold (and Gold): a weaker tower's armor debuff can no longer overwrite a stronger debuff still ticking on the target</li>
+                    <li>Poison: same-strength hits from the same gem now refresh the duration instead of being ignored mid-tick (applies to Emerald chain and Lucky Jade)</li>
+                    <li>Splash % tooltips uncapped &mdash; Ruby, Yellow Sapphire chain and Ancient Blood Stone now display the true post-scaling value above 100%</li>
+                    <li>Sprite visuals restored for Malachite tiers 2&ndash;3 (Vivid / Mighty), the full Dark Emerald chain, Red Crystal tiers 1&ndash;2, and the full Star Ruby chain &mdash; no more fallback circles on those gems</li>
+                </ul>
+            </div>
             <div class="patch-version">
                 <h3>v1.10 &mdash; Late-game Scaling</h3>
                 <ul>
@@ -714,6 +754,11 @@
                     <li>Level bonus and MVP bonus are now additive</li>
                 </ul>
             </div>
+        </div>
+        <div id="gemformulas-view" class="tab-content hidden">
+            <h2>Gem Formulas</h2>
+            <p class="gf-intro">Combine specific base gems during build phase to create a special gem. Listed from easiest to hardest to assemble.</p>
+            <div id="gemformulas-list"></div>
         </div>
         <div id="donate-view" class="tab-content hidden">
             <h2>Support Gem TD</h2>

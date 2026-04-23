@@ -2,7 +2,19 @@
 
 const SLOT_KEY_PREFIX = 'gemtd_slot_';
 const OLD_STORAGE_KEY = 'gemtd_save';    // legacy single-save key (pre-v1.9)
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
+
+/** Waves the player must survive between saves to prevent save-scumming. */
+export const SAVE_COOLDOWN_WAVES = 5;
+
+/**
+ * Waves remaining before the player can save again. 0 means save is available.
+ * Null lastSaveWave (fresh game / legacy save) counts as no cooldown.
+ */
+export function saveCooldownRemaining(state) {
+  if (!state || state.lastSaveWave == null) return 0;
+  return Math.max(0, SAVE_COOLDOWN_WAVES - (state.wave - state.lastSaveWave));
+}
 
 export function createInitialState() {
   return {
@@ -36,6 +48,7 @@ export function createInitialState() {
     gameSpeed: 1,
     gameTime: 0,
     gameId: crypto.randomUUID(),
+    lastSaveWave: null,
   };
 }
 
@@ -48,6 +61,11 @@ export function createInitialState() {
  * Stores both a lightweight meta object (for display) and the full state.
  */
 export function saveToSlot(slot, state) {
+  // Stamp the save wave for the 5-wave cooldown. Mutates the live state so
+  // the in-memory UI picks up the new cooldown on the next render, and lands
+  // in the blob below so reloading the save preserves the cooldown.
+  state.lastSaveWave = state.wave;
+
   const meta = {
     wave:        state.wave,
     gold:        state.gold,
@@ -195,5 +213,6 @@ function migrateState(s) {
   if (s.saveVersion === undefined) s.saveVersion = 0;
   if (s.rocks === undefined) s.rocks = [];
   if (!s.gameId) s.gameId = crypto.randomUUID();
+  if (s.lastSaveWave === undefined) s.lastSaveWave = null;
   return s;
 }

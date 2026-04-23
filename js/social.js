@@ -1,6 +1,8 @@
-// social.js — Social features: tabs, leaderboard, comments, score modal
+// social.js — Social features: tabs, leaderboard, comments, score modal, gem formulas
 
 import { getScores, submitScore, getComments, submitComment } from './firebase.js';
+import { SPECIAL_GEM_DEFS } from './specialgem.js';
+import { getGemSprite, getSpecialGemSprite } from './sprites.js';
 
 let lastPlayerName = '';
 
@@ -21,14 +23,111 @@ export function initTabs() {
       document.getElementById('leaderboard-view').classList.toggle('hidden', target !== 'leaderboard');
       document.getElementById('comments-view').classList.toggle('hidden', target !== 'comments');
       document.getElementById('patchnotes-view').classList.toggle('hidden', target !== 'patchnotes');
+      document.getElementById('gemformulas-view').classList.toggle('hidden', target !== 'gemformulas');
       document.getElementById('donate-view').classList.toggle('hidden', target !== 'donate');
 
       window.gameTabActive = (target === 'game');
 
       if (target === 'leaderboard') refreshLeaderboard();
       if (target === 'comments') refreshComments();
+      if (target === 'gemformulas') renderGemFormulas();
     });
   });
+}
+
+// ---------------------------------------------------------------------------
+// Gem Formulas tab
+// ---------------------------------------------------------------------------
+
+const QUALITY_RANK = { chipped: 0, flawed: 1, standard: 2, flawless: 3, perfect: 4, great: 5 };
+
+// One-line effect summaries, keyed by base special gem id.
+const EFFECT_SUMMARY = {
+  malachite:           'Multi-target: hits 3 enemies at once',
+  silver:              'Splash area damage with slow',
+  star_ruby:           'Burn aura — damage over time to all enemies in range',
+  jade:                'Poison DoT + slow stacked on every hit',
+  red_crystal:         'Anti-air; armor-reduction aura for nearby ground gems',
+  uranium_235:         'Slow aura + burn aura together (continuous AoE control)',
+  dark_emerald:        'Chance to stun the target on each hit',
+  gold:                'Crit chance + armor debuff on hit',
+  pink_diamond:        'Ground-only crit on hit',
+  black_opal:          '+% damage aura to all nearby gems',
+  blood_stone:         'Multi-target hits + burn aura',
+  yellow_sapphire:     'Splash + slow + damage aura for nearby gems',
+  paraiba_tourmaline:  'On-hit nova proc + armor-reduction aura',
+};
+
+let gemFormulasRendered = false;
+
+function recipeDifficulty(def) {
+  const ing = def.ingredients || [];
+  const sum = ing.reduce((s, i) => s + (QUALITY_RANK[i.quality] ?? 0), 0);
+  // Extra ingredients past the usual 3 push the chain toward the hard end.
+  return sum + Math.max(0, ing.length - 3) * 2;
+}
+
+function capitalize(s) {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+}
+
+function gemIconSrc(type, quality) {
+  const canvas = getGemSprite(type, quality);
+  return canvas ? canvas.toDataURL() : '';
+}
+
+function specialIconSrc(specialType) {
+  const canvas = getSpecialGemSprite(specialType);
+  return canvas ? canvas.toDataURL() : '';
+}
+
+function renderIngredient(ing) {
+  const label = `${capitalize(ing.quality)} ${ing.type}`;
+  const src   = gemIconSrc(ing.type, ing.quality);
+  return `<span class="gf-ingredient">
+    <img class="gf-ing-icon" src="${src}" alt="${label}" title="${label}">
+    <span class="gf-ing-text">${label}</span>
+  </span>`;
+}
+
+function renderGemFormulas() {
+  if (gemFormulasRendered) return;
+  const container = document.getElementById('gemformulas-list');
+  if (!container) return;
+
+  const bases = SPECIAL_GEM_DEFS
+    .filter(d => Array.isArray(d.ingredients))
+    .slice()
+    .sort((a, b) => recipeDifficulty(a) - recipeDifficulty(b));
+
+  let html = `<table class="gf-table">
+    <thead><tr>
+      <th>Special Gem</th><th>Recipe</th><th>Effect</th>
+    </tr></thead><tbody>`;
+
+  bases.forEach(def => {
+    const specialSrc = specialIconSrc(def.id);
+    const ingHtml = def.ingredients
+      .map(renderIngredient)
+      .join('<span class="gf-plus">+</span>');
+    const effect = EFFECT_SUMMARY[def.id] || '';
+
+    html += `<tr>
+      <td><div class="gf-gem-cell">
+        <img class="gf-gem-icon" src="${specialSrc}" alt="${def.name}">
+        <div>
+          <span class="gf-gem-name">${def.name}</span>
+          <span class="gf-gem-type">${def.attackType}-type</span>
+        </div>
+      </div></td>
+      <td><div class="gf-recipe">${ingHtml}</div></td>
+      <td class="gf-effect">${effect}</td>
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+  container.innerHTML = html;
+  gemFormulasRendered = true;
 }
 
 // ---------------------------------------------------------------------------

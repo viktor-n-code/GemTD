@@ -322,9 +322,10 @@ const SPECIAL_VISUALS = {
   // Blood Stone chain — flame, dark red→crimson
   blood_stone:     { shape: 'flame', light: '#ff4444', dark: '#660000', icon: 'skull', tier: 1 },
   ancient_blood_stone: { shape: 'flame', light: '#cc0000', dark: '#440000', icon: 'skull', tier: 2 },
-  // Rose Quartz chain — heart/gem, pink→rose
-  rose_quartz:     { shape: 'heart', light: '#ff88cc', dark: '#993366', icon: 'spiral', tier: 1 },
-  rose_quartz_crystal: { shape: 'heart', light: '#ff55aa', dark: '#882255', icon: 'spiral', tier: 2 },
+  // Red Crystal chain — heart, pink progression, spiral icon
+  red_crystal:         { shape: 'heart', light: '#ff88cc', dark: '#993366', icon: 'spiral', tier: 1 },
+  red_crystal_facet:   { shape: 'heart', light: '#ff55aa', dark: '#882255', icon: 'spiral', tier: 2 },
+  rose_quartz_crystal: { shape: 'heart', light: '#ffb3d9', dark: '#66224a', icon: 'spiral', tier: 3 },
   // Pink Diamond chain — cut diamond, pink→magenta
   pink_diamond:    { shape: 'cutdiamond', light: '#ff8099', dark: '#993355', icon: 'bolt', tier: 1 },
   great_pink_diamond: { shape: 'cutdiamond', light: '#ff55aa', dark: '#882244', icon: 'bolt', tier: 2 },
@@ -350,6 +351,10 @@ const SPECIAL_VISUALS = {
   // Dark Emerald chain — spikehex, dark green, bolt icon (stun theme)
   dark_emerald:        { shape: 'spikehex', light: '#2a7a3a', dark: '#0a3a1a', icon: 'bolt', tier: 1 },
   enchanted_emerald:   { shape: 'spikehex', light: '#3a9a4a', dark: '#1a4a2a', icon: 'bolt', tier: 2 },
+  // Star Ruby chain — starburst, red→orange, burst icon (burn aura)
+  star_ruby:           { shape: 'starburst', light: '#ff4466', dark: '#8b1a2a', icon: 'burst', tier: 1 },
+  blazing_star_ruby:   { shape: 'starburst', light: '#ff6633', dark: '#883322', icon: 'burst', tier: 2 },
+  grand_star_ruby:     { shape: 'starburst', light: '#ff9922', dark: '#884400', icon: 'burst', tier: 3 },
 };
 
 // --- Shape drawers for special gems ---
