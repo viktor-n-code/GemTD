@@ -3,6 +3,7 @@
 import { getScores, submitScore, getComments, submitComment } from './firebase.js';
 import { SPECIAL_GEM_DEFS } from './specialgem.js';
 import { getGemSprite, getSpecialGemSprite } from './sprites.js';
+import { track } from './analytics.js';
 
 let lastPlayerName = '';
 
@@ -32,6 +33,10 @@ export function initTabs() {
       if (target === 'comments') refreshComments();
       if (target === 'gemformulas') renderGemFormulas();
     });
+  });
+
+  document.querySelectorAll('#donate-view a[href*="ko-fi.com"]').forEach(link => {
+    link.addEventListener('click', () => track('kofi_click'));
   });
 }
 
@@ -290,6 +295,8 @@ export function showScoreModal(gameState, mazeLength, boardFillPct, endReason = 
       gameId: gameState.gameId,
       greatOpalWave: gameState.greatOpalWave,
     });
+
+    track(`score_submit/${endReason}/wave_${gameState.wave}`);
 
     cleanup();
   }, { once: true });

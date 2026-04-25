@@ -18,6 +18,9 @@ import { attackEnemy, canAttack, isInRange, tickPoison, getGemStats, getGemAttac
 import { render } from './renderer.js';
 import { InputHandler } from './input.js';
 import { drawUI, updateInfoPanel, updateLeftPanel, PANEL_H } from './ui.js';
+import { track } from './analytics.js';
+
+const WAVE_MILESTONES = new Set([5, 10, 20, 30, 50, 75, 100, 150, 200]);
 
 // ---------------------------------------------------------------------------
 // Module-level state
@@ -235,6 +238,8 @@ function init() {
   initFirebase();
   initTabs();
   initCommentForm();
+
+  track('game_start');
 
   requestAnimationFrame(gameLoop);
 }
@@ -1273,6 +1278,10 @@ function updateBetween() {
 
   gameState.downgradeAvailableId = null; // lock gem — no more downgrading
   gameState.phase = 'build';
+
+  if (WAVE_MILESTONES.has(gameState.wave)) {
+    track(`wave_reached/${gameState.wave}`);
+  }
 }
 
 // ---------------------------------------------------------------------------
