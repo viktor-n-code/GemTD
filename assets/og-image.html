@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Gem TD — OG Image Generator (1200×630)</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #222; color: #fff; font-family: Arial, sans-serif;
+    padding: 24px; display: flex; flex-direction: column; gap: 16px;
+  }
+  .instructions {
+    max-width: 900px; line-height: 1.6; font-size: 14px;
+    background: #333; padding: 16px 20px; border-radius: 6px;
+  }
+  .instructions code {
+    background: #111; padding: 2px 6px; border-radius: 3px; font-size: 13px;
+  }
+  .instructions ol { margin-left: 20px; margin-top: 8px; }
+  .instructions li { margin-bottom: 6px; }
+
+  #card {
+    width: 1200px; height: 630px;
+    background:
+      radial-gradient(ellipse at 30% 30%, rgba(0,212,255,0.18) 0%, transparent 50%),
+      radial-gradient(ellipse at 70% 70%, rgba(255,100,200,0.12) 0%, transparent 50%),
+      linear-gradient(135deg, #0d1b2a 0%, #16213e 45%, #0d1b2a 100%);
+    position: relative; overflow: hidden;
+    border: 2px solid #0f3460;
+    font-family: Arial, sans-serif; color: #fff;
+  }
+  .grid-bg {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.05) 1px, transparent 1px);
+    background-size: 30px 30px;
+    opacity: 0.6;
+  }
+  .glow-ring {
+    position: absolute; width: 700px; height: 700px;
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,212,255,0.10) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .content {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    height: 100%; padding: 60px 80px; text-align: center;
+  }
+  .title {
+    font-size: 180px; font-weight: 900;
+    letter-spacing: 16px;
+    color: #00d4ff;
+    text-shadow:
+      0 0 40px rgba(0,212,255,0.55),
+      0 0 90px rgba(0,212,255,0.30),
+      0 4px 0 #003344;
+    margin-bottom: 10px;
+    line-height: 1;
+  }
+  .tagline {
+    font-size: 36px; color: #cce0f0; letter-spacing: 6px;
+    text-transform: uppercase; margin-bottom: 60px;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  }
+  .gems { display: flex; gap: 42px; align-items: center; }
+  .gem { width: 76px; height: 76px; filter: drop-shadow(0 0 12px currentColor); }
+
+  .hints {
+    position: absolute; bottom: 36px; left: 0; right: 0;
+    text-align: center; font-size: 20px; color: #88aacc;
+    letter-spacing: 3px;
+  }
+  .hints b { color: #ffcc44; font-weight: 900; }
+
+  .corner {
+    position: absolute; top: 36px; right: 48px;
+    font-size: 16px; color: #667788; letter-spacing: 2px;
+  }
+</style>
+</head>
+<body>
+
+<div class="instructions">
+  <b>How to generate <code>og-image.png</code>:</b>
+  <ol>
+    <li>Open this file in Chrome: <code>file:///.../assets/og-image.html</code> (or via the local dev server).</li>
+    <li>Open DevTools (F12) → right-click the <code>&lt;div id="card"&gt;</code> element in the Elements panel → <b>Capture node screenshot</b>. Chrome saves a 1200×630 PNG at exact resolution.</li>
+    <li>Rename the saved file to <code>og-image.png</code> and drop it in this same <code>assets/</code> folder.</li>
+    <li>Commit <code>assets/og-image.png</code> alongside any index.html changes. GitHub Pages will serve it at the URL referenced by the <code>og:image</code> meta tag.</li>
+  </ol>
+  <p style="margin-top:10px;font-size:12px;color:#aaa">Alternative: take a 1200×630 screenshot with any tool (ShareX, Greenshot) and crop precisely. OG crawlers (Discord, Slack, Reddit, Twitter) want 1.91:1 aspect and at least 1200 wide.</p>
+</div>
+
+<div id="card">
+  <div class="grid-bg"></div>
+  <div class="glow-ring"></div>
+
+  <div class="corner">v1.11 · by viktor-n</div>
+
+  <div class="content">
+    <div class="title">GEM TD</div>
+    <div class="tagline">Endless Browser Tower Defense</div>
+
+    <div class="gems">
+      <!-- Amethyst -->
+      <svg class="gem" viewBox="0 0 64 64" style="color:#c864ff">
+        <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#e6a8ff"/><stop offset="1" stop-color="#8040c0"/>
+        </linearGradient></defs>
+        <polygon points="32,4 54,24 32,60 10,24" fill="url(#g1)" stroke="#2a0050" stroke-width="2" stroke-linejoin="round"/>
+        <polygon points="32,4 54,24 32,26 10,24" fill="#ffe0ff" opacity="0.5"/>
+      </svg>
+      <!-- Diamond -->
+      <svg class="gem" viewBox="0 0 64 64" style="color:#ffffff">
+        <defs><linearGradient id="g2" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#a0c8e8"/>
+        </linearGradient></defs>
+        <polygon points="32,4 54,24 32,60 10,24" fill="url(#g2)" stroke="#456" stroke-width="2" stroke-linejoin="round"/>
+        <polygon points="32,4 54,24 32,26 10,24" fill="#ffffff" opacity="0.7"/>
+      </svg>
+      <!-- Ruby -->
+      <svg class="gem" viewBox="0 0 64 64" style="color:#ff4060">
+        <defs><linearGradient id="g3" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ff88a0"/><stop offset="1" stop-color="#a00020"/>
+        </linearGradient></defs>
+        <polygon points="32,4 54,24 32,60 10,24" fill="url(#g3)" stroke="#400010" stroke-width="2" stroke-linejoin="round"/>
+        <polygon points="32,4 54,24 32,26 10,24" fill="#ffdde0" opacity="0.5"/>
+      </svg>
+      <!-- Emerald -->
+      <svg class="gem" viewBox="0 0 64 64" style="color:#30e060">
+        <defs><linearGradient id="g4" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#a0ffb0"/><stop offset="1" stop-color="#208030"/>
+        </linearGradient></defs>
+        <polygon points="32,4 54,24 32,60 10,24" fill="url(#g4)" stroke="#003010" stroke-width="2" stroke-linejoin="round"/>
+        <polygon points="32,4 54,24 32,26 10,24" fill="#e0ffe0" opacity="0.5"/>
+      </svg>
+      <!-- Sapphire -->
+      <svg class="gem" viewBox="0 0 64 64" style="color:#4080ff">
+        <defs><linearGradient id="g5" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#a0c0ff"/><stop offset="1" stop-color="#1040a0"/>
+        </linearGradient></defs>
+        <polygon points="32,4 54,24 32,60 10,24" fill="url(#g5)" stroke="#001040" stroke-width="2" stroke-linejoin="round"/>
+        <polygon points="32,4 54,24 32,26 10,24" fill="#d0e0ff" opacity="0.5"/>
+      </svg>
+      <!-- Topaz -->
+      <svg class="gem" viewBox="0 0 64 64" style="color:#ffcc33">
+        <defs><linearGradient id="g6" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#fff0a0"/><stop offset="1" stop-color="#c08010"/>
+        </linearGradient></defs>
+        <polygon points="32,4 54,24 32,60 10,24" fill="url(#g6)" stroke="#402000" stroke-width="2" stroke-linejoin="round"/>
+        <polygon points="32,4 54,24 32,26 10,24" fill="#fff8d0" opacity="0.55"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="hints">8 TYPES · 6 QUALITIES · 13 SPECIAL CHAINS · <b>ENDLESS</b></div>
+</div>
+
+</body>
+</html>
