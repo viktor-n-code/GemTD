@@ -521,6 +521,65 @@
         .slot-btn-delete { background: #5a1a1a; }
         .slot-btn-delete:hover { background: #7a2a2a; }
 
+        /* ── Onboarding modal ── */
+        #onboarding-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); display: flex; align-items: center;
+            justify-content: center; z-index: 1100;
+        }
+        #onboarding-modal .modal-box {
+            background: #0d1b2a; border: 2px solid #0f3460;
+            padding: 28px 32px; border-radius: 8px;
+            width: 480px; max-width: 90vw;
+            color: #cce0f0;
+        }
+        #onboarding-modal h2 {
+            color: #00d4ff; margin-bottom: 6px; text-align: center;
+            font-size: 22px; letter-spacing: 2px;
+        }
+        #onboarding-modal .onboarding-sub {
+            color: #88aacc; font-size: 12px; text-align: center;
+            margin-bottom: 18px;
+        }
+        .onboarding-steps {
+            list-style: none; padding: 0; margin: 0 0 18px;
+            counter-reset: step;
+        }
+        .onboarding-steps li {
+            font-size: 13px; line-height: 1.55;
+            padding: 10px 12px 10px 44px; margin-bottom: 8px;
+            background: #16213e; border-left: 3px solid #1a4a6a;
+            border-radius: 4px; position: relative;
+        }
+        .onboarding-steps li::before {
+            counter-increment: step;
+            content: counter(step);
+            position: absolute; left: 12px; top: 10px;
+            width: 22px; height: 22px; line-height: 22px;
+            text-align: center; border-radius: 50%;
+            background: #1a4a6a; color: #00d4ff;
+            font-weight: bold; font-size: 12px;
+        }
+        .onboarding-steps li b { color: #ffcc44; }
+        #onboarding-close {
+            padding: 10px 30px; font-size: 14px; cursor: pointer;
+            border-radius: 4px; border: none;
+            background: #1a6a3a; color: #fff; font-weight: bold;
+        }
+        #onboarding-close:hover { background: #2a8a4a; }
+        .onboarding-hint {
+            color: #667788; font-size: 11px; text-align: center;
+            margin-top: 14px; line-height: 1.5;
+        }
+        .left-howto {
+            display: inline-block;
+            color: #6699bb; font-size: 10px;
+            margin-top: 6px; cursor: pointer;
+            text-decoration: underline; text-decoration-style: dotted;
+            text-decoration-color: #335566;
+        }
+        .left-howto:hover { color: #00d4ff; }
+
         /* ── Mobile / touch ── */
         #game { touch-action: none; }
 
@@ -577,6 +636,7 @@
                     <div id="panel-title">GEM TD</div>
                     <div id="panel-version">v1.11</div>
                     <div style="color:#556677;font-size:9px;margin-top:2px">by viktor-n</div>
+                    <a id="how-to-play" class="left-howto">How to play</a>
                 </div>
                 <hr class="left-divider">
                 <div id="left-wave"></div>
@@ -825,6 +885,22 @@
             <div class="modal-buttons" style="margin-top:16px">
                 <button id="saveload-close" style="background:#3a3a3a;color:#aaa;padding:8px 20px;font-size:14px;cursor:pointer;border-radius:4px;border:none;">Close</button>
             </div>
+        </div>
+    </div>
+
+    <div id="onboarding-modal" class="hidden">
+        <div class="modal-box">
+            <h2>Welcome to Gem TD</h2>
+            <p class="onboarding-sub">Endless tower defense — three things to know before you start.</p>
+            <ol class="onboarding-steps">
+                <li><b>Roll.</b> Each round you get 5 random gem towers — different types and qualities. Place them on the grid; they auto-attack enemies passing by.</li>
+                <li><b>Keep or combine.</b> At the end of the build phase, keep one gem permanently — or combine 2+ same-type, same-quality gems into a stronger one. 13 special chains unlock unique towers.</li>
+                <li><b>Defend.</b> Waves never stop and scale forever. Build mazes to slow enemies, manage gold, and survive as far as you can. Game over when lives hit zero.</li>
+            </ol>
+            <div class="modal-buttons" style="text-align:center">
+                <button id="onboarding-close">Got it — let's play</button>
+            </div>
+            <p class="onboarding-hint">Re-open this any time via "How to play" in the left panel. Full mechanics in the Patch Notes and Gem Formulas tabs.</p>
         </div>
     </div>
 
