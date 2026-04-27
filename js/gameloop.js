@@ -238,10 +238,40 @@ function init() {
   initFirebase();
   initTabs();
   initCommentForm();
+  initOnboarding();
 
   track('game_start');
 
   requestAnimationFrame(gameLoop);
+}
+
+// ---------------------------------------------------------------------------
+// Onboarding overlay
+// ---------------------------------------------------------------------------
+
+const ONBOARDING_FLAG = 'gemtd_onboarded';
+
+function showOnboarding() {
+  document.getElementById('onboarding-modal')?.classList.remove('hidden');
+}
+
+function hideOnboarding() {
+  document.getElementById('onboarding-modal')?.classList.add('hidden');
+  try { localStorage.setItem(ONBOARDING_FLAG, '1'); } catch {}
+}
+
+function initOnboarding() {
+  document.getElementById('onboarding-close')?.addEventListener('click', hideOnboarding);
+  document.getElementById('how-to-play')?.addEventListener('click', showOnboarding);
+
+  const modal = document.getElementById('onboarding-modal');
+  modal?.addEventListener('click', (e) => {
+    if (e.target === modal) hideOnboarding();
+  });
+
+  let seen = false;
+  try { seen = !!localStorage.getItem(ONBOARDING_FLAG); } catch {}
+  if (!seen) showOnboarding();
 }
 
 // ---------------------------------------------------------------------------
